@@ -146,7 +146,16 @@ export const useRitualStore = create<RitualState>()(
       storage: createJSONStorage(() => localStorage),
       // Persist the entire state (sequence + drafts). Drafts outliving a
       // crash is a feature, not a bug — Brandon doesn't lose mid-slot writing.
-      version: 1,
+      //
+      // Version bumped 1 → 2 on 2026-04-10: the palette change from Lapham
+      // cream to white/gray/black landed alongside a batch of test drafts
+      // that had accumulated in localStorage during development and were
+      // hiding the "What did you dream?" placeholder on real launches.
+      // Bumping the version forces zustand-persist to discard any stored
+      // state that predates this change, giving every existing install a
+      // clean slate on next launch. No data loss — committed writing lives
+      // in the day log file, which zustand-persist has never touched.
+      version: 2,
     },
   ),
 );

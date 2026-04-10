@@ -3,10 +3,11 @@
 // fixed-position footer outside the animated region so it doesn't fade
 // during slot transitions.
 //
-// The shell itself uses `flex-1` (not `min-h-screen`) so it fills whatever
-// space is available inside its parent — typically a `<main>` container
-// that owns the overall viewport height. Stacking two `min-h-screen`
-// containers would force a scroll; `flex-1` lets the parent decide.
+// The layout is top-anchored (not centered): writing flows from a generous
+// top margin downward. This matches the feel of writing on a real page —
+// the first line lives near the top, and as you write the page fills. A
+// vertically-centered layout was tried and felt wrong; text that starts in
+// the middle of the window feels like a form, not a page.
 
 import type { ReactNode } from "react";
 
@@ -30,7 +31,7 @@ export function SlotShell({
     <>
       <section
         className={[
-          "flex flex-1 flex-col items-center justify-center px-8",
+          "flex flex-col items-center px-8 pt-24 pb-20",
           "transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           transitioning ? "-translate-y-3 opacity-0" : "translate-y-0 opacity-100",
         ].join(" ")}

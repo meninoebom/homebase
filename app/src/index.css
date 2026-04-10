@@ -1,28 +1,37 @@
 @import "tailwindcss";
 
 /*
- * Lapham's editorial palette — the design language that the four April 9 sub-agents
- * converged on for this project. Warm cream background, Charter serif body, single
- * terracotta accent. No shadows, no gradients, no dark mode in v1.
+ * White / gray / black palette. Replaced the Lapham editorial palette on
+ * 2026-04-10 after Brandon reported (correctly) that cream tinted everything
+ * and made the editor feel form-like rather than page-like. The iA Writer /
+ * Ulysses / Bear family all use clean white for writing surfaces because a
+ * warm cream only works as a *reference* aesthetic (which is what Brandon's
+ * own design-palette-laphams.md memory scopes it to — "info-dense HTML tools,
+ * cheat sheets, study materials"), not as a writing surface.
  *
- * Rationale lives in docs/plan-morning-ritual.md §11 and the April 9 design-voice
- * sub-agent report.
+ * Kept from the old palette: Charter serif body, single easing curve for
+ * motion, ink/ink-muted/ink-faint role names (just re-pointed at grays).
+ * Dropped from the old palette: terracotta accent, hairline warmth, the
+ * lifted `page` background that made the editor look like a form field.
  */
 @theme {
-  /* Color roles — named by function, not by shade. */
-  --color-paper: #f5efe1; /* window background, warm cream */
-  --color-page: #faf6ea; /* writing surface, slightly lifted from paper */
-  --color-ink: #2a2622; /* body writing, warm near-black */
-  --color-ink-muted: #6b625a; /* slot headers, metadata, yesterday whisper */
-  --color-ink-faint: #a89e90; /* chrome, hints, inactive slot numbers */
-  --color-terracotta: #b6442c; /* the single accent — drop caps, gate indicators */
-  --color-hairline: #e5dcc5; /* 1px rules between sections, nothing else */
+  /* Backgrounds — one color, no lifting. The editor is the window. */
+  --color-paper: #ffffff; /* window background */
+  --color-page: #ffffff; /* editor background (same as paper — no box) */
 
-  /* Type — Charter ships with macOS and is our body face; no Tiempos fallback to Georgia. */
+  /* Text — near-black to light gray. */
+  --color-ink: #111111; /* body writing */
+  --color-ink-muted: #6b7280; /* slot labels, metadata */
+  --color-ink-faint: #9ca3af; /* chrome, placeholder, slot counter */
+
+  /* Hairlines kept as a cool gray. Used nowhere yet. */
+  --color-hairline: #e5e7eb;
+
+  /* Type. */
   --font-serif: "Charter", "Iowan Old Style", "Palatino", ui-serif, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
 
-  /* Motion — single easing curve for the entire app. */
+  /* Motion. */
   --ease-ritual: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -50,17 +59,21 @@ body {
  * is a contentEditable div with the class `.ProseMirror`; TipTap doesn't
  * emit a shadow DOM or ship any default styling, so everything is on us.
  *
- * We target `.dreams-slot .ProseMirror` (not a global `.ProseMirror`) so
- * each slot can define its own editor look — inner weather may want
- * multi-section styling, piano may want a state-file-aware header.
+ * The editor has NO visible background or border — it blends into the
+ * window, which is the whole page for the user. No lifted `page` surface,
+ * no box, no form-field affordance. What Brandon sees is text on white.
+ *
+ * Scoped to `.dreams-slot .ProseMirror` so each future slot can define
+ * its own editor look — inner weather may want multi-section styling,
+ * piano may want a state-file-aware header.
  */
 .dreams-slot .ProseMirror {
   font-family: var(--font-serif);
   font-size: 19px;
-  line-height: 1.58;
+  line-height: 1.62;
   color: var(--color-ink);
-  background-color: var(--color-page);
-  padding: 2.5rem 2rem;
+  background-color: transparent;
+  padding: 0;
   min-height: 20rem;
   outline: none;
   border: none;

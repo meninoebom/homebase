@@ -1,21 +1,18 @@
-// The morning sequence runner. This is the one file that knows the full
-// shape of a morning: start → render current slot → Cmd-Enter → commit →
-// advance → next slot or end-of-morning. Everything slot-specific lives in
-// the slot component; everything session-wide lives in the Zustand store;
-// this file is the glue.
+// The morning sequence runner. This file knows the full shape of a morning:
+// start → render current slot → Cmd-Enter → commit → advance → next slot
+// or end-of-morning. Everything slot-specific lives in the slot component;
+// everything session-wide lives in the Zustand store; this file is the glue.
 //
 // Cmd-Enter is handled at the window level via a keydown listener so every
-// slot (current and future) inherits the covenant without re-implementing it.
-// Plan §11 + interaction agent: the one keyboard gesture the whole app has.
+// slot (current and future) inherits the covenant without re-implementing
+// it. Cmd+Shift+R resets the current session — useful during development
+// and testing to clear persisted drafts without opening devtools.
 
-import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 
 import { EndOfMorning } from "../components/EndOfMorning";
-import { Greeting } from "../components/Greeting";
 import { SlotShell } from "../components/SlotShell";
-import { grepLogs, recentDates } from "../lib/log";
-import type { LogHit } from "../lib/log";
 import { getSlot, slotOrder } from "../slots/registry";
 import {
   selectCurrentSlotId,
@@ -34,6 +31,7 @@ function MorningRunner() {
   const startMorning = useRitualStore((s) => s.startMorning);
   const completeSlot = useRitualStore((s) => s.completeSlot);
   const setDraft = useRitualStore((s) => s.setDraft);
+  const reset = useRitualStore((s) => s.reset);
   const currentSlotId = useRitualStore(selectCurrentSlotId);
   const draftForCurrent = useRitualStore((s) =>
     currentSlotId ? (s.drafts[currentSlotId] ?? "") : "",
@@ -44,31 +42,12 @@ function MorningRunner() {
   const elapsedMs = useRitualStore(selectElapsedMs);
 
   const [transitioning, setTransitioning] = useState(false);
-  const [greetingWhisper, setGreetingWhisper] = useState<LogHit | null>(null);
-  const [onFirstSlot, setOnFirstSlot] = useState(false);
 
-  // Start the sequence on mount. startMorning is idempotent: if the store
-  // already has a morning in progress, this is a no-op.
+  // Start the sequence on mount. startMorning handles all four cases
+  // (fresh, in-progress today, completed today, stale from a previous day).
   useEffect(() => {
     startMorning(slotOrder);
   }, [startMorning]);
-
-  // Yesterday whisper: grep the last 14 days for a telling pattern. For now
-  // we just look for "avoiding" under any heading. This lights up on ~day 7
-  // when there's real history; before that it returns nothing and the
-  // greeting stays clean.
-  useEffect(() => {
-    const yesterday = recentDates(14).slice(1); // skip today
-    grepLogs("avoiding", yesterday)
-      .then((hits) => {
-        if (hits.length > 0) setGreetingWhisper(hits[0]);
-      })
-      .catch((err) => {
-        // Whisper is a nice-to-have, not load-bearing; a failed grep
-        // should never block the morning.
-        console.warn("whisper grep failed:", err);
-      });
-  }, []);
 
   const handleCommit = useCallback(async () => {
     if (!currentSlotId || transitioning) return;
@@ -83,33 +62,34 @@ function MorningRunner() {
       return;
     }
 
-    // Hold the faded-out state briefly so the transition is visible, then
-    // reset so the next slot mounts with the entrance animation.
+    // Hold the faded-out state briefly so the transition is visible,
+    // then reset so the next slot mounts with the entrance animation.
     window.setTimeout(() => {
       setTransitioning(false);
     }, TRANSITION_MS);
   }, [completeSlot, currentSlotId, draftForCurrent, transitioning]);
 
-  // Track whether we're on the first slot — used to suppress the entrance
-  // transition on initial mount (there's nothing to transition away from).
-  useEffect(() => {
-    setOnFirstSlot(currentIndex === 0 && !isDone);
-  }, [currentIndex, isDone]);
-
-  // The one keyboard covenant — Cmd-Enter (or Ctrl-Enter on non-mac)
-  // commits the current slot and advances. Listens at the window level so
-  // every slot inherits the gesture; prevents default so textareas don't
-  // also insert a newline.
+  // Keyboard covenants:
+  //   Cmd-Enter  — commit current slot and advance (the one ritual gesture)
+  //   Cmd-Shift-R — reset the entire session (development / testing escape hatch)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         void handleCommit();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        reset();
+        // Re-start the sequence after the reset so the user lands on a
+        // fresh first slot instead of an empty store.
+        startMorning(slotOrder);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [handleCommit]);
+  }, [handleCommit, reset, startMorning]);
 
   if (isDone) {
     return (
@@ -120,16 +100,13 @@ function MorningRunner() {
   }
 
   if (!currentSlotId) {
-    // Zero active slots — greet the day and exit cleanly. Matches the
-    // bash spike's "zero-slot clean exit" behavior.
+    // Zero active slots — quiet exit, matching the bash spike's behavior
+    // when slots.md was empty.
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="mx-auto w-full max-w-[62ch] px-8 text-center">
-          <Greeting date={new Date()} />
-          <p className="mt-10 font-sans text-xs uppercase tracking-[0.04em] text-ink-faint">
-            no slots today
-          </p>
-        </div>
+        <p className="font-sans text-xs uppercase tracking-[0.04em] text-ink-faint">
+          no slots today
+        </p>
       </main>
     );
   }
@@ -149,19 +126,7 @@ function MorningRunner() {
   const SlotComponent = slot.component;
 
   return (
-    <main className="flex min-h-screen flex-col bg-paper">
-      {/* Greeting above the active slot, shown only on the first slot of
-          the morning (not repeated once the sequence is in motion). The
-          outer flex+justify-center keeps the 62ch column horizontally
-          centered without fighting the parent's items-stretch. */}
-      {onFirstSlot ? (
-        <div className="flex w-full justify-center px-8 pt-20">
-          <div className="w-full max-w-[62ch]">
-            <Greeting date={new Date()} whisper={greetingWhisper?.line ?? undefined} />
-          </div>
-        </div>
-      ) : null}
-
+    <main className="min-h-screen bg-paper">
       <SlotShell
         slotName={slot.id}
         currentIndex={currentIndex}
