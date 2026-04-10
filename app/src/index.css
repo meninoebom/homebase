@@ -44,3 +44,54 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/*
+ * TipTap / ProseMirror editor styles for prompt slots. The editor surface
+ * is a contentEditable div with the class `.ProseMirror`; TipTap doesn't
+ * emit a shadow DOM or ship any default styling, so everything is on us.
+ *
+ * We target `.dreams-slot .ProseMirror` (not a global `.ProseMirror`) so
+ * each slot can define its own editor look — inner weather may want
+ * multi-section styling, piano may want a state-file-aware header.
+ */
+.dreams-slot .ProseMirror {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.58;
+  color: var(--color-ink);
+  background-color: var(--color-page);
+  padding: 2.5rem 2rem;
+  min-height: 20rem;
+  outline: none;
+  border: none;
+  cursor: text;
+}
+
+.dreams-slot .ProseMirror:focus,
+.dreams-slot .ProseMirror:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.dreams-slot .ProseMirror p {
+  margin: 0 0 1em 0;
+}
+
+.dreams-slot .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * The placeholder. TipTap's Placeholder extension sets a `data-placeholder`
+ * attribute on the first empty node and adds the `is-editor-empty` class;
+ * we render the placeholder via `::before` so it sits exactly where the
+ * cursor would go without affecting layout.
+ */
+.dreams-slot .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-ink-faint);
+  font-style: italic;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
