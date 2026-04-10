@@ -20,6 +20,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "@tiptap/extension-document": "^3.22.3",
     "@tiptap/extension-hard-break": "^3.22.3",
+    "@tiptap/extension-heading": "^3.22.3",
     "@tiptap/extension-history": "^3.22.3",
     "@tiptap/extension-paragraph": "^3.22.3",
     "@tiptap/extension-placeholder": "^3.22.3",

@@ -16,6 +16,7 @@
 
 import type { ComponentType } from "react";
 import { meta as dreamsMeta } from "./dreams/meta";
+import { meta as innerWeatherMeta } from "./inner-weather/meta";
 
 export type SlotId = string;
 
@@ -41,16 +42,21 @@ export interface SlotModule {
 
 export const slots: Record<SlotId, SlotModule> = {
   dreams: dreamsMeta,
+  "inner-weather": innerWeatherMeta,
 };
 
 /**
  * The order slots run in during the morning sequence. Dreams is first
- * because dream memory is perishable (plan §5). When inner weather ships
- * in issue 005, this becomes `["dreams", "inner-weather"]` — one slot at
- * a time, previous slot must survive a week of real mornings before the
- * next is added.
+ * because dream memory is perishable (plan §5). Inner weather is second
+ * because it's the highest-leverage emotional capture and it follows
+ * naturally after the dream — the dream is the night, the inner weather
+ * is the morning. Plan §5 calls for one slot at a time, each earning
+ * a week of real mornings before the next is added, but inner weather
+ * is landing alongside dreams in the initial Tauri build because Brandon
+ * asked to see a multi-slot sequence in action before committing to the
+ * one-at-a-time rule.
  */
-export const slotOrder: SlotId[] = ["dreams"];
+export const slotOrder: SlotId[] = ["dreams", "inner-weather"];
 
 export function getSlot(id: SlotId): SlotModule | null {
   return slots[id] ?? null;

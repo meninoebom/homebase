@@ -55,19 +55,24 @@ body {
 }
 
 /*
+ * ============================================================
+ *  Shared editor styles (.ritual-editor)
+ * ============================================================
+ *
  * TipTap / ProseMirror editor styles for prompt slots. The editor surface
  * is a contentEditable div with the class `.ProseMirror`; TipTap doesn't
  * emit a shadow DOM or ship any default styling, so everything is on us.
  *
  * The editor has NO visible background or border — it blends into the
  * window, which is the whole page for the user. No lifted `page` surface,
- * no box, no form-field affordance. What Brandon sees is text on white.
+ * no box, no form-field affordance.
  *
- * Scoped to `.dreams-slot .ProseMirror` so each future slot can define
- * its own editor look — inner weather may want multi-section styling,
- * piano may want a state-file-aware header.
+ * Every prompt slot's root element gets `ritual-editor` as a shared class
+ * for the base typography, and optionally a slot-specific class
+ * (`dreams-slot`, `inner-weather-slot`) for extras like the Dreams
+ * placeholder or the inner-weather h3 headings.
  */
-.dreams-slot .ProseMirror {
+.ritual-editor .ProseMirror {
   font-family: var(--font-serif);
   font-size: 20px;
   line-height: 1.72;
@@ -80,8 +85,8 @@ body {
   cursor: text;
 }
 
-.dreams-slot .ProseMirror:focus,
-.dreams-slot .ProseMirror:focus-visible {
+.ritual-editor .ProseMirror:focus,
+.ritual-editor .ProseMirror:focus-visible {
   outline: none;
   box-shadow: none;
 }
@@ -94,19 +99,23 @@ body {
  * above, the prose feels generous inside a paragraph and tight between
  * paragraphs — closer to how a page in a notebook actually reads.
  */
-.dreams-slot .ProseMirror p {
+.ritual-editor .ProseMirror p {
   margin: 0 0 0.35em 0;
 }
 
-.dreams-slot .ProseMirror p:last-child {
+.ritual-editor .ProseMirror p:last-child {
   margin-bottom: 0;
 }
 
 /*
- * The placeholder. TipTap's Placeholder extension sets a `data-placeholder`
- * attribute on the first empty node and adds the `is-editor-empty` class;
- * we render the placeholder via `::before` so it sits exactly where the
- * cursor would go without affecting layout.
+ * ============================================================
+ *  Dreams slot — placeholder
+ * ============================================================
+ *
+ * TipTap's Placeholder extension sets a `data-placeholder` attribute on
+ * the first empty node and adds the `is-editor-empty` class; we render
+ * the placeholder via `::before` so it sits exactly where the cursor
+ * would go without affecting layout.
  */
 .dreams-slot .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
@@ -115,4 +124,28 @@ body {
   pointer-events: none;
   float: left;
   height: 0;
+}
+
+/*
+ * ============================================================
+ *  Inner weather slot — section headings
+ * ============================================================
+ *
+ * Inner weather's template has five `### Section` headings. Each renders
+ * as an italic muted serif, smaller than the body but visually distinct.
+ * Top margin gives each section breathing room; the first heading has
+ * no top margin so it hugs the top of the writing column.
+ */
+.inner-weather-slot .ProseMirror h3 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--color-ink-muted);
+  margin: 1.75em 0 0.4em 0;
+}
+
+.inner-weather-slot .ProseMirror h3:first-child {
+  margin-top: 0;
 }

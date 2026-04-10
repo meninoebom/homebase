@@ -60,7 +60,7 @@ export function DreamsSlot({ initialDraft, onDraft }: SlotProps) {
   if (!editor) return null;
 
   return (
-    <div className="dreams-slot">
+    <div className="dreams-slot ritual-editor">
       <EditorContent editor={editor} />
     </div>
   );
