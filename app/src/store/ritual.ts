@@ -147,15 +147,19 @@ export const useRitualStore = create<RitualState>()(
       // Persist the entire state (sequence + drafts). Drafts outliving a
       // crash is a feature, not a bug — Brandon doesn't lose mid-slot writing.
       //
-      // Version bumped 1 → 2 on 2026-04-10: the palette change from Lapham
-      // cream to white/gray/black landed alongside a batch of test drafts
-      // that had accumulated in localStorage during development and were
-      // hiding the "What did you dream?" placeholder on real launches.
-      // Bumping the version forces zustand-persist to discard any stored
-      // state that predates this change, giving every existing install a
-      // clean slate on next launch. No data loss — committed writing lives
-      // in the day log file, which zustand-persist has never touched.
-      version: 2,
+      // Version history:
+      //   1 → 2 (2026-04-10): palette change wiped stale test drafts
+      //   2 → 3 (2026-04-10): slotOrder changed from ["dreams"] to
+      //     ["dreams", "inner-weather"] but persisted sessions kept the
+      //     old single-slot array, so Brandon was seeing "1 of 1" on
+      //     launches that should have been "1 of 2." Bumping invalidates
+      //     any session that was started before inner-weather landed.
+      //
+      // Rule: bump this version any time the STATE SHAPE or the slotOrder
+      // contents change in a way that makes persisted sessions stale.
+      // Drafts in the canonical day log are never affected — only the
+      // in-progress session state, which is by design ephemeral-ish.
+      version: 3,
     },
   ),
 );

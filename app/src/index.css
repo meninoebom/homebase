@@ -108,6 +108,22 @@ body {
 }
 
 /*
+ * Empty paragraphs (from Enter-spam) shrink to half-height so that three
+ * or four Enter presses don't create a huge visual gap. A paragraph that
+ * contains only ProseMirror's trailing break is rendered at 0.7 line-height
+ * instead of 1.72, and the margin-bottom shrinks too. End result: three
+ * empty paragraphs in a row are ~45px of gap instead of ~130px, while
+ * a single empty paragraph still reads as "a blank line."
+ *
+ * Uses :has() which is supported in WKWebView (macOS Tauri target) as of
+ * Safari 15.4+ — we're on current macOS so this is safe.
+ */
+.ritual-editor .ProseMirror p:has(> br.ProseMirror-trailingBreak:only-child) {
+  line-height: 0.7;
+  margin-bottom: 0;
+}
+
+/*
  * ============================================================
  *  Dreams slot — placeholder
  * ============================================================
