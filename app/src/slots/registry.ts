@@ -2,14 +2,20 @@
 // known to the app — no filesystem magic, no auto-discovery. Adding a slot
 // means editing this file and `slotOrder` below.
 //
+// Each slot's metadata lives with its own code in `<slot>/meta.ts`, which
+// the registry imports. That keeps the registry a thin lookup table while
+// slot properties (goalState, kind) live next to the component they
+// describe.
+//
 // The slot component contract is deliberately minimal: a React function
 // component that receives `SlotProps` and renders whatever it wants. The
-// morning route calls `onComplete(body)` when Cmd-Enter fires; slots don't
-// handle keyboard events themselves. This keeps the Cmd-Enter covenant in
-// one place (morning.tsx) instead of scattered across every slot.
+// morning route calls `onDraft(body)` as the user types and reads the
+// draft from the store when Cmd-Enter fires; slots don't handle keyboard
+// events themselves. This keeps the Cmd-Enter covenant in one place
+// (morning.tsx) instead of scattered across every slot.
 
 import type { ComponentType } from "react";
-import { PlaceholderSlot } from "./placeholder";
+import { meta as dreamsMeta } from "./dreams/meta";
 
 export type SlotId = string;
 
@@ -34,24 +40,17 @@ export interface SlotModule {
 }
 
 export const slots: Record<SlotId, SlotModule> = {
-  placeholder: {
-    id: "placeholder",
-    kind: "prompt",
-    goalState:
-      "I have verified that the Tauri shell can run a slot end to end — " +
-      "this slot is scaffolding and is deleted when Dreams ships in issue 004.",
-    component: PlaceholderSlot,
-  },
+  dreams: dreamsMeta,
 };
 
 /**
- * The order slots run in during the morning sequence. When Dreams ships in
- * issue 004, this becomes `["dreams"]` and placeholder is removed. When
- * inner-weather ships in 005, this becomes `["dreams", "inner-weather"]`.
- * The rule from plan §5: one slot a week, previous slot must survive a
- * week of real mornings before the next is added.
+ * The order slots run in during the morning sequence. Dreams is first
+ * because dream memory is perishable (plan §5). When inner weather ships
+ * in issue 005, this becomes `["dreams", "inner-weather"]` — one slot at
+ * a time, previous slot must survive a week of real mornings before the
+ * next is added.
  */
-export const slotOrder: SlotId[] = ["placeholder"];
+export const slotOrder: SlotId[] = ["dreams"];
 
 export function getSlot(id: SlotId): SlotModule | null {
   return slots[id] ?? null;

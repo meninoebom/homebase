@@ -150,11 +150,15 @@ function MorningRunner() {
 
   return (
     <main className="flex min-h-screen flex-col bg-paper">
-      {/* Greeting lives above the active slot, shown only on the first slot
-          of the morning (not repeated once the sequence is in motion). */}
+      {/* Greeting above the active slot, shown only on the first slot of
+          the morning (not repeated once the sequence is in motion). The
+          outer flex+justify-center keeps the 62ch column horizontally
+          centered without fighting the parent's items-stretch. */}
       {onFirstSlot ? (
-        <div className="mx-auto mt-16 w-full max-w-[62ch] px-8">
-          <Greeting date={new Date()} whisper={greetingWhisper?.line ?? undefined} />
+        <div className="flex w-full justify-center px-8 pt-20">
+          <div className="w-full max-w-[62ch]">
+            <Greeting date={new Date()} whisper={greetingWhisper?.line ?? undefined} />
+          </div>
         </div>
       ) : null}
 
