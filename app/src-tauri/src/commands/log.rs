@@ -139,7 +139,17 @@ fn append_section_impl(
     writeln!(file)?;
     writeln!(file, "{}", body.trim_end())?;
     writeln!(file)?;
+
+    // Two-step durability: flush() pushes any stdlib-level buffering to
+    // the kernel, sync_all() asks the kernel to commit to disk (fsync).
+    // Together, these guarantee that after this function returns Ok(()),
+    // Brandon's writing survives an OS crash or power loss. Cost is one
+    // fsync per slot completion — a few milliseconds on SSD, which is
+    // invisible in the Cmd-Enter flow.
+    //
+    // Documented in docs/save-architecture.md under "Guarantees".
     file.flush()?;
+    file.sync_all()?;
     Ok(())
 }
 

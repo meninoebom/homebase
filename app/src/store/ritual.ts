@@ -48,19 +48,48 @@ const EMPTY_STATE = {
   drafts: {} as Record<SlotId, string>,
 };
 
+/**
+ * True if two timestamps fall on the same local calendar day. Used by
+ * startMorning to detect stale sessions from previous days. Uses
+ * Date.toDateString() which formats as "Fri Apr 10 2026" — a date-only
+ * representation that ignores time of day and timezone math.
+ */
+function isSameDay(a: number, b: number): boolean {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}
+
 export const useRitualStore = create<RitualState>()(
   persist(
     (set, get) => ({
       ...EMPTY_STATE,
 
       startMorning: (slotOrder) => {
-        // Idempotent: if a morning is already in progress (startedAt set but
-        // not yet completedAt), leave state alone. This means reloading the
-        // dev window mid-sequence won't wipe progress.
+        // Four cases this handles:
+        //
+        //   1. First ever: startedAt === null → fresh start.
+        //   2. In progress today (started, not yet completed, same day):
+        //      leave the state alone so reloads / hot-reloads don't wipe
+        //      mid-slot drafts.
+        //   3. Completed today (started AND completed earlier today):
+        //      leave the state alone. The morning runner's isDone check
+        //      renders EndOfMorning, giving Brandon a gentle "you're done
+        //      for today" acknowledgment instead of starting a new morning.
+        //   4. Stale from a previous day (startedAt from yesterday or
+        //      earlier, whether or not completedAt is set): reset and
+        //      start fresh. Uncommitted drafts from the stale session are
+        //      discarded — they never made it into the canonical log, so
+        //      we treat them as never-happened. (Committed writing is in
+        //      the day log file, unaffected by this reset.)
+        //
+        // See docs/save-architecture.md §"Stale session detection" for
+        // the reasoning behind treating yesterday's incomplete drafts as
+        // ephemeral.
         const state = get();
-        if (state.startedAt !== null && state.completedAt === null) {
+        if (state.startedAt !== null && isSameDay(state.startedAt, Date.now())) {
+          // Case 2 or 3: same-day session, leave it alone.
           return;
         }
+        // Case 1 or 4: fresh start.
         set({
           slotOrder,
           currentIndex: 0,
