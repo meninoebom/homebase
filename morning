@@ -44,14 +44,26 @@ if [[ -f "$yesterday_file" ]]; then
 fi
 echo
 
+if [[ ! -f "$RITUAL_ROOT/slots.md" ]]; then
+  echo "no slots.md at $RITUAL_ROOT/slots.md — aborting." >&2
+  exit 1
+fi
+
 # Parse slots.md: take numbered list entries up to a "## Parked" section.
 # Each line "1. gym — ..." contributes the first token after the number.
+# HTML comments are skipped so example slot names inside a <!-- --> block
+# don't get invoked as real slots.
 slots=$(awk '
-  /^## Parked/ { exit }
-  /^[0-9]+\. / { sub(/^[0-9]+\. +/, ""); print $1 }
+  /^## Parked/                   { exit }
+  /<!--/ && /-->/                { next }
+  /<!--/                         { in_comment = 1; next }
+  /-->/                          { in_comment = 0; next }
+  in_comment                     { next }
+  /^[0-9]+\. /                   { sub(/^[0-9]+\. +/, ""); print $1 }
 ' "$RITUAL_ROOT/slots.md")
 
 start_ts=$(date +%s)
+# Intentional word-split: $slots is a newline-separated list of slot names.
 for slot in $slots; do
   if [[ -n "$ONLY" && "$slot" != "$ONLY" ]]; then
     continue
