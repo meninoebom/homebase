@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "app",
+  "productName": "morning ritual",
   "version": "0.1.0",
   "identifier": "dev.morningritual.app",
   "build": {
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "app",
-        "width": 800,
-        "height": 600
+        "title": "morning ritual",
+        "width": 960,
+        "height": 720,
+        "minWidth": 640,
+        "minHeight": 480
       }
     ],
     "security": {
