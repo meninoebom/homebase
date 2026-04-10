@@ -69,8 +69,8 @@ body {
  */
 .dreams-slot .ProseMirror {
   font-family: var(--font-serif);
-  font-size: 19px;
-  line-height: 1.62;
+  font-size: 20px;
+  line-height: 1.72;
   color: var(--color-ink);
   background-color: transparent;
   padding: 0;
@@ -86,8 +86,16 @@ body {
   box-shadow: none;
 }
 
+/*
+ * Paragraph rhythm. Brandon's feedback (2026-04-10): the old 1em margin
+ * was "way too big" because repeated Enter presses compounded into a
+ * huge visual gap. Dropping to 0.35em tightens up paragraph breaks while
+ * still leaving them visually distinct. Combined with the 1.72 line-height
+ * above, the prose feels generous inside a paragraph and tight between
+ * paragraphs — closer to how a page in a notebook actually reads.
+ */
 .dreams-slot .ProseMirror p {
-  margin: 0 0 1em 0;
+  margin: 0 0 0.35em 0;
 }
 
 .dreams-slot .ProseMirror p:last-child {

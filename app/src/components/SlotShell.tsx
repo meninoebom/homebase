@@ -36,7 +36,11 @@ export function SlotShell({
           transitioning ? "-translate-y-3 opacity-0" : "translate-y-0 opacity-100",
         ].join(" ")}
       >
-        <div className="w-full max-w-[62ch]">{children}</div>
+        {/* Writing column widened from 62ch to 72ch on 2026-04-10 per
+            Brandon's feedback ("pretty narrow, the writing space"). 72ch
+            at 20px Charter is ~760px on a typical display — wider than
+            iA Writer's default 65ch, narrower than a Notion doc. */}
+        <div className="w-full max-w-[72ch]">{children}</div>
       </section>
       <footer className="fixed right-8 bottom-6 font-sans text-xs uppercase tracking-[0.04em] text-ink-faint">
         {slotName} · {currentIndex + 1} of {total}
