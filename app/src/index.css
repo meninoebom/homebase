@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/*
+ * Lapham's editorial palette — the design language that the four April 9 sub-agents
+ * converged on for this project. Warm cream background, Charter serif body, single
+ * terracotta accent. No shadows, no gradients, no dark mode in v1.
+ *
+ * Rationale lives in docs/plan-morning-ritual.md §11 and the April 9 design-voice
+ * sub-agent report.
+ */
+@theme {
+  /* Color roles — named by function, not by shade. */
+  --color-paper: #F5EFE1;       /* window background, warm cream */
+  --color-page: #FAF6EA;        /* writing surface, slightly lifted from paper */
+  --color-ink: #2A2622;         /* body writing, warm near-black */
+  --color-ink-muted: #6B625A;   /* slot headers, metadata, yesterday whisper */
+  --color-ink-faint: #A89E90;   /* chrome, hints, inactive slot numbers */
+  --color-terracotta: #B6442C;  /* the single accent — drop caps, gate indicators */
+  --color-hairline: #E5DCC5;    /* 1px rules between sections, nothing else */
+
+  /* Type — Charter ships with macOS and is our body face; no Tiempos fallback to Georgia. */
+  --font-serif: "Charter", "Iowan Old Style", "Palatino", ui-serif, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+
+  /* Motion — single easing curve for the entire app. */
+  --ease-ritual: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/*
+ * Base page styles. The writing column will be clamped at 62ch by individual
+ * slot components; this just sets the window-level defaults.
+ */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-feature-settings: "kern", "liga", "calt";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
