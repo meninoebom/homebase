@@ -47,15 +47,27 @@ A slot is expected to append writing to the day log under a `## <slot-name>` hea
 
 Full slot taxonomy and workspace-state pattern: `docs/plan-morning-ritual.md` §10.
 
-## Commands (once `app/` is scaffolded)
+## Commands
 
-    pnpm --dir app install         # first time only
-    pnpm --dir app tauri dev       # launches the desktop app in dev mode
-    pnpm --dir app tauri build     # production bundle
-    pnpm --dir app test            # Vitest
+Run these from the repo root (`~/dev/morning-ritual`). The root `package.json` forwards everything to `app/` via `pnpm -C app`, so you never need to `cd` into the subdirectory.
+
+    pnpm dev               # launches the full Tauri desktop app in dev mode
+    pnpm build             # production Tauri bundle (.app / .dmg / .msi)
+    pnpm build:frontend    # frontend only (vp build + tsc --noEmit)
+    pnpm check             # format + lint + typecheck in one command (vp check)
+    pnpm check:fix         # auto-fix formatting and lint issues
+    pnpm test              # run tests once
+    pnpm test:watch        # run tests in watch mode
+    pnpm typecheck         # tsc --noEmit only
+    pnpm tauri <cmd>       # forward any tauri CLI subcommand
+    pnpm install:app       # install/update dependencies inside app/
+
+Under the hood the frontend is Vite+ (`vp`) and the desktop layer is Tauri v2. Full command reference for the `vp` CLI lives in `app/AGENTS.md` and `app/README.md`. Daily entry point is `pnpm dev` — that's it.
+
+For Rust-side checks from the repo root:
+
+    cargo check --manifest-path app/src-tauri/Cargo.toml
     cargo test --manifest-path app/src-tauri/Cargo.toml
-
-Brandon's typical entry point is: double-click the dock icon in the morning, or `pnpm --dir app tauri dev` from a terminal during development.
 
 ## The research framing
 
