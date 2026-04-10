@@ -1,27 +1,61 @@
 # morning-ritual
 
-A personal morning ritual built as a thin shell around a set of composable slots. The first slot is the algorithmic gym. Future slots include a daily check-in (brain dump, inner weather, today's compass), piano practice log, reading reflections, Tend todo triage, and crumb.blog draft capture.
+A personal daily workspace shaped like a bullet journal. The time-axis is a
+dated markdown file per day, in `log/`. The topic-axis is a set of slot
+subdirectories — each a small tool for one domain of Brandon's mornings
+(the algorithmic gym, piano, inner weather, dreams, reading, creative
+projects). Both live as plaintext on the filesystem. The log file IS the
+memory; grep is the memory layer.
 
-This is both a working tool and a research substrate for writing about the minimum viable substrate for personalized software.
+The `morning` command runs the slot sequence from `slots.md`. It is the
+primary invocation. `ritual <slot>` exists as a secondary affordance for
+cases that genuinely don't fit the morning window — notably piano updates
+after a 4pm practice session — but it is not an equal entry point
+(plan §15 rule 1). If ad-hoc use ever starts replacing morning use, the
+morning is broken and needs shrinking, not "evolving."
+
+This is not a life tracker, not a shippable product, and not a "plugin
+platform." A slot IS the extension mechanism. No scores, no streaks, no
+metrics, no quizzes. It is a writing practice that happens to be structured.
+
+## Usage
+
+    ./morning                  run the full morning sequence
+    ./morning --only <slot>    run a single slot from the sequence
 
 ## Structure
 
-- `docs/` — idea briefs and plans for the ritual and each slot
-- `docs/templates/` — templates used by slots (e.g. the inner weather check-in)
-- `NOTES.md` — research field notes on the ritual itself
-- `gym/` — the algorithmic gym (first active slot, created when Cut 1 ships)
-- `log/` — daily dated markdown logs, shared across slots (created when the shell ships)
-- `slots.md` — ordered list of active slots (created when the shell ships)
+- `morning` — the shell (bash, ~60 lines)
+- `slots.md` — ordered list of active slots
+- `log/` — symlink to `~/Documents/morning-ritual-log/`
+- `log/NOTES.md` — research field notes on the ritual itself
+- `log/YYYY-MM-DD.md` — one file per day; slots append under their own `## <slot-name>` header
+- `docs/` — plans and idea briefs
+- `docs/templates/` — editable prompt templates used by prompt slots
+- `gym/` — the algorithmic gym slot (slot 0, built in parallel; see `docs/plan-algorithmic-gym.md`)
 
-## Active work streams
+## The slot contract
 
-Two things are being built in parallel:
+A slot is a subdirectory with an executable `run.sh`. The shell sets these
+environment variables before calling it:
 
-1. **Ralf hardening via the Signal Gym track.** Python reps that fix real Ralf bugs, hand-ported back to the Ralf TypeScript runtime. See `docs/plan-algorithmic-gym.md`.
-2. **Control center agents.** Small specific agents wired into the ritual, designed around state handoff via MCP and durable event logs. See `docs/plan-algorithmic-gym.md` Track 2b.
+- `RITUAL_DATE` — today in `YYYY-MM-DD`
+- `RITUAL_LOG`  — path to today's log file
+- `RITUAL_MODE` — `morning` or `adhoc`
 
-See also `docs/plan-morning-ritual.md` for the shell and slot protocol.
+A slot is expected to append markdown to `$RITUAL_LOG` under a
+`## <slot-name>` header. That's the entire contract. No manifest, no
+schema, no config file. Slots can also maintain persistent state files
+in their own directory — see plan §10 for the workspace pattern.
 
-## The broader bet
+## The plan
 
-This is not a "control center" or a "productivity hub." It is a personal logbook plus a manifest of slots that read and write it. The substrate is plaintext on the filesystem. The log file IS the memory. See `docs/plan-morning-ritual.md` section 1 for the framing.
+The full design lives in `docs/plan-morning-ritual.md`. The most important
+sections:
+
+- **§5** — phased slot rollout (one slot at a time, previous slot must
+  survive a week of real mornings first)
+- **§9** — the thesis under study, in Brandon's words
+- **§15** — the five rules the project now explicitly lives by
+- **§16** — self-audit checklist for adding any new slot
+- **§17** — the discipline of subtraction (what was deliberately left out)
