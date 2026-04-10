@@ -1,3 +1,21 @@
 .DS_Store
 *.swp
 *.swo
+
+# AI workflow scratch (ephemeral, per ~/.claude/CLAUDE.md convention)
+.llm/
+
+# Node / pnpm
+node_modules/
+pnpm-debug.log*
+
+# Tauri build artifacts
+app/dist/
+app/src-tauri/target/
+app/src-tauri/gen/schemas/
+app/src-tauri/Cargo.lock
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
