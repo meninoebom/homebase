@@ -1,5 +1,5 @@
-/// <reference types="vitest" />
-import { defineConfig } from "vite";
+/// <reference types="vite-plus/test" />
+import { defineConfig } from "vite-plus";
 import react from "@vitejs/plugin-react";
 
 // Vitest-only config. Kept separate from vite.config.ts so the TanStack Router

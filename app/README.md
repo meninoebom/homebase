@@ -6,11 +6,11 @@ The Tauri v2 desktop application for the morning ritual. Scaffolded April 10, 20
 
 - **[Tauri v2](https://v2.tauri.app/)** — Rust host + OS-native webview shell (3–10 MB bundles, not Electron)
 - **React 19 + TypeScript** — frontend framework
-- **[Vite 7](https://vite.dev/)** — build tool and dev server
-- **[Tailwind CSS v4](https://tailwindcss.com/)** — styling, configured with the Lapham editorial palette in `src/index.css` (`@theme` block)
+- **[Vite+](https://viteplus.dev/)** — unified toolchain (`vp` CLI) bundling Vite 8 + Rolldown + Vitest + Oxlint + Oxfmt + tsdown under one command. Migrated from stock Vite on April 10, 2026 — see commit history for the one-commit migration.
+- **[Tailwind CSS v4](https://tailwindcss.com/)** — styling via `@tailwindcss/vite`, configured with the Lapham editorial palette in `src/index.css` (`@theme` block)
 - **[TanStack Router](https://tanstack.com/router)** — type-safe file-based routing; route tree auto-generated into `src/routeTree.gen.ts`
 - **[Zustand 5](https://zustand-demo.pmnd.rs/)** — state layer (used in issue 003+; see `.llm/active-plan.md`)
-- **[Vitest](https://vitest.dev/) + Testing Library** — unit tests for components and the ritual store
+- **Testing Library + jsdom** — component test environment (Vitest itself comes from Vite+)
 
 ## Directory layout
 
@@ -48,36 +48,47 @@ app/
 
 ## Commands
 
+Vite+ provides the unified `vp` CLI for frontend work. Tauri's own CLI handles the desktop-app layer and runs the `pnpm dev` / `pnpm build` scripts under the hood (which route to `vp dev` / `vp build`).
+
 ```bash
-pnpm install              # first time only
-pnpm dev                  # vite dev server (frontend only — use tauri dev for the real app)
-pnpm tauri dev            # launches the desktop app in dev mode
-pnpm tauri build          # production bundle
-pnpm build                # vite build + tsc --noEmit (no GUI, just frontend + types)
-pnpm typecheck            # tsc --noEmit only
-pnpm test                 # vitest run
-pnpm test:watch           # vitest in watch mode
+# First-time setup
+vp install               # install dependencies (or: pnpm install — either works)
+
+# Daily commands
+vp dev                   # Vite dev server only (fast; no Tauri window)
+pnpm tauri dev           # launches the full desktop app — use this for real development
+pnpm tauri build         # production bundle (.app / .dmg / .msi)
+
+# Quality gates (run before committing)
+vp check                 # format (oxfmt) + lint (oxlint) + typecheck — one command
+vp check --fix           # auto-fix formatting and lint issues
+vp test                  # run tests in watch mode
+vp test run              # run tests once and exit
+vp build                 # production frontend build only (no Tauri bundle)
 
 # Rust-only checks (from app/src-tauri/)
-cargo check               # fast compile check
-cargo test                # Rust unit tests
+cargo check              # fast compile check
+cargo test               # Rust unit tests
 ```
 
-**Note on the build order:** `pnpm build` runs `vite build && tsc --noEmit`, not `tsc && vite build`. This is deliberate: the TanStack Router Vite plugin generates `src/routeTree.gen.ts` during the Vite build, and `tsc` can't find the generated file if it runs first. After a fresh clone, run `pnpm build` once to generate the tree.
+**pnpm script aliases** are available for anything invoked by Tauri or CI tooling:
+`pnpm dev`, `pnpm build`, `pnpm check`, `pnpm check:fix`, `pnpm test`, `pnpm test:watch`, `pnpm typecheck`, `pnpm preview`. These all route through Vite+ internally.
+
+**Note on the build order:** `pnpm build` runs `vp build && tsc --noEmit`, not `tsc && vp build`. This is deliberate: the TanStack Router Vite plugin generates `src/routeTree.gen.ts` during the build pass, and `tsc` can't find the generated file if it runs first. `vp check` has the same ordering concern and handles it internally. After a fresh clone, run `vp build` once (or `pnpm build`) to generate the tree.
 
 ## Design language
 
 The visual system is defined in `src/index.css` under `@theme`. Seven named color roles, a Charter serif stack (never falling back to Georgia), and a single easing curve for all motion. Full rationale and the sub-agent report that defined it live in `../docs/plan-morning-ritual.md` §11 and `.llm/active-plan.md` (gitignored).
 
-| Token | Hex | Used for |
-|---|---|---|
-| `paper` | `#F5EFE1` | Window background, warm cream |
-| `page` | `#FAF6EA` | Writing surface, lifted from paper |
-| `ink` | `#2A2622` | Body writing |
-| `ink-muted` | `#6B625A` | Slot headers, metadata, yesterday whisper |
-| `ink-faint` | `#A89E90` | Chrome, keyboard hints, inactive slot numbers |
+| Token        | Hex       | Used for                                       |
+| ------------ | --------- | ---------------------------------------------- |
+| `paper`      | `#F5EFE1` | Window background, warm cream                  |
+| `page`       | `#FAF6EA` | Writing surface, lifted from paper             |
+| `ink`        | `#2A2622` | Body writing                                   |
+| `ink-muted`  | `#6B625A` | Slot headers, metadata, yesterday whisper      |
+| `ink-faint`  | `#A89E90` | Chrome, keyboard hints, inactive slot numbers  |
 | `terracotta` | `#B6442C` | The single accent (drop caps, gate indicators) |
-| `hairline` | `#E5DCC5` | 1px rules, nothing else |
+| `hairline`   | `#E5DCC5` | 1px rules, nothing else                        |
 
 Use these via Tailwind utilities: `bg-paper`, `text-ink-muted`, `border-hairline`, etc.
 

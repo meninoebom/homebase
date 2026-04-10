@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -6,8 +6,13 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
-// https://vite.dev/config/
-export default defineConfig(async () => ({
+// https://viteplus.dev/config
+//
+// Config is a plain object (not a function wrapper) so Vite+ can statically
+// introspect the `fmt` field. Environment-dependent bits (TAURI_DEV_HOST) are
+// read at module load, which happens once per invocation — same effect as
+// using `defineConfig(async () => ({...}))` but keeps the tooling happy.
+export default defineConfig({
   plugins: [
     // Order matters: TanStack Router plugin must run before the React plugin so
     // the generated routeTree.gen.ts exists before React compiles imports.
@@ -21,12 +26,19 @@ export default defineConfig(async () => ({
     tailwindcss(),
   ],
 
-  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-  //
-  // 1. prevent Vite from obscuring rust errors
+  // Oxfmt ignore patterns — oxfmt is the formatter bundled with Vite+ and
+  // runs via `vp check`. The auto-generated route tree regenerates on every
+  // build, so formatting it would just loop. Tauri's config lives outside
+  // the frontend ecosystem and uses its own conventions.
+  fmt: {
+    ignorePatterns: ["**/*.gen.ts", "dist/**", "src-tauri/**", "pnpm-lock.yaml"],
+  },
+
+  // Vite options tailored for Tauri development, only applied in `vp dev`
+  // or `vp build` (invoked through Tauri's beforeDevCommand / beforeBuildCommand).
   clearScreen: false,
-  // 2. tauri expects a fixed port, fail if that port is not available
   server: {
+    // Tauri expects a fixed port.
     port: 1420,
     strictPort: true,
     host: host || false,
@@ -38,8 +50,7 @@ export default defineConfig(async () => ({
         }
       : undefined,
     watch: {
-      // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
   },
-}));
+});

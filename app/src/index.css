@@ -10,13 +10,13 @@
  */
 @theme {
   /* Color roles — named by function, not by shade. */
-  --color-paper: #F5EFE1;       /* window background, warm cream */
-  --color-page: #FAF6EA;        /* writing surface, slightly lifted from paper */
-  --color-ink: #2A2622;         /* body writing, warm near-black */
-  --color-ink-muted: #6B625A;   /* slot headers, metadata, yesterday whisper */
-  --color-ink-faint: #A89E90;   /* chrome, hints, inactive slot numbers */
-  --color-terracotta: #B6442C;  /* the single accent — drop caps, gate indicators */
-  --color-hairline: #E5DCC5;    /* 1px rules between sections, nothing else */
+  --color-paper: #f5efe1; /* window background, warm cream */
+  --color-page: #faf6ea; /* writing surface, slightly lifted from paper */
+  --color-ink: #2a2622; /* body writing, warm near-black */
+  --color-ink-muted: #6b625a; /* slot headers, metadata, yesterday whisper */
+  --color-ink-faint: #a89e90; /* chrome, hints, inactive slot numbers */
+  --color-terracotta: #b6442c; /* the single accent — drop caps, gate indicators */
+  --color-hairline: #e5dcc5; /* 1px rules between sections, nothing else */
 
   /* Type — Charter ships with macOS and is our body face; no Tiempos fallback to Georgia. */
   --font-serif: "Charter", "Iowan Old Style", "Palatino", ui-serif, serif;
@@ -30,7 +30,9 @@
  * Base page styles. The writing column will be clamped at 62ch by individual
  * slot components; this just sets the window-level defaults.
  */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
