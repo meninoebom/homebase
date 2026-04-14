@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=960">
+<title>morning ritual — hub prototype</title>
+<style>
+  /* ================================================================
+     HUB PROTOTYPE — single scrollable daily worksheet
+
+     This replaces the wizard prototype. All sections visible at once,
+     scrollable, inline-editable. The interaction model is "fill in
+     the blank" — everything exists on the page before you start.
+
+     Open in browser. Toggle between "empty morning" and "mid-morning"
+     states to see how the page fills up.
+   ================================================================ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&display=swap');
+
+  :root {
+    --ink: #111111;
+    --ink-muted: #6B7280;
+    --ink-faint: #9CA3AF;
+    --ink-ghost: #D1D5DB;
+    --hairline: #E8E8E8;
+    --bg: #FFFFFF;
+    --bg-brief: #FAFAFA;
+    --accent-line: #E0E0E0;
+    --font-body: 'Newsreader', 'Charter', 'Georgia', serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #EEEEED;
+    min-height: 100%;
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0 48px;
+  }
+
+  /* -- Mockup controls ---------------------------------------------- */
+  .controls {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    background: #E0E0E0;
+    border-radius: 8px;
+    padding: 2px;
+    font-size: 12px;
+    position: sticky;
+    top: 12px;
+    z-index: 100;
+  }
+
+  .controls button {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+
+  .controls button.active {
+    background: white;
+    color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* -- Window frame ------------------------------------------------- */
+  .window {
+    width: 960px;
+    min-height: 720px;
+    background: var(--bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .titlebar {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .titlebar .dots { display: flex; gap: 8px; }
+  .titlebar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .titlebar .dot.red { background: #FF5F57; }
+  .titlebar .dot.yellow { background: #FEBC2E; }
+  .titlebar .dot.green { background: #28C840; }
+  .titlebar .title {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 13px; color: var(--ink-muted); font-weight: 500;
+  }
+
+  /* -- Page column -------------------------------------------------- */
+  .page {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 0 64px;
+  }
+
+  .column {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+
+  /* -- Page header (date + whisper) --------------------------------- */
+  .page-header {
+    padding: 36px 0 0;
+    margin-bottom: 8px;
+  }
+
+  .dateline {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .whisper {
+    margin-top: 12px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-ghost);
+    line-height: 1.5;
+    padding-left: 14px;
+    border-left: 2px solid var(--hairline);
+  }
+
+  .whisper em { font-style: normal; color: var(--ink-faint); }
+
+  /* -- Section ------------------------------------------------------ */
+  .section {
+    padding: 28px 0 8px;
+  }
+
+  .section + .section {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-name {
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .section-tag {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+  }
+
+  /* -- Writing field ------------------------------------------------ */
+  .writing-field {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.72;
+    color: var(--ink);
+    min-height: 3.5em;
+    padding: 0;
+    outline: none;
+    white-space: pre-wrap;
+  }
+
+  .writing-field[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--ink-ghost);
+    font-style: italic;
+    pointer-events: none;
+  }
+
+  .writing-field.has-content {
+    color: var(--ink);
+  }
+
+  /* Cursor simulation */
+  .cursor {
+    display: inline-block;
+    width: 1.5px;
+    height: 1.15em;
+    background: var(--ink);
+    vertical-align: text-bottom;
+    animation: blink 1.1s step-end infinite;
+    margin-left: 1px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* -- Inner weather sub-sections ----------------------------------- */
+  .iw-group {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .iw-item {}
+
+  .iw-prompt {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .iw-field {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.72;
+    color: var(--ink);
+    min-height: 1.8em;
+    outline: none;
+    white-space: pre-wrap;
+  }
+
+  .iw-field[contenteditable]:empty::before {
+    content: '';
+  }
+
+  .iw-field.has-content {}
+
+  /* -- Collapsed section -------------------------------------------- */
+  .section.collapsed .section-header {
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+
+  .section.collapsed .section-body {
+    display: none;
+  }
+
+  .section.collapsed .section-name {
+    color: var(--ink-faint);
+  }
+
+  .section.collapsed .expand-hint {
+    display: inline;
+  }
+
+  .expand-hint {
+    display: none;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    color: var(--ink-ghost);
+    margin-left: 12px;
+    font-style: normal;
+  }
+
+  /* -- Workspace state (piano) -------------------------------------- */
+  .workspace-state {
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    padding: 12px 16px;
+    background: var(--bg-brief);
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+
+  .workspace-state .label {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    margin-bottom: 4px;
+  }
+
+  /* -- Briefing section (agent-generated, visually demoted) --------- */
+  .section.briefing {
+    background: var(--bg-brief);
+    margin: 20px -24px 0;
+    padding: 24px 24px 20px;
+    border-radius: 8px;
+    border-top: none;
+  }
+
+  .section.briefing .section-name {
+    font-size: 18px;
+    color: var(--ink-muted);
+  }
+
+  .briefing-content {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--ink-muted);
+  }
+
+  .briefing-content .quote {
+    font-style: italic;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .briefing-content .meta {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    color: var(--ink-ghost);
+    letter-spacing: 0.04em;
+  }
+
+  /* -- Tend / to-dos (read-only, pinned at bottom) ------------------ */
+  .section.todos {
+    background: var(--bg-brief);
+    margin: 8px -24px 0;
+    padding: 20px 24px;
+    border-radius: 8px;
+    border-top: none;
+  }
+
+  .section.todos .section-name {
+    font-size: 18px;
+    color: var(--ink-muted);
+  }
+
+  .todo-list {
+    list-style: none;
+    padding: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink-muted);
+  }
+
+  .todo-list li::before {
+    content: '○';
+    margin-right: 10px;
+    color: var(--ink-ghost);
+  }
+
+  .todo-list .frog::before {
+    content: '●';
+    color: var(--ink-muted);
+  }
+
+  .todo-list .frog {
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  /* -- Annotations -------------------------------------------------- */
+  .annotations {
+    max-width: 960px; width: 100%;
+    margin-top: 20px; padding: 20px 24px;
+    font-size: 12px; color: var(--ink-muted); line-height: 1.65;
+    background: white; border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .annotations strong { color: var(--ink); }
+  .annotations .note { margin-bottom: 10px; }
+  .annotations .note:last-child { margin-bottom: 0; }
+
+  /* -- State toggle animations -------------------------------------- */
+  .state-empty .filled-content { display: none; }
+  .state-empty .empty-content { display: block; }
+  .state-mid .filled-content { display: block; }
+  .state-mid .empty-content { display: none; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="active" onclick="setState('empty')">Fresh morning</button>
+  <button onclick="setState('mid')">Mid-morning</button>
+</div>
+
+<div class="window">
+  <div class="titlebar">
+    <div class="dots">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+    </div>
+    <span class="title">morning ritual</span>
+  </div>
+
+  <div class="page" id="page">
+    <div class="column">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="dateline">Sunday · April 13, 2026</div>
+        <div class="whisper" id="whisper">
+          <span class="empty-content" style="color: var(--ink-ghost); font-style: italic;">
+            <!-- No whisper on day 1 — this space is empty until history exists -->
+          </span>
+          <span class="filled-content">
+            Yesterday you wrote <em>"I keep telling myself I'll do it tomorrow."</em>
+          </span>
+        </div>
+      </div>
+
+      <!-- SECTION: Dreams -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-name">Dreams</h2>
+          <span class="section-tag">I</span>
+        </div>
+        <div class="section-body">
+          <div class="empty-content">
+            <div class="writing-field" contenteditable data-placeholder="What did you dream?"></div>
+          </div>
+          <div class="filled-content">
+            <div class="writing-field has-content">I was driving down a road I didn't recognize. There was a contest happening in a field — people were building something out of wood, and I knew I was supposed to be part of it but I couldn't find the entrance. The light was that amber late-afternoon color.<span class="cursor"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Inner Weather -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-name">Inner Weather</h2>
+          <span class="section-tag">II</span>
+        </div>
+        <div class="section-body">
+          <div class="iw-group">
+            <div class="iw-item">
+              <div class="iw-prompt">What's weighing on you</div>
+              <div class="empty-content">
+                <div class="iw-field" contenteditable></div>
+              </div>
+              <div class="filled-content">
+                <div class="iw-field has-content">The Neon.ai demo is tomorrow and I haven't rehearsed the technical walkthrough.</div>
+              </div>
+            </div>
+            <div class="iw-item">
+              <div class="iw-prompt">What are you avoiding</div>
+              <div class="empty-content">
+                <div class="iw-field" contenteditable></div>
+              </div>
+              <div class="filled-content">
+                <div class="iw-field has-content">The email from legal about the compliance review.</div>
+              </div>
+            </div>
+            <div class="iw-item">
+              <div class="iw-prompt">What needs to be said</div>
+              <div class="iw-field" contenteditable></div>
+            </div>
+            <div class="iw-item">
+              <div class="iw-prompt">What's giving you life</div>
+              <div class="empty-content">
+                <div class="iw-field" contenteditable></div>
+              </div>
+              <div class="filled-content">
+                <div class="iw-field has-content">Piano. The Chopin is starting to feel like something I'm playing, not something I'm learning.</div>
+              </div>
+            </div>
+            <div class="iw-item">
+              <div class="iw-prompt">What you have gratitude for</div>
+              <div class="iw-field" contenteditable></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Piano -->
+      <div class="section" id="piano-section">
+        <div class="section-header">
+          <h2 class="section-name">Piano<span class="expand-hint">click to expand</span></h2>
+          <span class="section-tag">III</span>
+        </div>
+        <div class="section-body">
+          <div class="workspace-state">
+            <div class="label">Currently working on</div>
+            Chopin Nocturne Op. 9 No. 1 — LH voicing, phrase shaping bars 12–16
+          </div>
+          <div class="empty-content">
+            <div class="writing-field" contenteditable data-placeholder="Anything from yesterday's practice?"></div>
+          </div>
+          <div class="filled-content">
+            <div class="writing-field has-content">Lesson on Monday was good. Maria said the phrasing in bars 12–14 is getting there but I'm still rushing the turn in bar 15. Need to practice that passage at half tempo.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Creative Projects (collapsed by default in empty state) -->
+      <div class="section" id="creative-section">
+        <div class="section-header" onclick="toggleSection('creative-section')">
+          <h2 class="section-name">Creative Projects<span class="expand-hint">click to expand</span></h2>
+          <span class="section-tag">IV</span>
+        </div>
+        <div class="section-body">
+          <div class="writing-field" contenteditable data-placeholder="What's surfacing? What's maturing?"></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Reflections (collapsed by default) -->
+      <div class="section collapsed" id="reflections-section">
+        <div class="section-header" onclick="toggleSection('reflections-section')">
+          <h2 class="section-name">Reflections<span class="expand-hint">click to expand</span></h2>
+          <span class="section-tag">V</span>
+        </div>
+        <div class="section-body">
+          <div class="writing-field" contenteditable data-placeholder="What are you reading, watching, or listening to?"></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Daily Briefing (agent-generated, visually demoted) -->
+      <div class="section briefing">
+        <div class="section-header">
+          <h2 class="section-name">Briefing</h2>
+          <span class="section-tag">generated</span>
+        </div>
+        <div class="section-body">
+          <div class="briefing-content">
+            <span class="quote">"The only way to do great work is to love what you do. If you haven't found it yet, keep looking."</span>
+            <div class="meta">
+              Next: Piano lesson with Maria, 4:00 PM<br>
+              Elder care: Mom's appointment Wednesday confirmed
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Tend to-dos (read-only, pinned at bottom) -->
+      <div class="section todos">
+        <div class="section-header">
+          <h2 class="section-name">Today in Tend</h2>
+          <span class="section-tag"><a href="#" style="color: var(--ink-ghost); text-decoration: none; border-bottom: 1px solid var(--ink-ghost);">open tend</a></span>
+        </div>
+        <div class="section-body">
+          <ul class="todo-list">
+            <li class="frog">Rehearse Neon.ai demo walkthrough</li>
+            <li>Reply to legal re: compliance review</li>
+            <li>Push crumb.blog draft from reading reflection</li>
+            <li>Update morning-ritual NOTES.md</li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- .column -->
+  </div><!-- .page -->
+</div><!-- .window -->
+
+<!-- Design annotations -->
+<div class="annotations">
+  <div class="note"><strong>Layout model:</strong> Single scrollable column, all sections visible from the start. No wizard, no tabs, no mode switching. The page IS the morning — you scroll and write wherever your eye lands. This is the Capacities template pattern that Brandon used for months.</div>
+  <div class="note"><strong>Section anatomy:</strong> Italic serif section name (left) + roman numeral tag (right) + hairline separator between sections. Writing fields are inline — no separate "edit mode." Collapsed sections show their name in faint gray with a click-to-expand hint.</div>
+  <div class="note"><strong>Visual hierarchy:</strong> Generative writing sections (Dreams, Inner Weather, Piano, Creative) at the top. Reference sections (Briefing, Tend) at the bottom with a different background (#FAFAFA) to signal "this is context, not your writing."</div>
+  <div class="note"><strong>Inner Weather sub-sections:</strong> Italic prompts at 15px in muted gray, writing areas at 18px in near-black. No left borders — just vertical spacing + the italic prompt as the visual separator. Empty fields have no placeholder text (empty space is an invitation, not an obligation).</div>
+  <div class="note"><strong>Yesterday whisper:</strong> One line at the top, below the dateline, in ghost gray with a subtle left border. Quotes Brandon's own words from yesterday's log via grep. Empty on day 1 — no "nothing to show yet" message.</div>
+  <div class="note"><strong>Piano workspace state:</strong> The "currently working on" block has a subtle background (#FAFAFA) to distinguish standing state from today's writing. The writing field below is for today's notes.</div>
+  <div class="note"><strong>Briefing + Tend:</strong> Both have the #FAFAFA background + smaller type + "generated" / "open tend" tags. Visually demoted: clearly reference material, not your writing. The Tend section has a highlighted "frog" (the one task you should eat first, per plan §5).</div>
+  <div class="note"><strong>Empty vs. filled:</strong> Toggle "Fresh morning" / "Mid-morning" to see how the page fills up. On a fresh morning, Dreams has a placeholder; Inner Weather prompts are visible with empty space below; collapsed sections are a single line. Mid-morning shows content flowing in, the whisper visible, and the page gaining texture as Brandon writes.</div>
+  <div class="note"><strong>Font:</strong> Newsreader (Google Fonts) as Charter stand-in. Body text 18px. Section names 22px italic. UI chrome 11px system sans in caps.</div>
+</div>
+
+<script>
+function setState(state) {
+  const page = document.getElementById('page');
+  page.className = 'page state-' + state;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Show/hide whisper
+  const whisper = document.getElementById('whisper');
+  if (state === 'empty') {
+    whisper.style.display = 'none';
+  } else {
+    whisper.style.display = 'block';
+  }
+
+  // Collapse reflections in empty state, expand in mid
+  const reflections = document.getElementById('reflections-section');
+  if (state === 'empty') {
+    reflections.classList.add('collapsed');
+  } else {
+    reflections.classList.remove('collapsed');
+  }
+}
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+// Initialize
+setState('empty');
+</script>
+
+</body>
+</html>

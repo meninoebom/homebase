@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=960">
+<title>morning ritual — hub v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&display=swap');
+
+  :root {
+    --ink: #111111;
+    --ink-muted: #6B7280;
+    --ink-faint: #9CA3AF;
+    --ink-ghost: #D1D5DB;
+    --hairline: #EBEBEB;
+    --bg: #FFFFFF;
+    --bg-ref: #F8F8F8;
+    --font-body: 'Newsreader', 'Charter', 'Georgia', serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #E8E8E8;
+    min-height: 100%;
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 48px;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex; gap: 2px; margin-bottom: 12px;
+    background: #DDDCDC; border-radius: 7px; padding: 2px;
+    font-size: 11px; position: sticky; top: 8px; z-index: 100;
+  }
+  .controls button {
+    padding: 5px 14px; border: none; background: transparent;
+    color: var(--ink-muted); cursor: pointer; border-radius: 5px;
+    font-family: var(--font-ui); font-size: 11px; transition: all 0.2s;
+  }
+  .controls button.active {
+    background: white; color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* Window */
+  .window {
+    width: 960px; min-height: 720px;
+    background: var(--bg); border-radius: 10px; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06);
+    display: flex; flex-direction: column;
+  }
+
+  .titlebar {
+    height: 38px; display: flex; align-items: center; padding: 0 16px;
+    background: var(--bg); z-index: 10; flex-shrink: 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .titlebar .dots { display: flex; gap: 8px; }
+  .titlebar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .titlebar .dot.red { background: #FF5F57; }
+  .titlebar .dot.yellow { background: #FEBC2E; }
+  .titlebar .dot.green { background: #28C840; }
+  .titlebar .title {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 13px; color: var(--ink-muted); font-weight: 500;
+  }
+
+  /* Page */
+  .page { flex: 1; overflow-y: auto; padding: 0 0 48px; }
+
+  .col {
+    max-width: 640px; margin: 0 auto; padding: 0 40px;
+  }
+
+  /* Dateline + whisper */
+  .page-top {
+    padding: 28px 0 0;
+    margin-bottom: 4px;
+  }
+
+  .dateline {
+    font-family: var(--font-ui); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .whisper {
+    margin-top: 10px;
+    font-family: var(--font-body); font-size: 14px;
+    font-style: italic; color: var(--ink-ghost);
+    line-height: 1.45;
+  }
+  .whisper em { font-style: normal; color: var(--ink-faint); }
+
+  /* Section */
+  .section { padding: 20px 0 6px; }
+  .section + .section { border-top: 1px solid var(--hairline); }
+
+  .section-head {
+    display: flex; align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: var(--font-body); font-size: 20px;
+    font-style: italic; font-weight: 300;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+
+  .section-num {
+    font-family: var(--font-ui); font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-ghost);
+  }
+
+  /* Writing field — TIGHTER body text per Brandon's feedback */
+  .wf {
+    font-family: var(--font-body); font-size: 17px;
+    line-height: 1.5; color: var(--ink);
+    min-height: 2em; outline: none; white-space: pre-wrap;
+  }
+  .wf[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--ink-ghost); font-style: italic;
+  }
+
+  .cursor {
+    display: inline-block; width: 1.5px; height: 1.1em;
+    background: var(--ink); vertical-align: text-bottom;
+    animation: blink 1.1s step-end infinite; margin-left: 1px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Inner weather — single field with suggestion hints */
+  .iw-hints {
+    font-family: var(--font-body); font-size: 13px;
+    font-style: italic; color: var(--ink-ghost);
+    line-height: 1.55; margin-bottom: 10px;
+  }
+
+  /* Piano — workspace state + practice items */
+  .practice-state {
+    font-family: var(--font-ui); font-size: 12px;
+    color: var(--ink-faint); line-height: 1.6;
+    padding: 10px 14px; background: var(--bg-ref);
+    border-radius: 5px; margin-bottom: 10px;
+  }
+  .practice-state .plabel {
+    font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--ink-ghost);
+    margin-bottom: 3px;
+  }
+  .practice-items {
+    font-family: var(--font-body); font-size: 15px;
+    line-height: 1.6; color: var(--ink-muted);
+    list-style: none; padding: 0; margin-bottom: 8px;
+  }
+  .practice-items li { padding: 2px 0; }
+  .practice-items li::before {
+    content: '·'; margin-right: 8px; color: var(--ink-ghost);
+  }
+
+  /* Morning practices — single reflective field */
+  .practices-note {
+    font-family: var(--font-ui); font-size: 12px;
+    color: var(--ink-ghost); font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  /* Reference sections (briefing, tend) */
+  .ref-section {
+    background: var(--bg-ref);
+    margin: 16px -20px 0; padding: 18px 20px 16px;
+    border-radius: 6px; border-top: none;
+  }
+  .ref-section + .ref-section { margin-top: 8px; }
+  .ref-section .section-title { font-size: 16px; color: var(--ink-muted); }
+
+  .briefing-body {
+    font-family: var(--font-body); font-size: 14px;
+    line-height: 1.55; color: var(--ink-muted);
+  }
+  .briefing-body .quote {
+    font-style: italic; margin-bottom: 8px; display: block;
+  }
+  .briefing-body .meta {
+    font-family: var(--font-ui); font-size: 11px;
+    color: var(--ink-ghost); letter-spacing: 0.03em;
+  }
+
+  .todo-list {
+    list-style: none; padding: 0;
+    font-family: var(--font-body); font-size: 14px;
+    line-height: 1.75; color: var(--ink-muted);
+  }
+  .todo-list li::before { content: '○'; margin-right: 8px; color: var(--ink-ghost); }
+  .todo-list .frog::before { content: '●'; color: var(--ink-muted); }
+  .todo-list .frog { color: var(--ink); }
+
+  /* State toggles */
+  .state-empty .filled { display: none; }
+  .state-empty .empty { display: block; }
+  .state-mid .filled { display: block; }
+  .state-mid .empty { display: none; }
+
+  /* Annotations */
+  .ann {
+    max-width: 960px; width: 100%; margin-top: 16px; padding: 16px 20px;
+    font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+    background: white; border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .ann strong { color: var(--ink); }
+  .ann .n { margin-bottom: 8px; }
+  .ann .n:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="active" onclick="setState('empty')">Fresh morning</button>
+  <button onclick="setState('mid')">Mid-morning</button>
+</div>
+
+<div class="window">
+  <div class="titlebar">
+    <div class="dots">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+    </div>
+    <span class="title">morning ritual</span>
+  </div>
+
+  <div class="page" id="page">
+    <div class="col">
+
+      <!-- Top -->
+      <div class="page-top">
+        <div class="dateline">Sunday · April 13, 2026</div>
+        <div class="whisper filled">
+          Yesterday you wrote <em>"I keep telling myself I'll do it tomorrow."</em>
+        </div>
+      </div>
+
+      <!-- DREAMS — no section header, just the prompt -->
+      <div class="section" style="border-top: none; padding-top: 16px;">
+        <div class="empty">
+          <div class="wf" contenteditable data-placeholder="What did you dream?"></div>
+        </div>
+        <div class="filled">
+          <div class="wf">I was driving down a road I didn't recognize. There was a contest in a field — people building something out of wood. I couldn't find the entrance. The light was amber, late afternoon.<span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <!-- INNER WEATHER — single field, suggestion hints -->
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">Inner Weather</h2>
+        </div>
+        <div class="iw-hints">
+          weighing on you · avoiding · needs to be said · giving you life · gratitude
+        </div>
+        <div class="empty">
+          <div class="wf" contenteditable data-placeholder="What's alive in you this morning?"></div>
+        </div>
+        <div class="filled">
+          <div class="wf">The Neon demo is tomorrow and I haven't rehearsed. I keep putting it off — not because I can't do it but because I'm afraid of the technical questions. Meanwhile the Chopin is starting to feel like mine. That's giving me life. Grateful for Maria pushing me on the phrasing.</div>
+        </div>
+      </div>
+
+      <!-- MORNING PRACTICES — single reflective field -->
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">Morning Practices</h2>
+        </div>
+        <div class="practices-note">movement · meditation · water · piano</div>
+        <div class="empty">
+          <div class="wf" contenteditable data-placeholder="Anything about your practices today?"></div>
+        </div>
+        <div class="filled">
+          <div class="wf">Meditation was scattered. Kept coming back to the demo. Movement was good — 30 min walk, cold air helped clear my head.</div>
+        </div>
+      </div>
+
+      <!-- PIANO — practice state + today's notes -->
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">Piano</h2>
+        </div>
+        <div class="practice-state">
+          <div class="plabel">Working on</div>
+          <ul class="practice-items">
+            <li>Chopin Nocturne Op. 9 No. 1 — LH voicing, bars 12–16</li>
+            <li>C minor harmonic scale, contrary motion</li>
+            <li>Chord inversions: dominant 7ths through all keys</li>
+            <li>Sight-reading: Bartók Mikrokosmos Vol. 3</li>
+          </ul>
+        </div>
+        <div class="empty">
+          <div class="wf" contenteditable data-placeholder="What did you practice? What clicked, what needs work?"></div>
+        </div>
+        <div class="filled">
+          <div class="wf">Practiced the Chopin passage at half tempo like Maria said. The turn in bar 15 is cleaner when I lead with the wrist. Scale work felt mechanical — might skip tomorrow and do arpeggios instead.</div>
+        </div>
+      </div>
+
+      <!-- CREATIVE PROJECTS -->
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">Creative Projects</h2>
+        </div>
+        <div class="empty">
+          <div class="wf" contenteditable data-placeholder="What's surfacing? What's maturing?"></div>
+        </div>
+        <div class="filled">
+          <div class="wf">The crumb.blog essay about narrow agents is close. Need to write the section on trust and delegation — the part about how you have to let the agent fail before you can let it succeed.</div>
+        </div>
+      </div>
+
+      <!-- BRIEFING (reference, visually demoted) -->
+      <div class="ref-section">
+        <div class="section-head">
+          <h2 class="section-title">Briefing</h2>
+          <span class="section-num">generated</span>
+        </div>
+        <div class="briefing-body">
+          <span class="quote">"The only way to do great work is to love what you do."</span>
+          <div class="meta">
+            Next: Piano lesson with Maria, 4:00 PM · Elder care: Mom's appointment Wed confirmed
+          </div>
+        </div>
+      </div>
+
+      <!-- TEND (reference, read-only) -->
+      <div class="ref-section">
+        <div class="section-head">
+          <h2 class="section-title">Today in Tend</h2>
+          <span class="section-num"><a href="#" style="color: var(--ink-ghost); text-decoration: none; border-bottom: 1px dotted var(--ink-ghost);">open</a></span>
+        </div>
+        <ul class="todo-list">
+          <li class="frog">Rehearse Neon.ai demo walkthrough</li>
+          <li>Reply to legal re: compliance review</li>
+          <li>Push crumb.blog draft</li>
+          <li>Update morning-ritual NOTES.md</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="ann">
+  <div class="n"><strong>v2 changes from Brandon's feedback:</strong> Dreams lost its section header — it's just a placeholder prompt at the top, the first thing you write. Inner weather collapsed from 5 separate fields to one writing area with muted suggestion hints ("weighing on you · avoiding · needs to be said · giving you life · gratitude"). Reflections removed entirely. Body text tightened: 17px at 1.5 line-height (was 18-20px at 1.72). Padding reduced throughout.</div>
+  <div class="n"><strong>Dreams as first breath:</strong> No header, no label, just "What did you dream?" — the simplest possible entry point. Brandon said "it doesn't have to be a labeled section." The dream section IS the page opening; the dateline above it is the only context needed.</div>
+  <div class="n"><strong>Inner weather as a single flow:</strong> The five Capacities-era prompts are condensed to a single hint line ("weighing on you · avoiding · needs to be said · giving you life · gratitude") above one open field. Brandon writes a paragraph touching whatever resonates, not five separate answers. "I think it can just be a single prompt with different suggestions."</div>
+  <div class="n"><strong>Morning practices:</strong> A single reflective field, not checkboxes. The muted hint ("movement · meditation · water · piano") lists Brandon's standing practices as context, not as a checklist. The placeholder is "Anything about your practices today?" — answerable in one sentence or skippable. Waiting on sub-agent research for whether this is right or should change.</div>
+  <div class="n"><strong>Piano:</strong> Has a "Working on" state block (persistent list of current pieces/exercises) plus a daily writing field. The practice items list changes slowly (weekly, after lessons). The daily field is for what happened today. Sub-agent researching musician notebook patterns for refinement.</div>
+  <div class="n"><strong>Space efficiency:</strong> Column narrowed to 640px (from 680px). Body text 17px/1.5 (from 18-20px/1.72). Section padding tightened. "It's about the exercise of writing, not seeing my own writing." More content fits above the fold.</div>
+  <div class="n"><strong>To-dos stay at the bottom:</strong> Brandon said "I think it actually makes sense that you have to scroll down because then you have to sort of go through your morning ritual to get to it." The ritual comes first; the task list is the reward at the bottom.</div>
+</div>
+
+<script>
+function setState(s) {
+  document.getElementById('page').className = 'page state-' + s;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+setState('empty');
+</script>
+
+</body>
+</html>

@@ -1,7 +1,5 @@
-// Dreams slot — CodeMirror 6 version. Drastically simpler than the TipTap
-// version because CM6's document IS plain text — no JSON intermediate, no
-// parseMarkdownToDoc/serializeDocToMarkdown round-trip. The editor content
-// is the draft string, period.
+// Dreams — no section header, just a placeholder prompt.
+// The simplest entry point: "What did you dream?"
 
 import { RitualEditor } from "../../components/RitualEditor";
 import type { SlotProps } from "../registry";

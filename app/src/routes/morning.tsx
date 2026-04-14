@@ -1,145 +1,166 @@
-// The morning sequence runner. This file knows the full shape of a morning:
-// start → render current slot → Cmd-Enter → commit → advance → next slot
-// or end-of-morning. Everything slot-specific lives in the slot component;
-// everything session-wide lives in the Zustand store; this file is the glue.
+// The morning hub — all sections on one scrollable page.
 //
-// Cmd-Enter is handled at the window level via a keydown listener so every
-// slot (current and future) inherits the covenant without re-implementing
-// it. Cmd+Shift+R resets the current session — useful during development
-// and testing to clear persisted drafts without opening devtools.
+// Replaces the sequential wizard (2026-04-13) because Brandon's original
+// vision was always "one-stop shop where I can see everything in one place."
+// The Capacities template he used for months was a single long page, and
+// that's what this is: a daily worksheet, not a wizard.
+//
+// Save model: Cmd-S writes all non-empty sections to the day log via the
+// Rust `save_day` command. Drafts live in Zustand (persisted to localStorage)
+// for crash recovery between saves.
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
-import { EndOfMorning } from "../components/EndOfMorning";
-import { SlotShell } from "../components/SlotShell";
 import { getSlot, slotOrder } from "../slots/registry";
-import {
-  selectCurrentSlotId,
-  selectElapsedMs,
-  selectIsDone,
-  useRitualStore,
-} from "../store/ritual";
-
-const TRANSITION_MS = 320;
+import { useRitualStore } from "../store/ritual";
 
 export const Route = createFileRoute("/morning")({
-  component: MorningRunner,
+  component: MorningHub,
 });
 
-function MorningRunner() {
+// Section titles — dreams has none (it's just the prompt at the top).
+const SECTION_TITLES: Record<string, string> = {
+  "inner-weather": "Inner Weather",
+  "morning-practices": "Morning Practices",
+  piano: "Piano",
+  creative: "Creative Projects",
+};
+
+function MorningHub() {
   const startMorning = useRitualStore((s) => s.startMorning);
-  const completeSlot = useRitualStore((s) => s.completeSlot);
   const setDraft = useRitualStore((s) => s.setDraft);
+  const saveMorning = useRitualStore((s) => s.saveMorning);
+  const saving = useRitualStore((s) => s.saving);
+  const lastSavedAt = useRitualStore((s) => s.lastSavedAt);
   const reset = useRitualStore((s) => s.reset);
-  const currentSlotId = useRitualStore(selectCurrentSlotId);
-  const draftForCurrent = useRitualStore((s) =>
-    currentSlotId ? (s.drafts[currentSlotId] ?? "") : "",
-  );
-  const total = useRitualStore((s) => s.slotOrder.length);
-  const currentIndex = useRitualStore((s) => s.currentIndex);
-  const isDone = useRitualStore(selectIsDone);
-  const elapsedMs = useRitualStore(selectElapsedMs);
+  const drafts = useRitualStore((s) => s.drafts);
 
-  const [transitioning, setTransitioning] = useState(false);
-
-  // Start the sequence on mount. startMorning handles all four cases
-  // (fresh, in-progress today, completed today, stale from a previous day).
   useEffect(() => {
-    startMorning(slotOrder);
+    startMorning();
   }, [startMorning]);
 
-  const handleCommit = useCallback(async () => {
-    if (!currentSlotId || transitioning) return;
-    const body = draftForCurrent;
-
-    setTransitioning(true);
+  const handleSave = useCallback(async () => {
     try {
-      await completeSlot(currentSlotId, body);
+      await saveMorning();
     } catch (err) {
-      console.error("completeSlot failed:", err);
-      setTransitioning(false);
-      return;
+      console.error("save failed:", err);
     }
+  }, [saveMorning]);
 
-    // Hold the faded-out state briefly so the transition is visible,
-    // then reset so the next slot mounts with the entrance animation.
-    window.setTimeout(() => {
-      setTransitioning(false);
-    }, TRANSITION_MS);
-  }, [completeSlot, currentSlotId, draftForCurrent, transitioning]);
-
-  // Keyboard covenants:
-  //   Cmd-Enter  — commit current slot and advance (the one ritual gesture)
-  //   Cmd-Shift-R — reset the entire session (development / testing escape hatch)
+  // Keyboard shortcuts: Cmd-S saves, Cmd-Shift-R resets
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        void handleCommit();
+        void handleSave();
         return;
       }
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "r") {
         e.preventDefault();
         reset();
-        // Re-start the sequence after the reset so the user lands on a
-        // fresh first slot instead of an empty store.
-        startMorning(slotOrder);
+        startMorning();
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [handleCommit, reset, startMorning]);
+  }, [handleSave, reset, startMorning]);
 
-  if (isDone) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-paper">
-        <EndOfMorning elapsedMs={elapsedMs} slotCount={total} />
-      </main>
-    );
-  }
+  const today = new Date();
+  const dateline = today
+    .toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
+    .toUpperCase();
 
-  if (!currentSlotId) {
-    // Zero active slots — quiet exit, matching the bash spike's behavior
-    // when slots.md was empty.
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-paper">
-        <p className="font-sans text-xs uppercase tracking-[0.04em] text-ink-faint">
-          no slots today
-        </p>
-      </main>
-    );
-  }
-
-  const slot = getSlot(currentSlotId);
-  if (!slot) {
-    // Programmer error: slotOrder references a slot that isn't in the registry.
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-paper">
-        <p className="font-serif text-ink">
-          unknown slot: <code className="font-mono">{currentSlotId}</code>
-        </p>
-      </main>
-    );
-  }
-
-  const SlotComponent = slot.component;
+  const savedLabel = lastSavedAt
+    ? `saved ${new Date(lastSavedAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }).toLowerCase()}`
+    : "";
 
   return (
-    <main className="flex h-screen flex-col bg-paper">
-      <SlotShell
-        slotName={slot.id}
-        currentIndex={currentIndex}
-        total={total}
-        transitioning={transitioning}
-      >
-        <SlotComponent
-          key={currentSlotId}
-          mode="morning"
-          initialDraft={draftForCurrent}
-          onDraft={(body) => setDraft(currentSlotId, body)}
-        />
-      </SlotShell>
+    <main className="flex h-screen flex-col bg-white">
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-[640px] px-10 pb-16 pt-8">
+          {/* Dateline */}
+          <p className="font-sans text-[11px] tracking-[0.1em] text-[#9CA3AF]">{dateline}</p>
+
+          {/* Sections */}
+          {slotOrder.map((slotId, i) => {
+            const slot = getSlot(slotId);
+            if (!slot) return null;
+            const SlotComponent = slot.component;
+            const title = SECTION_TITLES[slotId];
+
+            return (
+              <section
+                key={slotId}
+                className={i > 0 ? "mt-2 border-t border-[#EBEBEB] pt-5" : "mt-4"}
+              >
+                {title && (
+                  <h2 className="mb-3 font-serif text-[20px] font-light italic text-[#111111]">
+                    {title}
+                  </h2>
+                )}
+                <SlotComponent
+                  mode="morning"
+                  initialDraft={drafts[slotId] ?? ""}
+                  onDraft={(body) => setDraft(slotId, body)}
+                />
+              </section>
+            );
+          })}
+
+          {/* Briefing (placeholder — agent-generated content comes later) */}
+          <div className="mt-4 rounded-md bg-[#F8F8F8] px-4 py-3">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-serif text-[16px] italic text-[#6B7280]">Briefing</h2>
+              <span className="font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
+                generated
+              </span>
+            </div>
+            <p className="mt-2 font-serif text-[14px] italic leading-relaxed text-[#6B7280]">
+              "The only way to do great work is to love what you do."
+            </p>
+            <p className="mt-2 font-sans text-[11px] text-[#D1D5DB]">
+              Briefing integrations (calendar, elder care) come later.
+            </p>
+          </div>
+
+          {/* Tend (placeholder — read-only to-do list comes later) */}
+          <div className="mt-2 rounded-md bg-[#F8F8F8] px-4 py-3">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-serif text-[16px] italic text-[#6B7280]">Today in Tend</h2>
+              <a
+                href="https://tendyourgarden.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-sans text-[10px] text-[#D1D5DB] underline decoration-dotted"
+              >
+                open
+              </a>
+            </div>
+            <p className="mt-2 font-sans text-[11px] text-[#D1D5DB]">
+              Tend integration ships when the API is ready.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Status bar */}
+      <footer className="flex items-center justify-between border-t border-[#EBEBEB] px-6 py-2">
+        <span className="font-sans text-[11px] text-[#D1D5DB]">
+          {saving ? "saving…" : savedLabel}
+        </span>
+        <span className="font-sans text-[11px] text-[#D1D5DB]">
+          <kbd className="rounded border border-[#EBEBEB] px-1 py-0.5 font-sans text-[10px] text-[#9CA3AF]">
+            ⌘S
+          </kbd>{" "}
+          save
+        </span>
+      </footer>
     </main>
   );
 }

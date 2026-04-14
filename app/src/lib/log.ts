@@ -45,6 +45,20 @@ export async function grepLogs(pattern: string, dates: string[]): Promise<LogHit
   return invoke<LogHit[]>("grep_logs", { pattern, dates });
 }
 
+export interface DaySection {
+  slot: string;
+  body: string;
+}
+
+/**
+ * Save the complete day file. Writes all sections atomically — the hub's
+ * save model. Preserves any pre-existing sections in the file that aren't
+ * in the sections list (e.g., from adhoc writes).
+ */
+export async function saveDay(date: string, sections: DaySection[]): Promise<void> {
+  await invoke("save_day", { date, sections });
+}
+
 /**
  * Local today as YYYY-MM-DD, using the browser/webview's timezone. The
  * morning ritual is a single-user app in a single timezone, so this is

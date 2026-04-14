@@ -101,6 +101,27 @@ pub struct LogHit {
     pub section: Option<String>,
 }
 
+/// A section in a day file, sent from the frontend when saving the hub.
+#[derive(Debug, Deserialize)]
+pub struct DaySection {
+    pub slot: String,
+    pub body: String,
+}
+
+/// Save the complete day file. Replaces the entire file content with the
+/// given sections, preserving any pre-existing sections not in the new list
+/// (e.g., sections added by adhoc writes from other tools). This is the
+/// hub's save model — one atomic write per save, not incremental appends.
+#[tauri::command]
+pub fn save_day<R: Runtime>(
+    app: AppHandle<R>,
+    date: String,
+    sections: Vec<DaySection>,
+) -> Result<(), LogError> {
+    let log_dir = ritual_log_dir(&app)?;
+    save_day_impl(&log_dir, &date, &sections)
+}
+
 // -- Pure impls (no Tauri types, fully unit-testable) --------------------
 
 fn read_day_impl(log_dir: &Path, date: &str) -> Result<String, LogError> {
@@ -180,6 +201,77 @@ fn grep_logs_impl(
     }
 
     Ok(hits)
+}
+
+fn save_day_impl(log_dir: &Path, date: &str, sections: &[DaySection]) -> Result<(), LogError> {
+    validate_date(date)?;
+    for s in sections {
+        validate_slot_name(&s.slot)?;
+    }
+
+    fs::create_dir_all(log_dir)?;
+    let path = log_dir.join(format!("{date}.md"));
+
+    let mut output = format!("# {}\n\n", human_date(date));
+
+    // If the file already exists, preserve any sections NOT in the new list
+    // (e.g., sections added by adhoc writes or other tools).
+    if path.exists() {
+        let existing = fs::read_to_string(&path)?;
+        let existing_sections = parse_sections(&existing);
+        let new_slot_names: std::collections::HashSet<&str> =
+            sections.iter().map(|s| s.slot.as_str()).collect();
+
+        for (slot, body) in &existing_sections {
+            if !new_slot_names.contains(slot.as_str()) {
+                output.push_str(&format!("## {slot}\n\n{}\n\n", body.trim()));
+            }
+        }
+    }
+
+    // Write the new/updated sections.
+    for s in sections {
+        if !s.body.trim().is_empty() {
+            output.push_str(&format!("## {}\n\n{}\n\n", s.slot, s.body.trim_end()));
+        }
+    }
+
+    let final_content = output.trim_end().to_owned() + "\n";
+    fs::write(&path, &final_content)?;
+
+    // fsync — durable after this returns.
+    let f = fs::File::open(&path)?;
+    f.sync_all()?;
+    Ok(())
+}
+
+/// Parse a day file into a list of (slot_name, body) tuples. Used by
+/// save_day_impl to preserve sections that aren't being overwritten.
+fn parse_sections(content: &str) -> Vec<(String, String)> {
+    let mut sections = Vec::new();
+    let mut current_slot: Option<String> = None;
+    let mut current_body = String::new();
+
+    for line in content.lines() {
+        if let Some(rest) = line.strip_prefix("## ") {
+            if let Some(slot) = current_slot.take() {
+                sections.push((slot, current_body.clone()));
+                current_body.clear();
+            }
+            current_slot = Some(rest.trim().to_string());
+        } else if line.starts_with("# ") {
+            // Day header — skip.
+        } else if current_slot.is_some() {
+            current_body.push_str(line);
+            current_body.push('\n');
+        }
+    }
+
+    if let Some(slot) = current_slot {
+        sections.push((slot, current_body));
+    }
+
+    sections
 }
 
 // -- validation and helpers ----------------------------------------------
@@ -424,5 +516,67 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let err = grep_logs_impl(tmp.path(), "", &["2026-04-10".to_string()]).unwrap_err();
         assert!(matches!(err, LogError::Invalid(_)));
+    }
+
+    #[test]
+    fn save_day_impl_creates_file_with_all_sections() {
+        let tmp = TempDir::new().unwrap();
+        let sections = vec![
+            DaySection { slot: "dreams".into(), body: "A dream about the sea.".into() },
+            DaySection { slot: "inner-weather".into(), body: "Feeling good.".into() },
+        ];
+        save_day_impl(tmp.path(), "2026-04-13", &sections).unwrap();
+
+        let content = fs::read_to_string(tmp.path().join("2026-04-13.md")).unwrap();
+        assert!(content.starts_with("# Monday, April 13, 2026"));
+        assert!(content.contains("## dreams\n\nA dream about the sea."));
+        assert!(content.contains("## inner-weather\n\nFeeling good."));
+    }
+
+    #[test]
+    fn save_day_impl_preserves_foreign_sections() {
+        let tmp = TempDir::new().unwrap();
+        // First write: create a day file with two sections.
+        let sections = vec![
+            DaySection { slot: "dreams".into(), body: "First dream.".into() },
+            DaySection { slot: "foreign".into(), body: "Written by another tool.".into() },
+        ];
+        save_day_impl(tmp.path(), "2026-04-13", &sections).unwrap();
+
+        // Second write: update dreams only. The "foreign" section should survive.
+        let sections = vec![
+            DaySection { slot: "dreams".into(), body: "Updated dream.".into() },
+        ];
+        save_day_impl(tmp.path(), "2026-04-13", &sections).unwrap();
+
+        let content = fs::read_to_string(tmp.path().join("2026-04-13.md")).unwrap();
+        assert!(content.contains("## dreams\n\nUpdated dream."));
+        assert!(content.contains("## foreign\n\nWritten by another tool."));
+        assert!(!content.contains("First dream."));
+    }
+
+    #[test]
+    fn save_day_impl_skips_empty_sections() {
+        let tmp = TempDir::new().unwrap();
+        let sections = vec![
+            DaySection { slot: "dreams".into(), body: "Has content.".into() },
+            DaySection { slot: "empty".into(), body: "  \n  ".into() },
+        ];
+        save_day_impl(tmp.path(), "2026-04-13", &sections).unwrap();
+
+        let content = fs::read_to_string(tmp.path().join("2026-04-13.md")).unwrap();
+        assert!(content.contains("## dreams"));
+        assert!(!content.contains("## empty"));
+    }
+
+    #[test]
+    fn parse_sections_extracts_slot_bodies() {
+        let content = "# Friday\n\n## dreams\n\nDream text.\n\n## piano\n\nPractice notes.\n";
+        let sections = parse_sections(content);
+        assert_eq!(sections.len(), 2);
+        assert_eq!(sections[0].0, "dreams");
+        assert!(sections[0].1.contains("Dream text."));
+        assert_eq!(sections[1].0, "piano");
+        assert!(sections[1].1.contains("Practice notes."));
     }
 }

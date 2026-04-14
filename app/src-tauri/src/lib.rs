@@ -19,6 +19,7 @@ pub fn run() {
             commands::log::read_day,
             commands::log::append_section,
             commands::log::grep_logs,
+            commands::log::save_day,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
