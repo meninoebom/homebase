@@ -1,13 +1,6 @@
 // The morning hub — all sections on one scrollable page.
-//
-// Replaces the sequential wizard (2026-04-13) because Brandon's original
-// vision was always "one-stop shop where I can see everything in one place."
-// The Capacities template he used for months was a single long page, and
-// that's what this is: a daily worksheet, not a wizard.
-//
-// Save model: Cmd-S writes all non-empty sections to the day log via the
-// Rust `save_day` command. Drafts live in Zustand (persisted to localStorage)
-// for crash recovery between saves.
+// Compact layout: editors are content-height, not viewport-height.
+// The page scrolls normally like a web form.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
@@ -19,7 +12,6 @@ export const Route = createFileRoute("/morning")({
   component: MorningHub,
 });
 
-// Section titles — dreams has none (it's just the prompt at the top).
 const SECTION_TITLES: Record<string, string> = {
   "inner-weather": "Inner Weather",
   "morning-practices": "Morning Practices",
@@ -48,7 +40,6 @@ function MorningHub() {
     }
   }, [saveMorning]);
 
-  // Keyboard shortcuts: Cmd-S saves, Cmd-Shift-R resets
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
@@ -81,76 +72,65 @@ function MorningHub() {
     : "";
 
   return (
-    <main className="flex h-screen flex-col bg-white">
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[640px] px-10 pb-16 pt-8">
-          {/* Dateline */}
-          <p className="font-sans text-[11px] tracking-[0.1em] text-[#9CA3AF]">{dateline}</p>
+    <main className="min-h-screen bg-white">
+      <div className="mx-auto max-w-[780px] px-8 pb-12 pt-6">
+        {/* Dateline */}
+        <p className="mb-4 font-sans text-[11px] tracking-[0.1em] text-[#9CA3AF]">{dateline}</p>
 
-          {/* Sections */}
-          {slotOrder.map((slotId, i) => {
-            const slot = getSlot(slotId);
-            if (!slot) return null;
-            const SlotComponent = slot.component;
-            const title = SECTION_TITLES[slotId];
+        {/* Sections */}
+        {slotOrder.map((slotId, i) => {
+          const slot = getSlot(slotId);
+          if (!slot) return null;
+          const SlotComponent = slot.component;
+          const title = SECTION_TITLES[slotId];
 
-            return (
-              <section
-                key={slotId}
-                className={i > 0 ? "mt-2 border-t border-[#EBEBEB] pt-5" : "mt-4"}
-              >
-                {title && (
-                  <h2 className="mb-3 font-serif text-[20px] font-light italic text-[#111111]">
-                    {title}
-                  </h2>
-                )}
-                <SlotComponent
-                  mode="morning"
-                  initialDraft={drafts[slotId] ?? ""}
-                  onDraft={(body) => setDraft(slotId, body)}
-                />
-              </section>
-            );
-          })}
+          return (
+            <section key={slotId} className={i > 0 ? "mt-4 border-t border-[#EBEBEB] pt-3" : ""}>
+              {title && (
+                <h2 className="mb-1 font-serif text-[17px] font-light italic text-[#111]">
+                  {title}
+                </h2>
+              )}
+              <SlotComponent
+                mode="morning"
+                initialDraft={drafts[slotId] ?? ""}
+                onDraft={(body) => setDraft(slotId, body)}
+              />
+            </section>
+          );
+        })}
 
-          {/* Briefing (placeholder — agent-generated content comes later) */}
-          <div className="mt-4 rounded-md bg-[#F8F8F8] px-4 py-3">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-serif text-[16px] italic text-[#6B7280]">Briefing</h2>
-              <span className="font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
-                generated
-              </span>
-            </div>
-            <p className="mt-2 font-serif text-[14px] italic leading-relaxed text-[#6B7280]">
-              "The only way to do great work is to love what you do."
-            </p>
-            <p className="mt-2 font-sans text-[11px] text-[#D1D5DB]">
-              Briefing integrations (calendar, elder care) come later.
-            </p>
+        {/* Briefing placeholder */}
+        <div className="mt-4 rounded bg-[#F8F8F8] px-3 py-2">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-serif text-[14px] italic text-[#6B7280]">Briefing</h2>
+            <span className="font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
+              generated
+            </span>
           </div>
+          <p className="mt-1 font-serif text-[13px] italic leading-snug text-[#9CA3AF]">
+            "The only way to do great work is to love what you do."
+          </p>
+        </div>
 
-          {/* Tend (placeholder — read-only to-do list comes later) */}
-          <div className="mt-2 rounded-md bg-[#F8F8F8] px-4 py-3">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-serif text-[16px] italic text-[#6B7280]">Today in Tend</h2>
-              <a
-                href="https://tendyourgarden.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-sans text-[10px] text-[#D1D5DB] underline decoration-dotted"
-              >
-                open
-              </a>
-            </div>
-            <p className="mt-2 font-sans text-[11px] text-[#D1D5DB]">
-              Tend integration ships when the API is ready.
-            </p>
+        {/* Tend placeholder */}
+        <div className="mt-2 rounded bg-[#F8F8F8] px-3 py-2">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-serif text-[14px] italic text-[#6B7280]">Today in Tend</h2>
+            <a
+              href="https://tendyourgarden.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-sans text-[10px] text-[#D1D5DB] underline decoration-dotted"
+            >
+              open
+            </a>
           </div>
         </div>
       </div>
 
       {/* Status bar */}
-      <footer className="flex items-center justify-between border-t border-[#EBEBEB] px-6 py-2">
+      <footer className="sticky bottom-0 flex items-center justify-between border-t border-[#EBEBEB] bg-white px-6 py-1.5">
         <span className="font-sans text-[11px] text-[#D1D5DB]">
           {saving ? "saving…" : savedLabel}
         </span>
