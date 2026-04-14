@@ -70,12 +70,17 @@ body {
  * to read as CSS than as JS theme objects.
  */
 
-/* The ritual-editor container itself: no visible box. */
+/* The ritual-editor container fills its parent so the editor becomes a
+   bounded-height viewport for typewriter scrolling. The 50vh padding on
+   .cm-content (in RitualEditor.tsx's theme) only works when the scroller
+   has a finite height — otherwise there's nothing to scroll within. */
 .ritual-editor {
   width: 100%;
+  height: 100%;
 }
 
-/* CM6's .cm-editor is the outer container. Ensure it blends. */
+/* CM6's .cm-editor is the outer container. Full height + transparent. */
 .ritual-editor .cm-editor {
+  height: 100%;
   background: transparent;
 }

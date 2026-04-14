@@ -1,13 +1,10 @@
 // Wraps the current slot with the 320ms fade/rise transition animation and
-// the small slot counter in the bottom-right corner. The counter lives in a
-// fixed-position footer outside the animated region so it doesn't fade
-// during slot transitions.
+// the small slot counter in the bottom-right corner.
 //
-// The layout is top-anchored (not centered): writing flows from a generous
-// top margin downward. This matches the feel of writing on a real page —
-// the first line lives near the top, and as you write the page fills. A
-// vertically-centered layout was tried and felt wrong; text that starts in
-// the middle of the window feels like a form, not a page.
+// The layout fills the remaining viewport height (flex-1) so the editor
+// inside it can be a fixed-height viewport with its own scrolling —
+// which is what typewriter mode needs (50vh padding on .cm-content only
+// works when the editor's scroll container has a bounded height).
 
 import type { ReactNode } from "react";
 
@@ -15,7 +12,6 @@ interface SlotShellProps {
   slotName: string;
   currentIndex: number;
   total: number;
-  /** True while the outgoing slot is fading out. Drives the transition. */
   transitioning: boolean;
   children: ReactNode;
 }
@@ -31,16 +27,12 @@ export function SlotShell({
     <>
       <section
         className={[
-          "flex flex-col items-center px-8 pt-24 pb-20",
+          "flex flex-1 flex-col items-center overflow-hidden px-8",
           "transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           transitioning ? "-translate-y-3 opacity-0" : "translate-y-0 opacity-100",
         ].join(" ")}
       >
-        {/* Writing column widened from 62ch to 72ch on 2026-04-10 per
-            Brandon's feedback ("pretty narrow, the writing space"). 72ch
-            at 20px Charter is ~760px on a typical display — wider than
-            iA Writer's default 65ch, narrower than a Notion doc. */}
-        <div className="w-full max-w-[72ch]">{children}</div>
+        <div className="w-full max-w-[72ch] flex-1 overflow-hidden">{children}</div>
       </section>
       <footer className="fixed right-8 bottom-6 font-sans text-xs uppercase tracking-[0.04em] text-ink-faint">
         {slotName} · {currentIndex + 1} of {total}

@@ -1,34 +1,36 @@
-// Shared CodeMirror 6 editor for all prompt slots. Replaces TipTap.
+// Shared CodeMirror 6 editor for all prompt slots.
 //
-// The switch from TipTap to CM6 was made on 2026-04-13 after research
-// showed that CM6 is the standard for prose-quality writing surfaces in
-// Tauri apps (Astro Editor, Obsidian Live Preview, Heynote). TipTap's
-// ProseMirror model fights you on typewriter scrolling, empty-paragraph
-// collapse, and markdown-as-you-type — all things CM6 gives for free
-// or as idiomatic extensions.
+// Replaces TipTap (2026-04-13). The swap was driven by research showing
+// CM6 is the standard for prose-quality writing surfaces in Tauri apps
+// (Astro Editor, Obsidian Live Preview). CM6 gives us typewriter scrolling,
+// markdown-as-you-type, and simpler code in exchange for a larger per-chunk
+// bundle (acceptable for a local-first desktop app).
 //
-// Design: the editor is mounted once on initial render and manages its
-// own state (CM6 is not a React controlled component). On every doc
-// change, we call onChange(doc.toString()). The caller (slot component)
-// passes onChange as a stable callback via useCallback/ref.
+// Typewriter mode implementation adapted from Danny Smith's Astro Editor
+// (https://github.com/dannysmith/astro-editor) — Apache/MIT licensed.
+// Key patterns: transaction extender for keyboard centering, ViewPlugin
+// for deferred pointer centering, and 50vh padding on .cm-content so
+// the first/last lines of the document CAN reach viewport center.
 
 import { useEffect, useRef } from "react";
 
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown } from "@codemirror/lang-markdown";
-import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
-import { EditorView, ViewUpdate, keymap, placeholder as placeholderExt } from "@codemirror/view";
+import {
+  EditorView,
+  ViewPlugin,
+  type ViewUpdate,
+  keymap,
+  placeholder as placeholderExt,
+} from "@codemirror/view";
 import { tags } from "@lezer/highlight";
 
 interface RitualEditorProps {
-  /** Document content on first mount. Not reactive after mount. */
   initialContent: string;
-  /** Called on every doc change with the full document string. */
   onChange: (content: string) => void;
-  /** Shown in ink-faint italic when the editor is empty. */
   placeholderText?: string;
-  /** Auto-focus the editor on mount. Default true. */
   autoFocus?: boolean;
 }
 
@@ -40,9 +42,6 @@ export function RitualEditor({
 }: RitualEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-
-  // Use a ref for onChange so the updateListener closure doesn't go stale
-  // if the parent re-renders with a new callback identity.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
@@ -63,7 +62,12 @@ export function RitualEditor({
       updateListener,
       EditorView.lineWrapping,
       ritualTheme,
-      typewriterScrolling,
+      // Typewriter mode: always on, not togglable. Three pieces work together:
+      // 1. transactionExtender centers on keyboard selection changes
+      // 2. ViewPlugin centers on mouse clicks (deferred to after mouseup)
+      // 3. 50vh padding on .cm-content (in the theme) creates scroll space
+      typewriterKeyboardExtender,
+      typewriterMousePlugin,
     ];
 
     if (placeholderText) {
@@ -81,7 +85,15 @@ export function RitualEditor({
     });
 
     if (autoFocus) {
-      requestAnimationFrame(() => view.focus());
+      requestAnimationFrame(() => {
+        view.focus();
+        // After focusing, center the cursor position
+        view.dispatch({
+          effects: EditorView.scrollIntoView(view.state.selection.main.head, {
+            y: "center",
+          }),
+        });
+      });
     }
 
     viewRef.current = view;
@@ -91,35 +103,39 @@ export function RitualEditor({
       viewRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Mount only. Content flows through onChange; re-mounting would lose cursor.
+  }, []);
 
   return <div ref={containerRef} className="ritual-editor" />;
 }
 
 // -- Theme ----------------------------------------------------------------
 
-// CM6 theme: structural styles for the writing surface. Colors reference
-// CSS custom properties from src/index.css so we don't hardcode hex values.
 const ritualTheme = EditorView.theme({
   "&": {
     fontSize: "20px",
     backgroundColor: "transparent",
+    height: "100%",
+  },
+  ".cm-scroller": {
+    overflow: "auto",
+    fontFamily: "var(--font-serif)",
   },
   ".cm-content": {
     fontFamily: "var(--font-serif)",
     fontSize: "20px",
     lineHeight: "1.72",
     color: "var(--color-ink)",
-    padding: "0",
     caretColor: "var(--color-ink)",
-    minHeight: "20rem",
+    // 50vh padding above and below the content so the first and last
+    // lines can scroll to viewport center. Without this, typewriter
+    // mode can't center content near the edges of the document.
+    // Pattern from Astro Editor (dannysmith/astro-editor).
+    paddingTop: "50vh",
+    paddingBottom: "50vh",
+    minHeight: "0",
   },
   "&.cm-focused": {
     outline: "none",
-  },
-  ".cm-scroller": {
-    overflow: "visible",
-    fontFamily: "var(--font-serif)",
   },
   ".cm-line": {
     padding: "0.1em 0",
@@ -132,18 +148,15 @@ const ritualTheme = EditorView.theme({
     borderLeftColor: "var(--color-ink)",
     borderLeftWidth: "1.5px",
   },
-  // Don't highlight the active line — we want the text to dominate.
   ".cm-activeLine": {
     backgroundColor: "transparent",
   },
-  // Selection colors.
   ".cm-selectionBackground": {
     backgroundColor: "rgba(0, 0, 0, 0.08) !important",
   },
   "&.cm-focused .cm-selectionBackground": {
     backgroundColor: "rgba(0, 0, 0, 0.15) !important",
   },
-  // Gutters off (no line numbers in a writing app).
   ".cm-gutters": {
     display: "none",
   },
@@ -151,10 +164,6 @@ const ritualTheme = EditorView.theme({
 
 // -- Syntax highlighting -------------------------------------------------
 
-// Markdown heading styles. The `###` prefix is dimmed; the heading text
-// after the space is italic and muted. No font-size changes for headings
-// — the inner weather template's ### sections should feel like prompts,
-// not a heading hierarchy.
 const ritualHighlighting = HighlightStyle.define([
   {
     tag: tags.heading1,
@@ -174,30 +183,75 @@ const ritualHighlighting = HighlightStyle.define([
     fontWeight: "normal",
     color: "var(--color-ink-muted)",
   },
-  // The ### prefix itself — dim so the heading text is what the eye reads.
   {
     tag: tags.processingInstruction,
     color: "var(--color-ink-faint)",
   },
-  // Emphasis and strong in markdown
   { tag: tags.emphasis, fontStyle: "italic" },
   { tag: tags.strong, fontWeight: "bold" },
 ]);
 
 // -- Typewriter scrolling ------------------------------------------------
-
-// Pins the cursor line to the vertical center of the viewport on every
-// selection change. Uses a transactionExtender (not an updateListener)
-// so the scrollIntoView effect piggybacks on the selection-changing
-// transaction — one transaction, no follow-up dispatch, no infinite loop.
 //
-// Pattern from CM6 forum (https://discuss.codemirror.net/t/cm6-scroll-to-middle/2924)
-// and the Astro Editor Tauri app (dannysmith/astro-editor).
-const typewriterScrolling = EditorState.transactionExtender.of((tr) => {
-  if (!tr.selection) return null;
+// Adapted from Astro Editor by Danny Smith (Apache/MIT).
+// https://github.com/dannysmith/astro-editor
+//
+// Two pieces:
+// 1. A transactionExtender that adds scrollIntoView(head, { y: 'center' })
+//    to every non-pointer transaction that changes the selection or document.
+//    Pointer events are EXCLUDED because scrolling between mousedown and
+//    mouseup causes CM6 to interpret the click as a drag selection.
+// 2. A ViewPlugin that handles pointer centering AFTER mouseup completes,
+//    using requestAnimationFrame to ensure CM6 has finished processing the
+//    click before we scroll.
+
+const typewriterKeyboardExtender = EditorState.transactionExtender.of((tr) => {
+  if (!tr.selection && !tr.docChanged) return null;
+  // Skip pointer selections — handled by the ViewPlugin after mouseup
+  if (tr.isUserEvent("select.pointer")) return null;
   return {
-    effects: EditorView.scrollIntoView(tr.selection.main.head, {
+    effects: EditorView.scrollIntoView(tr.state.selection.main.head, {
       y: "center",
     }),
   };
 });
+
+const typewriterMousePlugin = ViewPlugin.fromClass(
+  class {
+    private _destroyed = false;
+    private pendingCleanup: (() => void) | null = null;
+
+    constructor(private view: EditorView) {}
+
+    update(update: ViewUpdate) {
+      if (update.transactions.some((tr) => tr.isUserEvent("select.pointer"))) {
+        this.cancelPending();
+        const handler = () => {
+          this.pendingCleanup = null;
+          requestAnimationFrame(() => {
+            if (this._destroyed) return;
+            this.view.dispatch({
+              effects: EditorView.scrollIntoView(this.view.state.selection.main.head, {
+                y: "center",
+              }),
+            });
+          });
+        };
+        this.pendingCleanup = () => document.removeEventListener("mouseup", handler);
+        document.addEventListener("mouseup", handler, { once: true });
+      }
+    }
+
+    private cancelPending() {
+      if (this.pendingCleanup) {
+        this.pendingCleanup();
+        this.pendingCleanup = null;
+      }
+    }
+
+    destroy() {
+      this._destroyed = true;
+      this.cancelPending();
+    }
+  },
+);

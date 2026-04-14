@@ -126,7 +126,7 @@ function MorningRunner() {
   const SlotComponent = slot.component;
 
   return (
-    <main className="min-h-screen bg-paper">
+    <main className="flex h-screen flex-col bg-paper">
       <SlotShell
         slotName={slot.id}
         currentIndex={currentIndex}
