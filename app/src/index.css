@@ -56,112 +56,26 @@ body {
 
 /*
  * ============================================================
- *  Shared editor styles (.ritual-editor)
+ *  CodeMirror 6 editor overrides (.ritual-editor)
  * ============================================================
  *
- * TipTap / ProseMirror editor styles for prompt slots. The editor surface
- * is a contentEditable div with the class `.ProseMirror`; TipTap doesn't
- * emit a shadow DOM or ship any default styling, so everything is on us.
+ * CM6 replaced TipTap on 2026-04-13 after research (Astro Editor,
+ * Obsidian, Heynote) showed CM6 is the standard for prose-quality
+ * writing surfaces. Most editor styling lives in the CM6 theme
+ * extension (src/components/RitualEditor.tsx → ritualTheme) rather
+ * than in CSS, because CM6 generates scoped class names at runtime.
  *
- * The editor has NO visible background or border — it blends into the
- * window, which is the whole page for the user. No lifted `page` surface,
- * no box, no form-field affordance.
- *
- * Every prompt slot's root element gets `ritual-editor` as a shared class
- * for the base typography, and optionally a slot-specific class
- * (`dreams-slot`, `inner-weather-slot`) for extras like the Dreams
- * placeholder or the inner-weather h3 headings.
+ * This CSS file only holds overrides that need CSS custom properties
+ * (which CM6 themes handle fine) or structural rules that are easier
+ * to read as CSS than as JS theme objects.
  */
-.ritual-editor .ProseMirror {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  line-height: 1.72;
-  color: var(--color-ink);
-  background-color: transparent;
-  padding: 0;
-  min-height: 20rem;
-  outline: none;
-  border: none;
-  cursor: text;
+
+/* The ritual-editor container itself: no visible box. */
+.ritual-editor {
+  width: 100%;
 }
 
-.ritual-editor .ProseMirror:focus,
-.ritual-editor .ProseMirror:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
-/*
- * Paragraph rhythm. Brandon's feedback (2026-04-10): the old 1em margin
- * was "way too big" because repeated Enter presses compounded into a
- * huge visual gap. Dropping to 0.35em tightens up paragraph breaks while
- * still leaving them visually distinct. Combined with the 1.72 line-height
- * above, the prose feels generous inside a paragraph and tight between
- * paragraphs — closer to how a page in a notebook actually reads.
- */
-.ritual-editor .ProseMirror p {
-  margin: 0 0 0.35em 0;
-}
-
-.ritual-editor .ProseMirror p:last-child {
-  margin-bottom: 0;
-}
-
-/*
- * Empty paragraphs (from Enter-spam) shrink to half-height so that three
- * or four Enter presses don't create a huge visual gap. A paragraph that
- * contains only ProseMirror's trailing break is rendered at 0.7 line-height
- * instead of 1.72, and the margin-bottom shrinks too. End result: three
- * empty paragraphs in a row are ~45px of gap instead of ~130px, while
- * a single empty paragraph still reads as "a blank line."
- *
- * Uses :has() which is supported in WKWebView (macOS Tauri target) as of
- * Safari 15.4+ — we're on current macOS so this is safe.
- */
-.ritual-editor .ProseMirror p:has(> br.ProseMirror-trailingBreak:only-child) {
-  line-height: 0.7;
-  margin-bottom: 0;
-}
-
-/*
- * ============================================================
- *  Dreams slot — placeholder
- * ============================================================
- *
- * TipTap's Placeholder extension sets a `data-placeholder` attribute on
- * the first empty node and adds the `is-editor-empty` class; we render
- * the placeholder via `::before` so it sits exactly where the cursor
- * would go without affecting layout.
- */
-.dreams-slot .ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: var(--color-ink-faint);
-  font-style: italic;
-  pointer-events: none;
-  float: left;
-  height: 0;
-}
-
-/*
- * ============================================================
- *  Inner weather slot — section headings
- * ============================================================
- *
- * Inner weather's template has five `### Section` headings. Each renders
- * as an italic muted serif, smaller than the body but visually distinct.
- * Top margin gives each section breathing room; the first heading has
- * no top margin so it hugs the top of the writing column.
- */
-.inner-weather-slot .ProseMirror h3 {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-style: italic;
-  font-weight: 400;
-  line-height: 1.35;
-  color: var(--color-ink-muted);
-  margin: 1.75em 0 0.4em 0;
-}
-
-.inner-weather-slot .ProseMirror h3:first-child {
-  margin-top: 0;
+/* CM6's .cm-editor is the outer container. Ensure it blends. */
+.ritual-editor .cm-editor {
+  background: transparent;
 }
