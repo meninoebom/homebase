@@ -1,12 +1,11 @@
-// Zustand store for the morning ritual hub.
+// Zustand store for the Homebase hub.
 //
-// Hub model (replaces the wizard's sequential model): all sections are
-// visible at once on a scrollable page. Drafts are per-section strings.
-// Saving is explicit (Cmd-S) and writes all non-empty sections to the
-// day log file via the Rust `save_day` command.
+// Hub model: all sections are visible at once on a scrollable page. Drafts
+// are per-section strings. Saving is explicit (Cmd-S) and writes all
+// non-empty sections to the day log file via saveDay() in lib/log.ts.
 //
 // Persistence: the full state is saved to localStorage so drafts survive
-// app crashes. A stale session from a previous day is detected on
+// page reloads. A stale session from a previous day is detected on
 // startMorning() and reset.
 
 import { create } from "zustand";
@@ -82,10 +81,11 @@ export const useRitualStore = create<RitualState>()(
       },
     }),
     {
-      name: "morning-ritual-state",
+      name: "homebase-state",
       storage: createJSONStorage(() => localStorage),
-      // Version 4: hub model replaces wizard. Clears old sequential state.
-      version: 4,
+      // Version 6: renamed from morning-ritual-state to homebase-state for
+      // the browser rewrite. Old key is orphaned (manual clear if you care).
+      version: 6,
     },
   ),
 );

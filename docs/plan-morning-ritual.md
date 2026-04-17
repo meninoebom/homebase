@@ -1,7 +1,11 @@
 # Plan: Morning Ritual Control Center
 
+> **April 15 2026 pivot — v4: Homebase (browser).** The Tauri shell was torn out. The app is now a pure HTML/JS static page named **Homebase** at `homebase/`, served by Vite and running in a Chromium browser. The substrate is preserved: real plaintext markdown at `~/Documents/morning-ritual-log/` via the File System Access API. User picks the folder once; handle persists in IndexedDB. §15 rule 4 ("grep is the memory layer") is intact — files are real, greppable from Terminal, and survive the app. Browser constraint: Chromium-only (Chrome/Edge/Arc/Brave); Safari and Firefox deferred. Every slot and hub mechanic survives the swap — only the substrate moved.
+>
+> References below to "Tauri rebuild," "Rust commands," and `run.sh` are historical. Mechanism is the browser now; everything else (sections, rules, self-audit) stands.
+
 ## 1. Summary
-Create `~/dev/morning-ritual/` as a thin shell that runs a configurable sequence of slot subdirectories. Day 1 ships with the algorithmic gym as the only active slot; every future slot is its own idea brief and planning cycle, added one at a time after the previous one has proven itself in a week of real mornings.
+Create `~/dev/homebase/` as a thin shell that runs a configurable sequence of slot subdirectories. Day 1 ships with the algorithmic gym as the only active slot; every future slot is its own idea brief and planning cycle, added one at a time after the previous one has proven itself in a week of real mornings.
 
 **The broader bet (see sections 9–13):** this is a personal workspace shaped like a bullet journal — dated log pages for the **time-axis** (what happened today) and topical slot directories for the **topic-axis** (what Brandon is currently working on in piano, his standing practices, the books he's reading, the creative projects that are maturing). Both live as plaintext on the filesystem.
 
@@ -12,7 +16,7 @@ It is not a life tracker (no scores, no streaks, no metrics, no quizzes), not a 
 ## 2. Directory structure
 
 ```
-~/dev/morning-ritual/
+~/dev/homebase/
   README.md              # Day 1. One paragraph: what this is, how to run it.
   morning                # Day 1. Executable entry point. See section 3.
   slots.md               # Day 1. Ordered list of active slots. See section 3.
@@ -58,7 +62,7 @@ Plain markdown, parsed by grabbing numbered lines. Brandon edits it by hand. Com
 
 ## 4. Slot protocol
 
-A slot is a subdirectory of `~/dev/morning-ritual/` that contains:
+A slot is a subdirectory of `~/dev/homebase/` that contains:
 
 - **`run.sh`** (required). Executable. Called by the shell. Receives `RITUAL_DATE` and `RITUAL_LOG` via environment. Responsible for its own interactivity, its own language, its own dependencies.
 - **`README.md`** (required). One paragraph explaining what the slot does and why it exists.
@@ -95,6 +99,12 @@ The list below is the morning sequence order AND the rough build order. Each ent
 
 8. **Slot 8 (deferred), Tend read-only surface.** Reads today's tasks and the frog from Tend's API, echoes them into the log. Explicitly read-only; project planning stays in Tend. Ships first as a three-line fetch slot that just prints a link to `tendyourgarden.app/today`; full API integration earns itself later. Deferred past the MVP because the ritual must work offline and because Tend's value is complementary, not central.
 
+9. **Slot 9, Orient (added April 15).** Workspace slot — Nick Milo-style home note / map of content. Renders four sections from `orient/state.md`: *This week's focus* (1–3 lines, edited weekly), *One thing today* (the Gary Keller focusing question, edited daily), *Launch* (hand-curated list of links to Brandon's tools and repos, max ~8), *Pinned reading* (1–3 essays/docs currently on his mind). Placed **last** in the morning sequence so the zero-effort slot cannot become an exit ramp from the harder writing slots; functionally the bridge from the ritual to the rest of the day. Does **not** append to the day log — orient is pure orientation, not writing. The hub's existing empty-drafts filter handles the opt-out without any contract change.
+
+    **§15 rule-5 tripwire.** This slot sits closest to the *"I feel organized"* failure mode of any slot in the app. The goal state is deliberately concrete — *"I know this week's focus, today's one thing, and where my tools live"* — and names three pieces of content, not a feeling. The design constraint is that every element must be something Brandon would want to look at during a bad month. No counts, no streaks, no "last edited," no dynamic data. First time something dynamic creeps in, the slot has rotted. See §16 re-audit below.
+
+    **§16 re-audit (April 15).** Q1 (what sentence could not have been written) doesn't apply cleanly — orient produces no writing. Read as "what would I have forgotten without it," the answer is concrete: *this week's focus* and *one thing today*. Q3 (re-read vs append-only) is the closest bend: orient is *neither* — it's a curated stock that gets pruned, not grown. The safeguard is that state.md is rewritten, not appended to; if orient ever accumulates history, it has failed. Q6 (a morning this would have caught something) is Brandon's to answer in NOTES.md after a week of use. The slot is safe to build, with rule 5 as the live tripwire.
+
 **Dropped from the phasing (April 10):**
 - **Workout / practices reminder.** Brandon: *"I know how to do my workout. I don't need a reminder."* If standing practices ever need surfacing later, they earn their own slot on a new idea brief.
 - **Creative writing prompt.** Brandon: *"I don't do a lot of poetry or fiction. Later I might come back for a slot that captures whatever's going through my head, but that's not now."*
@@ -107,7 +117,7 @@ The list below is the morning sequence order AND the rough build order. Each ent
 
 - **crumb.blog (`~/dev/breadcrumbs`).** The reading reflections slot and eventually the check-in's creative threads section will produce draft content. The existing `narrow-agent-telegram-breadcrumbs` agent already knows how to post to crumb.blog via `X-API-Key`, so the integration pattern is proven. The slot's job is to capture the thought and hand it to an existing tool, not to reinvent the publishing flow.
 - **Tend (`~/dev/tend`, tendyourgarden.app).** The Tend slot will read today's tasks from Tend's API (Brandon owns both sides, so the API can evolve as needed) and surface the frog. It may also echo the day's plan back into the log. No writes to Tend from the ritual in the first version. Read-only is enough.
-- **Algorithmic gym (`~/dev/morning-ritual/gym/`).** Lives inside the ritual directory from Day 1. The gym is a slot like any other, except it happens to be the first one. The gym agent owns everything inside `gym/`.
+- **Algorithmic gym (`~/dev/homebase/gym/`).** Lives inside the ritual directory from Day 1. The gym is a slot like any other, except it happens to be the first one. The gym agent owns everything inside `gym/`.
 
 No other integrations are in scope. No Slack, no Notion, no Obsidian, no Apple Notes, no iCloud sync, no Raycast extension. If Brandon wants any of those later, each is its own idea brief.
 
@@ -134,7 +144,7 @@ Explicitly deferred or rejected:
 ## 8. Open questions for Brandon
 
 1. **Halt or continue on slot failure?** Proposal: halt, because it surfaces breakage loudly and the ritual is short enough that restart is cheap. Confirm or override.
-2. **Where does the log live?** Proposal: `~/dev/morning-ritual/log/YYYY-MM-DD.md`, in the repo, gitignored by default. Alternative: `~/Documents/morning-ritual-log/` so the logs survive repo nuking. Preference?
+2. **Where does the log live?** Proposal: `~/dev/homebase/log/YYYY-MM-DD.md`, in the repo, gitignored by default. Alternative: `~/Documents/morning-ritual-log/` so the logs survive repo nuking. Preference?
 3. **Is the shell bash or Python?** Proposal: bash, because it is 20 lines and bash is universally available. Counter: Python makes `slots.md` parsing cleaner and matches the gym's language. Either works. Pick one and commit.
 4. **Gym first, or check-in first, inside a single morning?** The plan above builds the gym first but implies the check-in should eventually run before the gym on the clock (brain dump clears the head for the gym). Confirm the intended running order once the check-in exists, so slot 1 slots into position 1 in `slots.md`, not position 2.
 5. **Does this compete with Neon.ai and narrow-agent work for the next two weeks?** Honest answer seems to be yes. The main risk named in the idea brief is scope creep and competing priorities. Is the Day 1 scope (directory, shell, gym slot wrapper, nothing else) small enough to ship in one sitting without displacing Neon.ai? If not, the plan is still too big.
@@ -286,7 +296,7 @@ Saved as `.llm/inner-weather-template.md`. Five headers in Brandon's order:
 
 Two sides — three negative-space headers (what's weighing / avoiding / needs to be said) and two positive-space (giving life / gratitude). Free-form writing under each; any header can be skipped on a given morning. Brandon's April 9 phrasing: *"some emotional work, even if it's just two things"* — so on hard mornings the template collapses to two headers without protest.
 
-On Day 1, `.llm/inner-weather-template.md` moves to `~/dev/morning-ritual/inner-weather/template.md`. Edit the file directly to change the questions; no code change required.
+On Day 1, `.llm/inner-weather-template.md` moves to `~/dev/homebase/inner-weather/template.md`. Edit the file directly to change the questions; no code change required.
 
 ---
 

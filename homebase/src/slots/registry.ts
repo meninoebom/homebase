@@ -8,6 +8,7 @@ import { meta as creativeMeta } from "./creative/meta";
 import { meta as dreamsMeta } from "./dreams/meta";
 import { meta as innerWeatherMeta } from "./inner-weather/meta";
 import { meta as morningPracticesMeta } from "./morning-practices/meta";
+import { meta as orientMeta } from "./orient/meta";
 import { meta as pianoMeta } from "./piano/meta";
 
 export type SlotId = string;
@@ -32,6 +33,7 @@ export const slots: Record<SlotId, SlotModule> = {
   "morning-practices": morningPracticesMeta,
   piano: pianoMeta,
   creative: creativeMeta,
+  orient: orientMeta,
 };
 
 /**
@@ -44,6 +46,7 @@ export const slotOrder: SlotId[] = [
   "morning-practices",
   "piano",
   "creative",
+  "orient",
 ];
 
 export function getSlot(id: SlotId): SlotModule | null {

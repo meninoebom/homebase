@@ -1,18 +1,17 @@
 {
   "name": "morning-ritual",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Personal daily writing workspace — Tauri v2 app at app/, bash spike archived at research/bash-shell-spike/.",
+  "description": "Homebase — personal morning writing surface. Pure HTML/JS at homebase/, runs in the browser via the File System Access API. Tauri shell removed April 15 2026.",
   "scripts": {
-    "dev": "pnpm -C app tauri dev",
-    "build": "pnpm -C app tauri build",
-    "build:frontend": "pnpm -C app build",
-    "check": "pnpm -C app check",
-    "check:fix": "pnpm -C app check:fix",
-    "test": "pnpm -C app test",
-    "test:watch": "pnpm -C app test:watch",
-    "typecheck": "pnpm -C app typecheck",
-    "tauri": "pnpm -C app tauri",
-    "install:app": "pnpm -C app install"
+    "dev": "pnpm -C homebase dev",
+    "build": "pnpm -C homebase build",
+    "preview": "pnpm -C homebase preview",
+    "check": "pnpm -C homebase check",
+    "check:fix": "pnpm -C homebase check:fix",
+    "test": "pnpm -C homebase test",
+    "test:watch": "pnpm -C homebase test:watch",
+    "typecheck": "pnpm -C homebase typecheck",
+    "install:app": "pnpm -C homebase install"
   }
 }

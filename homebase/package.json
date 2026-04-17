@@ -1,6 +1,6 @@
 {
-  "name": "app",
-  "version": "0.1.0",
+  "name": "homebase",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,8 +11,7 @@
     "check:fix": "vp check --fix",
     "preview": "vp preview",
     "test": "vp test run --passWithNoTests",
-    "test:watch": "vp test --passWithNoTests",
-    "tauri": "tauri"
+    "test:watch": "vp test --passWithNoTests"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
@@ -22,8 +21,6 @@
     "@codemirror/view": "^6.41.0",
     "@lezer/highlight": "^1.2.3",
     "@tanstack/react-router": "^1.168.10",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "zustand": "^5.0.12"
@@ -31,7 +28,6 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/router-plugin": "^1.167.12",
-    "@tauri-apps/cli": "^2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
