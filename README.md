@@ -1,4 +1,4 @@
-# morning-ritual
+# homebase
 
 A personal daily writing workspace, shaped like a bullet journal. Time-axis is a dated markdown file per day in `log/`; topic-axis is a set of slot subdirectories — each a small, focused surface for one domain of Brandon's mornings (dreams, inner weather, piano, the algorithmic gym, reflections, creative projects, a daily briefing). Both live as plaintext on the filesystem. **The log file IS the memory; grep is the memory layer.**
 
@@ -11,7 +11,7 @@ The design rules that constrain every decision in this project are in `docs/plan
 ## Directory layout
 
 ```
-morning-ritual/
+homebase/
 ├── app/                       # Tauri v2 application (scaffolds in issue 002)
 │   ├── src-tauri/             # Rust backend (log commands, filesystem, grep)
 │   └── src/                   # React frontend (routes, slots, store)
@@ -49,7 +49,7 @@ Full slot taxonomy and workspace-state pattern: `docs/plan-morning-ritual.md` §
 
 ## Commands
 
-Run these from the repo root (`~/dev/morning-ritual`). The root `package.json` forwards everything to `app/` via `pnpm -C app`, so you never need to `cd` into the subdirectory.
+Run these from the repo root (`~/dev/homebase`). The root `package.json` forwards everything to `app/` via `pnpm -C app`, so you never need to `cd` into the subdirectory.
 
     pnpm dev               # launches the full Tauri desktop app in dev mode
     pnpm build             # production Tauri bundle (.app / .dmg / .msi)

@@ -4,7 +4,7 @@
 **Solution:** A single command Brandon runs each morning that walks him through a configurable sequence of "slots," where each slot is an independent small tool he built when he was ready for it.
 **For whom:** Brandon. A senior full-stack engineer in active job search who already has the discipline to do these practices but wants one entry point so they actually happen and accrue into artifacts (drafts, logs, reps).
 **Why now:** The bad algorithmic-math interview forced a concrete deliberate-practice plan (the gym), and mid-design Brandon noticed the gym belongs inside a larger ritual he has already been sketching. Capturing the shell now, while the instinct is fresh, prevents the gym from becoming yet another orphaned tool.
-**Simplest version:** A `~/dev/morning-ritual/` directory, a one-line launcher, and exactly one active slot: the gym. Other slots get added one at a time, each as its own future planning cycle, only after the previous slot has survived a week of real use.
+**Simplest version:** A `~/dev/homebase/` directory, a one-line launcher, and exactly one active slot: the gym. Other slots get added one at a time, each as its own future planning cycle, only after the previous slot has survived a week of real use.
 **The doubt:** Scope creep. Brandon has Neon.ai, narrow-agent research, job applications, and a Tend backlog all competing for the same mornings. Building the ritual shell can easily become a way to avoid doing the work the ritual is supposed to support.
 
 ### The slots (future planning cycles, not planned today)

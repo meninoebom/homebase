@@ -59,10 +59,10 @@ Phase 0 is optional. Phases 1 to 6 are mandatory.
 
 ## Directory structure
 
-The gym lives inside the morning-ritual project at `~/dev/morning-ritual/gym/`, alongside future slots. The whole morning-ritual directory is a git repo backed up to GitHub.
+The gym lives inside the morning-ritual project at `~/dev/homebase/gym/`, alongside future slots. The whole morning-ritual directory is a git repo backed up to GitHub.
 
 ```
-~/dev/morning-ritual/
+~/dev/homebase/
   README.md
   NOTES.md                      research field notes
   docs/
@@ -186,8 +186,8 @@ Contents:
 
 A Claude Code slash command at `~/.claude/commands/gym.md`. The command:
 
-1. Reads `~/dev/morning-ritual/gym/protocol.md` as the source of truth for the 7 phases.
-2. Runs `python3 ~/dev/morning-ritual/gym/rep.py start`.
+1. Reads `~/dev/homebase/gym/protocol.md` as the source of truth for the 7 phases.
+2. Runs `python3 ~/dev/homebase/gym/rep.py start`.
 3. Asks which track (`signal-gym`, `agent-internals`, `control-center`, `interview-patch`).
 4. Asks which rep (suggests the next un-done rep in that track).
 5. Walks through Phases 0 to 6 in order. Phase 0 only runs when the concept needs a primer.
@@ -197,7 +197,7 @@ A Claude Code slash command at `~/.claude/commands/gym.md`. The command:
 
 ## Log format
 
-One file per day at `~/dev/morning-ritual/log/YYYY-MM-DD.md`. The gym contributes one section per rep. Other slots (check-in, piano log, etc.) append sibling sections.
+One file per day at `~/dev/homebase/log/YYYY-MM-DD.md`. The gym contributes one section per rep. Other slots (check-in, piano log, etc.) append sibling sections.
 
 ```
 # 2026-04-10
