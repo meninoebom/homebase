@@ -26,7 +26,14 @@ import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-LOG_ROOT = Path.home() / "Documents" / "homebase-log"
+LOG_ROOT = (
+    Path.home()
+    / "Library"
+    / "CloudStorage"
+    / "GoogleDrive-afrobot@gmail.com"
+    / "My Drive"
+    / "homebase-log"
+)
 REPO_ROOT = Path.home() / "dev" / "homebase"
 GYM_ROOT = REPO_ROOT / "gym"
 
