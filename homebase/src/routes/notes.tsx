@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /*
- * Research log view. Renders ~/Documents/morning-ritual-log/NOTES.md as an
+ * Research log view. Renders ~/Documents/homebase-log/NOTES.md as an
  * editable surface so Brandon can jot field notes on the ritual itself without
  * leaving the app. The research log is the canary for ritual health (plan §16:
  * "NOTES.md's last entry is two weeks old" is a warning sign). Placeholder here;

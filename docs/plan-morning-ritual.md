@@ -1,6 +1,6 @@
 # Plan: Morning Ritual Control Center
 
-> **April 15 2026 pivot — v4: Homebase (browser).** The Tauri shell was torn out. The app is now a pure HTML/JS static page named **Homebase** at `homebase/`, served by Vite and running in a Chromium browser. The substrate is preserved: real plaintext markdown at `~/Documents/morning-ritual-log/` via the File System Access API. User picks the folder once; handle persists in IndexedDB. §15 rule 4 ("grep is the memory layer") is intact — files are real, greppable from Terminal, and survive the app. Browser constraint: Chromium-only (Chrome/Edge/Arc/Brave); Safari and Firefox deferred. Every slot and hub mechanic survives the swap — only the substrate moved.
+> **April 15 2026 pivot — v4: Homebase (browser).** The Tauri shell was torn out. The app is now a pure HTML/JS static page named **Homebase** at `homebase/`, served by Vite and running in a Chromium browser. The substrate is preserved: real plaintext markdown at `~/Documents/homebase-log/` via the File System Access API. User picks the folder once; handle persists in IndexedDB. §15 rule 4 ("grep is the memory layer") is intact — files are real, greppable from Terminal, and survive the app. Browser constraint: Chromium-only (Chrome/Edge/Arc/Brave); Safari and Firefox deferred. Every slot and hub mechanic survives the swap — only the substrate moved.
 >
 > References below to "Tauri rebuild," "Rust commands," and `run.sh` are historical. Mechanism is the browser now; everything else (sections, rules, self-audit) stands.
 
@@ -144,7 +144,7 @@ Explicitly deferred or rejected:
 ## 8. Open questions for Brandon
 
 1. **Halt or continue on slot failure?** Proposal: halt, because it surfaces breakage loudly and the ritual is short enough that restart is cheap. Confirm or override.
-2. **Where does the log live?** Proposal: `~/dev/homebase/log/YYYY-MM-DD.md`, in the repo, gitignored by default. Alternative: `~/Documents/morning-ritual-log/` so the logs survive repo nuking. Preference?
+2. **Where does the log live?** Proposal: `~/dev/homebase/log/YYYY-MM-DD.md`, in the repo, gitignored by default. Alternative: `~/Documents/homebase-log/` so the logs survive repo nuking. Preference?
 3. **Is the shell bash or Python?** Proposal: bash, because it is 20 lines and bash is universally available. Counter: Python makes `slots.md` parsing cleaner and matches the gym's language. Either works. Pick one and commit.
 4. **Gym first, or check-in first, inside a single morning?** The plan above builds the gym first but implies the check-in should eventually run before the gym on the clock (brain dump clears the head for the gym). Confirm the intended running order once the check-in exists, so slot 1 slots into position 1 in `slots.md`, not position 2.
 5. **Does this compete with Neon.ai and narrow-agent work for the next two weeks?** Honest answer seems to be yes. The main risk named in the idea brief is scope creep and competing priorities. Is the Day 1 scope (directory, shell, gym slot wrapper, nothing else) small enough to ship in one sitting without displacing Neon.ai? If not, the plan is still too big.
@@ -243,7 +243,7 @@ This project is designed toward **writing practice first, research material seco
 
 **Design consequences:**
 
-- **Logs live in `~/Documents/morning-ritual-log/YYYY-MM-DD.md`**, symlinked into the repo as `log/`. The repo is disposable; the log is the data. This resolves v1 open question #2. iCloud syncs the directory to the phone for free, at zero cost to the project. *Without this single decision, a future `rm -rf morning-ritual/` kills the longitudinal record and the research framing collapses.*
+- **Logs live in `~/Documents/homebase-log/YYYY-MM-DD.md`**, symlinked into the repo as `log/`. The repo is disposable; the log is the data. This resolves v1 open question #2. iCloud syncs the directory to the phone for free, at zero cost to the project. *Without this single decision, a future `rm -rf morning-ritual/` kills the longitudinal record and the research framing collapses.*
 
 - **`NOTES.md` ships on Day 1**, next to the log directory. It is the *research log* — field notes on the ritual itself. What broke. What you skipped and why. What you wanted. What you noticed about yourself that you could not have named on day 1. The distinction between "using the tool" and "studying yourself using the tool" lives in this one file.
 
@@ -266,7 +266,7 @@ If both are yes at month 3, this is worth publishing. If either is no, cut slots
 
 v1's open questions are updated or extended below. Questions 1, 4, 5, 6, 7 from §8 stand unchanged.
 
-- **Q2 (log location) — resolved.** `~/Documents/morning-ritual-log/YYYY-MM-DD.md`, symlinked into the repo as `log/`. Survives repo nuking. Syncs to phone via iCloud.
+- **Q2 (log location) — resolved.** `~/Documents/homebase-log/YYYY-MM-DD.md`, symlinked into the repo as `log/`. Survives repo nuking. Syncs to phone via iCloud.
 - **Q3 (bash or Python for the shell) — proposal.** Bash. The shell is ~40 lines; slots own their own language. Revisit only when a second shell helper becomes necessary.
 - **Q8 (new): When does the sidecar bus activate?** Proposal: not on Day 1. Slots 0–2 don't need composition. Introduce `$RITUAL_LOG.d/` the first time a slot actually needs another slot's output (probably the crumb.blog draft slot reading creative-threads). Force the rule to earn itself.
 - **Q9 (new): The research question in `NOTES.md`.** §9 proposes *"what is the minimum viable substrate for personalized software that survives a decade of model and vendor churn?"* That phrasing is a first draft. **Brandon should own this wording**, because the research framing is load-bearing for every anti-goal and every future "should I add X?" decision. See contribution request below.
@@ -282,7 +282,7 @@ Two small pieces of writing that shape the whole project and that *should not* b
 
 Brandon's framing from the April 9 conversation is saved as `.llm/notes-seed.md`. It has both halves: the substrate question (flexible enough to support changing tools, add/remove without destroying what's underneath) and the self-study question (which prompts genuinely help the writing, thinking, sharing — vs. which were life-tracker scaffolding). The load-bearing line — *this is not a tracker, it's a writing practice that happens to be structured* — sits at the bottom.
 
-On Day 1, `.llm/notes-seed.md` moves to `~/Documents/morning-ritual-log/NOTES.md`. Review and edit before then if anything rings false.
+On Day 1, `.llm/notes-seed.md` moves to `~/Documents/homebase-log/NOTES.md`. Review and edit before then if anything rings false.
 
 ### 14.2 `inner-weather/template.md` — drafted April 9
 

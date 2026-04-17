@@ -84,7 +84,7 @@ Claude then releases Brandon. Part 2 (or the extension) can be done today as a s
 
 ## Log section format
 
-Each rep produces one section under a `## gym: <track> / <rep>` header in `~/Documents/morning-ritual-log/YYYY-MM-DD.md`. The section contains sub-headers for each phase that actually ran.
+Each rep produces one section under a `## gym: <track> / <rep>` header in `~/Documents/homebase-log/YYYY-MM-DD.md`. The section contains sub-headers for each phase that actually ran.
 
 Example skeleton:
 

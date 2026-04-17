@@ -14,7 +14,7 @@ Each rep follows the 7-phase protocol in `protocol.md`. Phase 3 (cost prediction
 
 ## Canonical log
 
-Every phase appends a section to `~/Documents/morning-ritual-log/YYYY-MM-DD.md` under a `## gym: <track> / <rep>` header. The log file lives outside this repo, in `~/Documents/`, so it survives repo nuking and iCloud syncs it. This is the same file the Tauri homebase slots append to, per `docs/save-architecture.md` and plan-morning-ritual.md §15 rule 2.
+Every phase appends a section to `~/Documents/homebase-log/YYYY-MM-DD.md` under a `## gym: <track> / <rep>` header. The log file lives outside this repo, in `~/Documents/`, so it survives repo nuking and iCloud syncs it. This is the same file the Tauri homebase slots append to, per `docs/save-architecture.md` and plan-morning-ritual.md §15 rule 2.
 
 ## How to run a rep
 

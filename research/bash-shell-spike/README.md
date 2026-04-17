@@ -9,13 +9,13 @@ This directory holds the bash shell prototype of the morning ritual runner. It w
 
 ## Why it moved here
 
-The bash substrate was architecturally right in every way that survives the Tauri rebuild — plaintext markdown logs in `~/Documents/morning-ritual-log/`, the `log/` symlink pattern, the day-file-per-date convention, the "slot is a directory with its own runner" contract. But a terminal is not a rich enough writing surface for Brandon to actually want to open every morning, and that user-experience truth overrode the elegance-of-substrate argument. See the April 10 NOTES.md entry at `~/Documents/morning-ritual-log/NOTES.md` for the full research note — six concrete lessons plus the meta-lesson ("I am a terminal user for my code, not for my writing").
+The bash substrate was architecturally right in every way that survives the Tauri rebuild — plaintext markdown logs in `~/Documents/homebase-log/`, the `log/` symlink pattern, the day-file-per-date convention, the "slot is a directory with its own runner" contract. But a terminal is not a rich enough writing surface for Brandon to actually want to open every morning, and that user-experience truth overrode the elegance-of-substrate argument. See the April 10 NOTES.md entry at `~/Documents/homebase-log/NOTES.md` for the full research note — six concrete lessons plus the meta-lesson ("I am a terminal user for my code, not for my writing").
 
 ## What survived
 
 Every architectural decision validated by the spike carried forward unchanged:
 
-- **Logs live in `~/Documents/morning-ritual-log/`, not in the repo.** The `log/` symlink at the repo root is kept and will be used by the Tauri Rust backend exactly as it was used by the bash shell.
+- **Logs live in `~/Documents/homebase-log/`, not in the repo.** The `log/` symlink at the repo root is kept and will be used by the Tauri Rust backend exactly as it was used by the bash shell.
 - **NOTES.md is the research log**, lives next to the daily logs, is the canary for whether the ritual is studied or just performed.
 - **A slot is a small, self-contained unit** that appends to the day's markdown file under a `## <slot-name>` header. In the Tauri version the slot is a React component instead of a bash script, but the log-append contract is identical.
 - **The shell layer is smaller than any single slot.** The bash shell was ~60 lines of code; the Tauri app's shell layer (`src-tauri/src/commands/log.rs` + `src/store/ritual.ts` + `src/routes/morning.tsx`) should stay in the same ballpark. If it grows past ~300 lines before any slot ships, something is wrong with the contract.
@@ -30,7 +30,7 @@ Every architectural decision validated by the spike carried forward unchanged:
 
 ## Pointer
 
-- **The detailed research note** (what the spike taught, with the meta-lesson): `~/Documents/morning-ritual-log/NOTES.md` → `### 2026-04-10 — The Tauri pivot, and what the bash spike taught`
+- **The detailed research note** (what the spike taught, with the meta-lesson): `~/Documents/homebase-log/NOTES.md` → `### 2026-04-10 — The Tauri pivot, and what the bash spike taught`
 - **The current design plan** (what the Tauri rebuild looks like): `../../docs/plan-morning-ritual.md`
 - **The current active work plan**: `../../.llm/active-plan.md` (gitignored, ephemeral)
 

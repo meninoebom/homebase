@@ -1,7 +1,7 @@
 // File System Access API wrapper with IndexedDB handle persistence.
 //
 // Homebase's substrate is real plaintext markdown on disk — same folder the
-// Tauri version used (~/Documents/morning-ritual-log/). The user picks the
+// Tauri version used (~/Documents/homebase-log/). The user picks the
 // folder once via showDirectoryPicker(). We store the resulting
 // FileSystemDirectoryHandle in IndexedDB so it survives page reloads; on
 // subsequent loads we just need to re-confirm permission (usually silent

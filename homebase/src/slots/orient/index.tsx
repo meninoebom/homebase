@@ -29,7 +29,7 @@ export function OrientSlot(_props: SlotProps) {
   if (!state.focus && !state.oneThing) {
     return (
       <p className="font-serif text-[15px] italic text-[#9CA3AF]">
-        Edit <code className="font-mono text-[13px]">~/Documents/morning-ritual-log/orient/state.md</code> to set up this slot.
+        Edit <code className="font-mono text-[13px]">~/Documents/homebase-log/orient/state.md</code> to set up this slot.
       </p>
     );
   }

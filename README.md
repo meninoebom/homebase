@@ -24,7 +24,7 @@ homebase/
 │       └── inner-weather.md   # Editable prompt templates
 ├── research/
 │   └── bash-shell-spike/      # Archived April 9 bash prototype (research only)
-├── log/                       # → ~/Documents/morning-ritual-log/ (symlink)
+├── log/                       # → ~/Documents/homebase-log/ (symlink)
 │                              #   dated markdown files, NOTES.md
 ├── .llm/                      # AI workflow scratch (gitignored)
 │   ├── active-plan.md         # current working plan state
@@ -32,7 +32,7 @@ homebase/
 └── .gitignore
 ```
 
-`log/` is a relative symlink to `~/Documents/morning-ritual-log/`. The repo is disposable; the logs are the data. Deleting this repo does not delete a single morning's writing.
+`log/` is a relative symlink to `~/Documents/homebase-log/`. The repo is disposable; the logs are the data. Deleting this repo does not delete a single morning's writing.
 
 ## The slot contract (v2, for the Tauri app)
 
@@ -79,6 +79,6 @@ This project is designed toward writing practice first, research material second
 - **The five rules:** `docs/plan-morning-ritual.md` §15
 - **The self-audit checklist for new slots:** §16
 - **The bash shell spike (archived research):** `research/bash-shell-spike/`
-- **The research log:** `log/NOTES.md` → `~/Documents/morning-ritual-log/NOTES.md`
+- **The research log:** `log/NOTES.md` → `~/Documents/homebase-log/NOTES.md`
 - **Current active plan (gitignored):** `.llm/active-plan.md`
 - **Decomposed work items (gitignored):** `.llm/issues/`

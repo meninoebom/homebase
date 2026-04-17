@@ -23,7 +23,7 @@ Every piece of writing Brandon enters into the morning-ritual app lives in one o
 
 ### 3. Day log file (canonical)
 
-- **Where:** `~/Documents/morning-ritual-log/<YYYY-MM-DD>.md`. One plain markdown file per day. Outside the app bundle, outside the repo.
+- **Where:** `~/Documents/homebase-log/<YYYY-MM-DD>.md`. One plain markdown file per day. Outside the app bundle, outside the repo.
 - **Contents:** A `# <human date>` header at the top, then one `## <slot-name>` section per slot Brandon has committed today, in the order they were committed. Body text is exactly what Brandon wrote — no escaping, no metadata, no JSON, no frontmatter.
 - **Lifetime:** Permanent. Survives deleting the repo, deleting the app, reinstalling the app, or reformatting the machine if iCloud Drive is syncing the Documents folder.
 - **Used for:** The thing Brandon actually goes back and reads. The substrate hypothesis from plan §9 is that THIS is the memory — the log file outlives every tool that writes into it, including this app. `grep` is the query language, any text editor can read it, any future version of Claude can parse it.
@@ -131,7 +131,7 @@ If the Rust command fails (disk full, permission denied, impossibly bad luck), `
 
 ### What we do NOT guarantee
 
-1. **No data loss from deleting the log directory.** If Brandon deletes `~/Documents/morning-ritual-log/`, everything is gone. Backup is Brandon's responsibility (iCloud Drive, Time Machine, or manual).
+1. **No data loss from deleting the log directory.** If Brandon deletes `~/Documents/homebase-log/`, everything is gone. Backup is Brandon's responsibility (iCloud Drive, Time Machine, or manual).
 2. **No collision on concurrent writers.** Two instances of the app writing to the same day file simultaneously can interleave at a write-syscall granularity. In practice Brandon runs one instance; this is theoretical.
 3. **No conflict resolution.** If Brandon edits the day log file in a text editor while the app is running, the next append from the app just adds to the end — no merge, no check. The file is append-only from the app's perspective.
 4. **No draft persistence across Tauri data-dir wipes.** If Brandon clears the webview's app data (unusual but possible), in-progress drafts that haven't been committed yet are lost. Committed writing in the log directory is unaffected.
@@ -142,7 +142,7 @@ If the Rust command fails (disk full, permission denied, impossibly bad luck), `
 New slot types add to the flow without changing the save mechanism:
 
 - **Prompt slots** (Dreams, inner weather, reflections): use the flow above exactly as described. Component calls `onDraft` on change, morning runner calls `completeSlot` on Cmd-Enter. Zero changes to Rust or the store.
-- **Workspace slots** (piano, creative project): will have persistent `state.md` files in addition to the daily log section. When these ship, two new Rust commands (`read_slot_state`, `write_slot_state`) join `append_section` in the `log.rs` module. State files live in `~/Documents/morning-ritual-log/states/<slot>.md` so they share the "outside the app bundle, under `~/Documents`" property with the day logs.
+- **Workspace slots** (piano, creative project): will have persistent `state.md` files in addition to the daily log section. When these ship, two new Rust commands (`read_slot_state`, `write_slot_state`) join `append_section` in the `log.rs` module. State files live in `~/Documents/homebase-log/states/<slot>.md` so they share the "outside the app bundle, under `~/Documents`" property with the day logs.
 - **Fetch slots** (daily briefing): generate content via Rust (LLM calls, calendar reads) and hand the output to the same `append_section` command. Generated content goes under a `## <slot>:generated` header to stay visually subordinate to Brandon's own writing (plan §15 rule 2).
 - **Gated multi-phase slots** (gym): the state machine lives in the React component; each completed phase appends its own section to the day log via `append_section`. The gym's 7 phases result in 7 sections in the same day file.
 
@@ -152,20 +152,20 @@ None of these require a new save format, a database, a cache, or any schema. The
 
 The log directory is the unit of data portability. To move Brandon's writing to a new machine:
 
-1. Copy `~/Documents/morning-ritual-log/` to the new machine.
+1. Copy `~/Documents/homebase-log/` to the new machine.
 2. Install the morning-ritual app.
 3. The app writes new files into the existing directory without noticing or caring about the files that were already there.
 
 To move Brandon's writing to a different tool:
 
-1. Point the tool at `~/Documents/morning-ritual-log/`.
+1. Point the tool at `~/Documents/homebase-log/`.
 2. Every file is already plain markdown with `## <slot>` headers.
 3. Done.
 
 To archive Brandon's writing:
 
 ```bash
-tar czf dreams-2026.tgz ~/Documents/morning-ritual-log/
+tar czf dreams-2026.tgz ~/Documents/homebase-log/
 ```
 
 Every operation on the log directory is one shell command because every file is plain text in a well-known location. This is the whole point of plan §9 — the substrate outlives the tool.

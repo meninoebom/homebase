@@ -94,7 +94,7 @@ Use these via Tailwind utilities: `bg-paper`, `text-ink-muted`, `border-hairline
 
 ## The log directory
 
-The app reads and writes markdown files in `~/Documents/morning-ritual-log/` (same location as the bash shell spike used — see `../research/bash-shell-spike/`). The repo's root-level `log/` symlink points there. The Tauri Rust backend will resolve the path via a single `ritual_log_dir(app: &AppHandle) -> PathBuf` function (issue 003) so the mobile sandboxing story stays viable.
+The app reads and writes markdown files in `~/Documents/homebase-log/` (same location as the bash shell spike used — see `../research/bash-shell-spike/`). The repo's root-level `log/` symlink points there. The Tauri Rust backend will resolve the path via a single `ritual_log_dir(app: &AppHandle) -> PathBuf` function (issue 003) so the mobile sandboxing story stays viable.
 
 ## Pointers
 
@@ -102,4 +102,4 @@ The app reads and writes markdown files in `~/Documents/morning-ritual-log/` (sa
 - **The five rules:** §15 of that file
 - **Active work plan (gitignored):** `../.llm/active-plan.md`
 - **Work items (gitignored):** `../.llm/issues/`
-- **Research log:** `~/Documents/morning-ritual-log/NOTES.md`
+- **Research log:** `~/Documents/homebase-log/NOTES.md`

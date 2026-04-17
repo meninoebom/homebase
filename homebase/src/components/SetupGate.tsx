@@ -58,7 +58,7 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
           <h1 className="font-serif text-2xl text-[#374151]">Homebase</h1>
           <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
             Pick the folder where your morning log lives. Typically{" "}
-            <code className="font-mono text-[13px]">~/Documents/morning-ritual-log</code>.
+            <code className="font-mono text-[13px]">~/Documents/homebase-log</code>.
             Your choice is remembered for next time.
           </p>
           <div className="flex gap-3">

@@ -10,7 +10,7 @@ Subcommands:
   close                      finalize the rep, bump the streak
   status                     streak + current rep
 
-The canonical day log lives at ~/Documents/morning-ritual-log/YYYY-MM-DD.md.
+The canonical day log lives at ~/Documents/homebase-log/YYYY-MM-DD.md.
 Per-day state lives there too, as .state-YYYY-MM-DD.json.
 
 Phase 3 (predict) is gated: rep.py refuses to advance past it without an
@@ -26,7 +26,7 @@ import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-LOG_ROOT = Path.home() / "Documents" / "morning-ritual-log"
+LOG_ROOT = Path.home() / "Documents" / "homebase-log"
 REPO_ROOT = Path.home() / "dev" / "homebase"
 GYM_ROOT = REPO_ROOT / "gym"
 
