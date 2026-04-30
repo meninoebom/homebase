@@ -80,6 +80,33 @@ body {
   background: transparent;
 }
 
+/* Strategic layer (front-door accordion) — Lapham editorial palette.
+ *
+ * Scoped to .strategy-scope so the warm-cream/terracotta vars only apply
+ * inside the strategic accordion route (StrategyAccordion). The morning
+ * ritual keeps its existing white/gray palette unchanged — strategic and
+ * morning are deliberately *different rooms in the same magazine* per
+ * the design rationale at .llm/design-strategic-layer/rationale.md.
+ *
+ * Note these are scoped CSS variables (not Tailwind theme tokens) — they
+ * piggyback on `style={{ background: 'var(--terracotta)' }}` patterns in
+ * HorizonRow, MarkdownEditor, etc. Components carry inline fallbacks so
+ * isolated renders (tests) still look intentional. */
+.strategy-scope {
+  --page: #faf7f0;
+  --ref: #f2ecdc;
+  --ink: #1a1614;
+  --ink-muted: #7a7268;
+  --ink-faint: #a39a8a;
+  --ink-ghost: #c9c0b0;
+  --hairline: #e5dfd3;
+  --hairline-2: #d9d2c0;
+  --terracotta: #b8472d;
+  --terracotta-soft: rgba(184, 71, 45, 0.08);
+  background-color: var(--page);
+  color: var(--ink);
+}
+
 /* Strategic-layer save indicator — a 6px dot lower-right of each editor
  * that pulses softly while saving and settles to a steady terracotta when
  * saved. Used by SaveIndicator. */
