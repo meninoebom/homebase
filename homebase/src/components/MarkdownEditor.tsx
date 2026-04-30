@@ -37,6 +37,13 @@ interface MarkdownEditorProps {
   placeholder?: string;
   readonly?: boolean;
   autoFocus?: boolean;
+  /**
+   * Optional explicit-save callback bound to Cmd-Enter / Ctrl-Enter.
+   * Autosave handles persistence within 500ms anyway; this is the keyboard
+   * affordance for users who want immediate feedback (the SaveIndicator
+   * pulses → settles).
+   */
+  onSave?: () => void;
 }
 
 export function MarkdownEditor({
@@ -45,11 +52,14 @@ export function MarkdownEditor({
   placeholder,
   readonly = false,
   autoFocus = false,
+  onSave,
 }: MarkdownEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const onSaveRef = useRef(onSave);
+  onSaveRef.current = onSave;
 
   // Mount + unmount the editor exactly once per component lifecycle.
   // External `value` updates after mount are accepted via the effect below.
@@ -62,8 +72,19 @@ export function MarkdownEditor({
       }
     });
 
+    const saveBinding = keymap.of([
+      {
+        key: "Mod-Enter",
+        run: () => {
+          onSaveRef.current?.();
+          return true;
+        },
+      },
+    ]);
+
     const extensions: Extension[] = [
       history(),
+      saveBinding,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       markdown(),
       syntaxHighlighting(strategyHighlighting),
