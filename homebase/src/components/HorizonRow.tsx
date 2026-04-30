@@ -22,6 +22,7 @@
 
 import { useEffect } from "react";
 import { CarryOverBanner } from "./CarryOverBanner";
+import { HorizonInvitation } from "./HorizonInvitation";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { SaveIndicator } from "./SaveIndicator";
 import { useAutosave } from "../hooks/useAutosave";
@@ -194,18 +195,21 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
 
       {row.expanded && (
         <div className="pb-9 pl-7 pt-1">
-          {row.carryOver && (
+          {row.carryOver ? (
             <CarryOverBanner
               horizon={horizon}
               sourcePeriod={row.carryOver.sourcePeriod}
               onClear={() => clearCarryOver(horizon)}
             />
+          ) : (
+            row.content === "" && <HorizonInvitation horizon={horizon} />
           )}
           <div className="relative max-w-[62ch]">
             <MarkdownEditor
               value={row.content}
               onChange={(v) => setContent(horizon, v)}
               placeholder={PLACEHOLDER[horizon]}
+              onSave={flushNow}
             />
             <span className="absolute -right-2 bottom-0">
               <SaveIndicator status={row.saveStatus} />
