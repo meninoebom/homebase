@@ -141,6 +141,10 @@ export const PeriodKey = {
         if (!m) throw new Error(`invalid week key: ${key}`);
         return `Week ${Number(m[2])}, ${m[1]}`;
       }
+      default:
+        // Unreachable — isTimeBound() narrowed `horizon` above. Throw
+        // satisfies the type checker without lying about behavior.
+        throw new Error(`unreachable: format(${horizon as string})`);
     }
   },
 };

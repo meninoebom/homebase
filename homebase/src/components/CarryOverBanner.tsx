@@ -6,8 +6,14 @@
 
 import { PeriodKey, type Horizon } from "../lib/period-key";
 
+/**
+ * Props accept any Horizon for ergonomic JSX in HorizonRow. In practice
+ * the banner only renders when state.carryOver is non-null, which only
+ * happens for time-bound horizons; PeriodKey.format will throw if the
+ * caller violates that invariant.
+ */
 interface Props {
-  horizon: Exclude<Horizon, "life-values" | "life-goals">;
+  horizon: Horizon;
   sourcePeriod: string;
   onClear: () => void;
 }

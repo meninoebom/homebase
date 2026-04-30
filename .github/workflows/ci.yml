@@ -22,8 +22,16 @@ jobs:
       - name: Install dependencies
         run: vp install
 
-      - name: Lint and typecheck
+      - name: Format and lint
         run: vp check
+
+      # vp 0.0.0's `vp check` doesn't yet run tsc; running typecheck
+      # explicitly so TypeScript errors gate the merge. Drop this step once
+      # vp check folds typecheck in.
+      - name: Typecheck
+        # vp 0.0.0 has no `vp typecheck` builtin; `vp run typecheck`
+        # forwards to the package.json script (tsc --noEmit).
+        run: vp run typecheck
 
       - name: Run tests
         run: vp test run --passWithNoTests
