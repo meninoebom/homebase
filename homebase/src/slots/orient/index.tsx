@@ -3,7 +3,8 @@ import { RitualEditor } from "../../components/RitualEditor";
 import { readState, writeState } from "../../lib/log";
 import type { SlotProps } from "../registry";
 
-const QUESTION = "According to my deepest understanding, how can I live that understanding more deeply?";
+const QUESTION =
+  "According to my deepest understanding, how can I live that understanding more deeply?";
 
 function mondayLabel(): string {
   const now = new Date();
@@ -50,7 +51,10 @@ export function OrientSlot({ initialDraft, onDraft }: SlotProps) {
           placeholder="What do you want to move toward this week?"
           value={goals}
           rows={3}
-          onChange={(e) => { setGoals(e.target.value); setGoalsDirty(true); }}
+          onChange={(e) => {
+            setGoals(e.target.value);
+            setGoalsDirty(true);
+          }}
           onBlur={handleGoalsBlur}
         />
       </div>
@@ -59,11 +63,7 @@ export function OrientSlot({ initialDraft, onDraft }: SlotProps) {
         <p className="mb-2 font-serif text-[15px] italic leading-relaxed text-[#9CA3AF]">
           {QUESTION}
         </p>
-        <RitualEditor
-          initialContent={initialDraft}
-          onChange={onDraft}
-          placeholder="Write here…"
-        />
+        <RitualEditor initialContent={initialDraft} onChange={onDraft} placeholder="Write here…" />
       </div>
     </div>
   );

@@ -4,12 +4,7 @@
 // Must be a user click — File System Access API refuses to prompt otherwise.
 
 import { useEffect, useState } from "react";
-import {
-  fsaSupported,
-  getSavedLogDir,
-  pickLogDir,
-  requestLogDirPermission,
-} from "../lib/fs";
+import { fsaSupported, getSavedLogDir, pickLogDir, requestLogDirPermission } from "../lib/fs";
 
 type GateState =
   | { kind: "checking" }
@@ -42,13 +37,10 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
     <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-6 px-6 text-center">
       {state.kind === "unsupported" && (
         <>
-          <h1 className="font-serif text-2xl text-[#374151]">
-            Homebase needs a Chromium browser.
-          </h1>
+          <h1 className="font-serif text-2xl text-[#374151]">Homebase needs a Chromium browser.</h1>
           <p className="font-serif text-[15px] italic text-[#6B7280]">
-            The File System Access API is how Homebase reads and writes
-            your morning log as real markdown files. Open this page in
-            Chrome, Edge, Arc, or Brave.
+            The File System Access API is how Homebase reads and writes your morning log as real
+            markdown files. Open this page in Chrome, Edge, Arc, or Brave.
           </p>
         </>
       )}
@@ -58,8 +50,8 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
           <h1 className="font-serif text-2xl text-[#374151]">Homebase</h1>
           <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
             Pick the folder where your morning log lives. Typically{" "}
-            <code className="font-mono text-[13px]">~/Documents/homebase-log</code>.
-            Your choice is remembered for next time.
+            <code className="font-mono text-[13px]">~/Documents/homebase-log</code>. Your choice is
+            remembered for next time.
           </p>
           <div className="flex gap-3">
             <button

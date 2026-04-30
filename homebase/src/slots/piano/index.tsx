@@ -80,9 +80,7 @@ export function PianoSlot({ initialDraft, onDraft }: SlotProps) {
             </span>
           )}
           {saveError && (
-            <span className="font-mono text-[10px] text-[#B91C1C]">
-              save failed: {saveError}
-            </span>
+            <span className="font-mono text-[10px] text-[#B91C1C]">save failed: {saveError}</span>
           )}
         </div>
         <textarea

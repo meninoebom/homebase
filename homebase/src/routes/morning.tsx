@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 import { getSlot, slotOrder } from "../slots/registry";
 import { useRitualStore } from "../store/ritual";
@@ -29,7 +29,9 @@ function MorningHub() {
 
   // Auto-save 800ms after any draft change
   useEffect(() => {
-    const timer = setTimeout(() => { void saveNow(); }, 800);
+    const timer = setTimeout(() => {
+      void saveNow();
+    }, 800);
     return () => clearTimeout(timer);
   }, [drafts, saveNow]);
 
