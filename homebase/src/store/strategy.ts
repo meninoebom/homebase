@@ -13,7 +13,7 @@ import { CarryOverResolver, type CarryOver } from "../lib/carry-over-resolver";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { StrategyFs, type StrategyFsApi } from "../lib/strategy-fs";
 
-export type SaveStatus = "idle" | "saving" | "saved";
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export interface RowState {
   expanded: boolean;
@@ -185,8 +185,12 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
           },
         }));
       } catch (err) {
+        // Surface the failure via saveStatus="error" — the SaveIndicator
+        // will render an error pip until the next successful save (or until
+        // the user retries by editing again, which moves us to "saving").
+        // dirty stays true so the next edit/blur retries.
         set((s) => ({
-          rows: { ...s.rows, [horizon]: { ...s.rows[horizon], saveStatus: "idle" } },
+          rows: { ...s.rows, [horizon]: { ...s.rows[horizon], saveStatus: "error" } },
         }));
         throw err;
       }

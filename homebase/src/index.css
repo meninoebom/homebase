@@ -79,3 +79,19 @@ body {
 .ritual-editor .cm-editor {
   background: transparent;
 }
+
+/* Strategic-layer save indicator — a 6px dot lower-right of each editor
+ * that pulses softly while saving and settles to a steady terracotta when
+ * saved. Used by SaveIndicator. */
+@keyframes save-indicator-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+.save-indicator-pulse {
+  animation: save-indicator-pulse 1.6s ease-in-out infinite;
+}

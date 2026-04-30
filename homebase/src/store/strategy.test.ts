@@ -118,6 +118,23 @@ describe("StrategyStore", () => {
     expect(store.getState().rows["life-values"].saveStatus).toBe("idle");
   });
 
+  it("flush surfaces failures via saveStatus='error' and keeps dirty=true for retry", async () => {
+    // Build a fake fs whose write rejects, simulating a disk/permission failure.
+    const failingFs = createFakeStrategyFs();
+    failingFs.write = async () => {
+      throw new Error("disk full");
+    };
+
+    const store = createStrategyStore(failingFs);
+    await store.getState().expandRow("life-values");
+    store.getState().setContent("life-values", "courage");
+    await expect(store.getState().flush("life-values")).rejects.toThrow("disk full");
+
+    const row = store.getState().rows["life-values"];
+    expect(row.saveStatus).toBe("error");
+    expect(row.dirty).toBe(true); // content not lost; next edit/blur will retry
+  });
+
   it("resetSaveStatus brings saveStatus back to idle (consumer-driven settle)", async () => {
     const fs = createFakeStrategyFs();
     const store = createStrategyStore(fs);
