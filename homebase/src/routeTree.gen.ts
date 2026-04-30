@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StrategyRouteImport } from './routes/strategy'
 import { Route as NotesRouteImport } from './routes/notes'
 import { Route as MorningRouteImport } from './routes/morning'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspaceNameRouteImport } from './routes/workspace.$name'
 import { Route as SlotNameRouteImport } from './routes/slot.$name'
 
+const StrategyRoute = StrategyRouteImport.update({
+  id: '/strategy',
+  path: '/strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotesRoute = NotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/strategy': typeof StrategyRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/strategy': typeof StrategyRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/strategy': typeof StrategyRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/morning' | '/notes' | '/slot/$name' | '/workspace/$name'
+  fullPaths:
+    | '/'
+    | '/morning'
+    | '/notes'
+    | '/strategy'
+    | '/slot/$name'
+    | '/workspace/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/morning' | '/notes' | '/slot/$name' | '/workspace/$name'
+  to:
+    | '/'
+    | '/morning'
+    | '/notes'
+    | '/strategy'
+    | '/slot/$name'
+    | '/workspace/$name'
   id:
     | '__root__'
     | '/'
     | '/morning'
     | '/notes'
+    | '/strategy'
     | '/slot/$name'
     | '/workspace/$name'
   fileRoutesById: FileRoutesById
@@ -81,12 +103,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MorningRoute: typeof MorningRoute
   NotesRoute: typeof NotesRoute
+  StrategyRoute: typeof StrategyRoute
   SlotNameRoute: typeof SlotNameRoute
   WorkspaceNameRoute: typeof WorkspaceNameRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/strategy': {
+      id: '/strategy'
+      path: '/strategy'
+      fullPath: '/strategy'
+      preLoaderRoute: typeof StrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notes': {
       id: '/notes'
       path: '/notes'
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MorningRoute: MorningRoute,
   NotesRoute: NotesRoute,
+  StrategyRoute: StrategyRoute,
   SlotNameRoute: SlotNameRoute,
   WorkspaceNameRoute: WorkspaceNameRoute,
 }
