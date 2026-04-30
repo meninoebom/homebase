@@ -133,3 +133,9 @@ body {
   color: #8c341e !important;
   border-color: #8c341e !important;
 }
+
+/* Day-row portal hover — title turns terracotta to mirror the arrow.
+ * The arrow's translateX is handled inline via Tailwind group-hover. */
+.day-row-button:hover .row-day-title {
+  color: var(--terracotta, #b8472d) !important;
+}
