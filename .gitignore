@@ -1,6 +1,7 @@
 .DS_Store
 *.swp
 *.swo
+*.log
 
 # AI workflow scratch (ephemeral, per ~/.claude/CLAUDE.md convention)
 .llm/
@@ -9,12 +10,8 @@
 node_modules/
 pnpm-debug.log*
 
-# Tauri / Vite build artifacts
-# (Cargo.lock is intentionally NOT ignored — it's committed for applications
-# to guarantee reproducible builds.)
-app/dist/
-app/src-tauri/target/
-app/src-tauri/gen/schemas/
+# Vite build artifacts
+homebase/dist/
 
 # Editor / OS
 .vscode/
