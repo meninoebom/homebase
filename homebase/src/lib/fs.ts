@@ -61,8 +61,8 @@ let cachedDir: FileSystemDirectoryHandle | null = null;
 export function fsaSupported(): boolean {
   return (
     typeof window !== "undefined" &&
-    typeof (window as unknown as { showDirectoryPicker?: unknown })
-      .showDirectoryPicker === "function"
+    typeof (window as unknown as { showDirectoryPicker?: unknown }).showDirectoryPicker ===
+      "function"
   );
 }
 
@@ -109,9 +109,7 @@ export async function requestLogDirPermission(): Promise<FileSystemDirectoryHand
   return saved;
 }
 
-async function verifyPermission(
-  handle: FileSystemDirectoryHandle,
-): Promise<boolean> {
+async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
   const status = await handle.queryPermission({ mode: "readwrite" });
   return status === "granted";
 }
@@ -147,10 +145,7 @@ export async function writeNested(segments: string[], text: string): Promise<voi
   return writeAt(logDirOrThrow(), segments, text);
 }
 
-async function readAt(
-  root: FileSystemDirectoryHandle,
-  segments: string[],
-): Promise<string> {
+async function readAt(root: FileSystemDirectoryHandle, segments: string[]): Promise<string> {
   try {
     let dir = root;
     for (let i = 0; i < segments.length - 1; i++) {

@@ -39,11 +39,7 @@ export async function writeState(slot: string, text: string): Promise<void> {
   await writeNested([slot, "state.md"], text);
 }
 
-export async function appendSection(
-  date: string,
-  slot: string,
-  body: string,
-): Promise<void> {
+export async function appendSection(date: string, slot: string, body: string): Promise<void> {
   validateDate(date);
   validateSlot(slot);
   const existing = await readDay(date);
@@ -63,10 +59,7 @@ export async function appendSection(
  * slots aren't in the new list. Mirrors save_day_impl from the old Rust
  * backend.
  */
-export async function saveDay(
-  date: string,
-  sections: DaySection[],
-): Promise<void> {
+export async function saveDay(date: string, sections: DaySection[]): Promise<void> {
   validateDate(date);
   sections.forEach((s) => validateSlot(s.slot));
 
@@ -100,10 +93,7 @@ export async function readDaySections(date: string): Promise<Record<string, stri
   return out;
 }
 
-export async function grepLogs(
-  pattern: string,
-  dates: string[],
-): Promise<LogHit[]> {
+export async function grepLogs(pattern: string, dates: string[]): Promise<LogHit[]> {
   if (pattern.length === 0) throw new Error("empty pattern");
   const hits: LogHit[] = [];
   for (const date of dates) {
@@ -188,13 +178,20 @@ function firstMatch(content: string, pattern: string, date: string): LogHit | nu
 function humanDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
-  const weekdays = [
-    "Sunday", "Monday", "Tuesday", "Wednesday",
-    "Thursday", "Friday", "Saturday",
-  ];
+  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const date = new Date(y, m - 1, d);
   return `${weekdays[date.getDay()]}, ${months[m - 1]} ${d}, ${y}`;
 }
