@@ -63,7 +63,11 @@ export function OrientSlot({ initialDraft, onDraft }: SlotProps) {
         <p className="mb-2 font-serif text-[15px] italic leading-relaxed text-[#9CA3AF]">
           {QUESTION}
         </p>
-        <RitualEditor initialContent={initialDraft} onChange={onDraft} placeholder="Write here…" />
+        <RitualEditor
+          initialContent={initialDraft}
+          onChange={onDraft}
+          placeholderText="Write here…"
+        />
       </div>
     </div>
   );
