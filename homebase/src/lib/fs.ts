@@ -1,4 +1,5 @@
-// File System Access API wrapper with IndexedDB handle persistence.
+// File System Access API wrapper for the morning-ritual log directory,
+// with IndexedDB handle persistence (via ./idb).
 //
 // Homebase's substrate is real plaintext markdown on disk — same folder the
 // Tauri version used (~/Documents/homebase-log/). The user picks the
@@ -12,42 +13,9 @@
 // rule 4 (grep is the memory layer) matters more than browser breadth for
 // a personal app.
 
-const IDB_NAME = "homebase";
-const IDB_STORE = "handles";
+import { idbGet, idbSet } from "./idb";
+
 const HANDLE_KEY = "logDir";
-
-// -- IndexedDB handle persistence ----------------------------------------
-
-function openIdb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore(IDB_STORE);
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function idbGet<T>(key: string): Promise<T | undefined> {
-  const db = await openIdb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(IDB_STORE, "readonly");
-    const req = tx.objectStore(IDB_STORE).get(key);
-    req.onsuccess = () => resolve(req.result as T | undefined);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function idbSet(key: string, value: unknown): Promise<void> {
-  const db = await openIdb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(IDB_STORE, "readwrite");
-    tx.objectStore(IDB_STORE).put(value, key);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
 
 // -- Directory handle resolution ----------------------------------------
 
