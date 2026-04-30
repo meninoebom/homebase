@@ -122,3 +122,14 @@ body {
 .save-indicator-pulse {
   animation: save-indicator-pulse 1.6s ease-in-out infinite;
 }
+
+/* Strategic-layer carry-over banner (Lapham marginalia register).
+ *
+ * Hover state on the "clear" link darkens the terracotta. Component-level
+ * inline styles handle layout + idle color; this ruleset only owns the
+ * hover state since Tailwind v4 doesn't yet have a clean way to express
+ * hover on a CSS variable. */
+.carry-over-clear:hover {
+  color: #8c341e !important;
+  border-color: #8c341e !important;
+}
