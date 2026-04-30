@@ -83,7 +83,7 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
       <button
         type="button"
         onClick={onDayClick}
-        className="grid w-full cursor-pointer items-baseline px-0 py-[22px] text-left transition-colors hover:bg-[rgba(184,71,45,0.08)]"
+        className="day-row-button group grid w-full cursor-pointer items-baseline px-0 py-[22px] text-left transition-colors hover:bg-[rgba(184,71,45,0.08)]"
         style={{
           gridTemplateColumns: "28px 1fr auto 24px",
         }}
@@ -95,7 +95,7 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
           {ROMAN.day}
         </span>
         <h2
-          className="row-day-title font-serif text-[28px] font-light italic leading-[1.1] tracking-tight"
+          className="row-day-title font-serif text-[28px] font-light italic leading-[1.1] tracking-tight transition-colors"
           style={{ color: "var(--ink, #1A1614)" }}
         >
           {TITLE.day}
@@ -107,7 +107,8 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
           {metaFor("day")}
         </span>
         <span
-          className="row-day-arrow self-center text-center font-serif text-[18px] leading-none transition-transform"
+          aria-hidden="true"
+          className="row-day-arrow self-center text-center font-serif text-[18px] leading-none transition-transform duration-150 group-hover:translate-x-[4px]"
           style={{ color: "var(--terracotta, #B8472D)" }}
         >
           →
