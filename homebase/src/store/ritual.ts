@@ -1,91 +1,53 @@
 // Zustand store for the Homebase hub.
 //
-// Hub model: all sections are visible at once on a scrollable page. Drafts
-// are per-section strings. Saving is explicit (Cmd-S) and writes all
-// non-empty sections to the day log file via saveDay() in lib/log.ts.
-//
-// Persistence: the full state is saved to localStorage so drafts survive
-// page reloads. A stale session from a previous day is detected on
-// startMorning() and reset.
+// Drafts are in-memory only. On mount, today's file is read and drafts are
+// populated from it. Changes are auto-saved to disk via a debounced effect
+// in morning.tsx — no manual Cmd-S required, no localStorage.
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import { saveDay, todayISO } from "../lib/log";
+import { readDaySections, saveDay, todayISO } from "../lib/log";
 
 export type SlotId = string;
 
 interface RitualState {
   drafts: Record<SlotId, string>;
-  startedAt: number | null;
-  lastSavedAt: number | null;
   saving: boolean;
+  lastSavedAt: number | null;
 
-  startMorning: () => void;
+  loadToday: () => Promise<void>;
   setDraft: (slotId: SlotId, body: string) => void;
-  saveMorning: () => Promise<void>;
-  reset: () => void;
+  saveNow: () => Promise<void>;
 }
 
-const EMPTY_STATE = {
-  drafts: {} as Record<SlotId, string>,
-  startedAt: null as number | null,
-  lastSavedAt: null as number | null,
+export const useRitualStore = create<RitualState>()((set, get) => ({
+  drafts: {},
   saving: false,
-};
+  lastSavedAt: null,
 
-function isSameDay(a: number, b: number): boolean {
-  return new Date(a).toDateString() === new Date(b).toDateString();
-}
+  loadToday: async () => {
+    const sections = await readDaySections(todayISO());
+    set({ drafts: sections });
+  },
 
-export const useRitualStore = create<RitualState>()(
-  persist(
-    (set, get) => ({
-      ...EMPTY_STATE,
+  setDraft: (slotId, body) => {
+    set((state) => ({
+      drafts: { ...state.drafts, [slotId]: body },
+    }));
+  },
 
-      startMorning: () => {
-        const state = get();
-        if (state.startedAt !== null && isSameDay(state.startedAt, Date.now())) {
-          return;
-        }
-        set({
-          ...EMPTY_STATE,
-          startedAt: Date.now(),
-        });
-      },
-
-      setDraft: (slotId, body) => {
-        set((state) => ({
-          drafts: { ...state.drafts, [slotId]: body },
-        }));
-      },
-
-      saveMorning: async () => {
-        const state = get();
-        set({ saving: true });
-        try {
-          const sections = Object.entries(state.drafts)
-            .filter(([, body]) => body.trim().length > 0)
-            .map(([slot, body]) => ({ slot, body }));
-          if (sections.length > 0) {
-            await saveDay(todayISO(), sections);
-          }
-          set({ saving: false, lastSavedAt: Date.now() });
-        } catch (err) {
-          set({ saving: false });
-          throw err;
-        }
-      },
-
-      reset: () => {
-        set(EMPTY_STATE);
-      },
-    }),
-    {
-      name: "homebase-state",
-      storage: createJSONStorage(() => localStorage),
-      // Version 6: renamed from morning-ritual-state to homebase-state for
-      // the browser rewrite. Old key is orphaned (manual clear if you care).
-      version: 6,
-    },
-  ),
-);
+  saveNow: async () => {
+    const { drafts } = get();
+    const sections = Object.entries(drafts)
+      .filter(([, body]) => body.trim().length > 0)
+      .map(([slot, body]) => ({ slot, body }));
+    if (sections.length === 0) return;
+    set({ saving: true });
+    try {
+      await saveDay(todayISO(), sections);
+      set({ saving: false, lastSavedAt: Date.now() });
+    } catch (err) {
+      set({ saving: false });
+      throw err;
+    }
+  },
+}));

@@ -1,66 +1,70 @@
-// Orient — the map-of-content slot. Workspace kind, but unlike piano
-// it does NOT write to the day log. Pure orientation: hand-edited
-// state.md → static display.
-//
-// §15 rule 5 guardrail: every element here must be something Brandon
-// would still want to look at during a bad month. No counts, no
-// dynamic data, no progress indicators.
-
-import { useEffect, useState } from "react";
-import { readState } from "../../lib/log";
+import { useEffect, useRef, useState } from "react";
+import { RitualEditor } from "../../components/RitualEditor";
+import { readState, writeState } from "../../lib/log";
 import type { SlotProps } from "../registry";
-import { parseOrientState, type OrientState } from "./parse";
 
-const EMPTY: OrientState = { focus: "", oneThing: "" };
+const QUESTION = "According to my deepest understanding, how can I live that understanding more deeply?";
 
-export function OrientSlot(_props: SlotProps) {
-  const [state, setState] = useState<OrientState>(EMPTY);
+function mondayLabel(): string {
+  const now = new Date();
+  const diff = now.getDay() === 0 ? -6 : 1 - now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  return monday.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+export function OrientSlot({ initialDraft, onDraft }: SlotProps) {
+  const [goals, setGoals] = useState("");
+  const [goalsDirty, setGoalsDirty] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const lastSavedRef = useRef("");
 
   useEffect(() => {
     readState("orient").then((md) => {
-      setState(parseOrientState(md));
+      setGoals(md);
+      lastSavedRef.current = md;
       setLoaded(true);
     });
   }, []);
 
-  if (!loaded) return null;
-
-  if (!state.focus && !state.oneThing) {
-    return (
-      <p className="font-serif text-[15px] italic text-[#9CA3AF]">
-        Edit <code className="font-mono text-[13px]">~/Documents/homebase-log/orient/state.md</code> to set up this slot.
-      </p>
-    );
+  async function handleGoalsBlur() {
+    if (!goalsDirty || goals === lastSavedRef.current) {
+      setGoalsDirty(false);
+      return;
+    }
+    await writeState("orient", goals);
+    lastSavedRef.current = goals;
+    setGoalsDirty(false);
   }
 
-  return (
-    <div className="space-y-5">
-      {state.focus && (
-        <Block label="This week's focus">
-          <p className="font-serif text-[17px] leading-relaxed text-[#4B5563]">
-            {state.focus}
-          </p>
-        </Block>
-      )}
-      {state.oneThing && (
-        <Block label="One thing today">
-          <p className="font-serif text-[17px] italic leading-relaxed text-[#374151]">
-            {state.oneThing}
-          </p>
-        </Block>
-      )}
-    </div>
-  );
-}
+  if (!loaded) return null;
 
-function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <p className="mb-1 font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
-        {label}
-      </p>
-      {children}
+    <div className="space-y-6">
+      <div>
+        <p className="mb-1 font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
+          Goals for this week <span className="normal-case">· {mondayLabel()}</span>
+        </p>
+        <textarea
+          className="w-full resize-none bg-transparent font-serif text-[17px] leading-relaxed text-[#4B5563] placeholder:text-[#D1D5DB] focus:outline-none"
+          placeholder="What do you want to move toward this week?"
+          value={goals}
+          rows={3}
+          onChange={(e) => { setGoals(e.target.value); setGoalsDirty(true); }}
+          onBlur={handleGoalsBlur}
+        />
+      </div>
+
+      <div>
+        <p className="mb-2 font-serif text-[15px] italic leading-relaxed text-[#9CA3AF]">
+          {QUESTION}
+        </p>
+        <RitualEditor
+          initialContent={initialDraft}
+          onChange={onDraft}
+          placeholder="Write here…"
+        />
+      </div>
     </div>
   );
 }

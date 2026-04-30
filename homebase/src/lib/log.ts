@@ -91,6 +91,15 @@ export async function saveDay(
   await writeFile(`${date}.md`, output.trimEnd() + "\n");
 }
 
+export async function readDaySections(date: string): Promise<Record<string, string>> {
+  const md = await readDay(date);
+  const out: Record<string, string> = {};
+  for (const [slot, body] of parseSections(md)) {
+    out[slot] = body.trim();
+  }
+  return out;
+}
+
 export async function grepLogs(
   pattern: string,
   dates: string[],
