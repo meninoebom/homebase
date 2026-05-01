@@ -1,44 +1,27 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..700&family=Inter+Tight:ital,wght@0,300..900;1,300..900&display=swap");
 
 /*
- * White / gray / black palette. Replaced the Lapham editorial palette on
- * 2026-04-10 after Brandon reported (correctly) that cream tinted everything
- * and made the editor feel form-like rather than page-like. The iA Writer /
- * Ulysses / Bear family all use clean white for writing surfaces because a
- * warm cream only works as a *reference* aesthetic (which is what Brandon's
- * own design-palette-laphams.md memory scopes it to — "info-dense HTML tools,
- * cheat sheets, study materials"), not as a writing surface.
+ * White / gray / black palette for the MORNING RITUAL surface (/morning).
  *
- * Kept from the old palette: Charter serif body, single easing curve for
- * motion, ink/ink-muted/ink-faint role names (just re-pointed at grays).
- * Dropped from the old palette: terracotta accent, hairline warmth, the
- * lifted `page` background that made the editor look like a form field.
+ * Replaced the Lapham editorial palette on 2026-04-10 after Brandon
+ * reported (correctly) that cream tinted everything and made the editor
+ * feel form-like rather than page-like for *writing*. The strategic
+ * accordion (different room in the same magazine) keeps the warm cream
+ * register — see .strategy-scope below.
  */
 @theme {
-  /* Backgrounds — one color, no lifting. The editor is the window. */
-  --color-paper: #ffffff; /* window background */
-  --color-page: #ffffff; /* editor background (same as paper — no box) */
-
-  /* Text — near-black to light gray. */
-  --color-ink: #111111; /* body writing */
-  --color-ink-muted: #6b7280; /* slot labels, metadata */
-  --color-ink-faint: #9ca3af; /* chrome, placeholder, slot counter */
-
-  /* Hairlines kept as a cool gray. Used nowhere yet. */
+  --color-paper: #ffffff;
+  --color-page: #ffffff;
+  --color-ink: #111111;
+  --color-ink-muted: #6b7280;
+  --color-ink-faint: #9ca3af;
   --color-hairline: #e5e7eb;
-
-  /* Type. */
   --font-serif: "Charter", "Iowan Old Style", "Palatino", ui-serif, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-
-  /* Motion. */
   --ease-ritual: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-/*
- * Base page styles. The writing column will be clamped at 62ch by individual
- * slot components; this just sets the window-level defaults.
- */
 html,
 body,
 #root {
@@ -54,62 +37,88 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/*
- * ============================================================
- *  CodeMirror 6 editor overrides (.ritual-editor)
- * ============================================================
- *
- * CM6 replaced TipTap on 2026-04-13 after research (Astro Editor,
- * Obsidian, Heynote) showed CM6 is the standard for prose-quality
- * writing surfaces. Most editor styling lives in the CM6 theme
- * extension (src/components/RitualEditor.tsx → ritualTheme) rather
- * than in CSS, because CM6 generates scoped class names at runtime.
- *
- * This CSS file only holds overrides that need CSS custom properties
- * (which CM6 themes handle fine) or structural rules that are easier
- * to read as CSS than as JS theme objects.
- */
-
-/* Hub mode: editors are inline, content-height, no fixed viewport.
-   The page scrolls normally like a web document. */
+/* CodeMirror 6 morning-ritual editor — see RitualEditor.tsx for theme. */
 .ritual-editor {
   width: 100%;
 }
-
 .ritual-editor .cm-editor {
   background: transparent;
 }
 
-/* Strategic layer (front-door accordion) — Lapham editorial palette.
+/* ============================================================
+ * STRATEGIC LAYER — front-door accordion
  *
- * Scoped to .strategy-scope so the warm-cream/terracotta vars only apply
- * inside the strategic accordion route (StrategyAccordion). The morning
- * ritual keeps its existing white/gray palette unchanged — strategic and
- * morning are deliberately *different rooms in the same magazine* per
- * the design rationale at .llm/design-strategic-layer/rationale.md.
+ * Editorial system inspired by The New Criterion: cream paper, a dusty
+ * red signature accent, gilt + sage as quiet seconds, warm-gray inks.
+ * Type pairs Newsreader (display + body, italic) with Inter Tight (UI
+ * chrome) and Cormorant Garamond (numerals).
  *
- * Note these are scoped CSS variables (not Tailwind theme tokens) — they
- * piggyback on `style={{ background: 'var(--terracotta)' }}` patterns in
- * HorizonRow, MarkdownEditor, etc. Components carry inline fallbacks so
- * isolated renders (tests) still look intentional. */
+ * Tokens scoped to .strategy-scope so they don't leak into the morning
+ * ritual at /morning, which keeps its white/gray writing-surface
+ * register. Two different rooms in the same magazine.
+ *
+ * Source-of-truth design canvas: ~/dev/homebase/Homebase Redesign/
+ * design/colors_and_type.css.
+ * ============================================================ */
 .strategy-scope {
-  --page: #faf7f0;
-  --ref: #f2ecdc;
-  --ink: #1a1614;
-  --ink-muted: #7a7268;
-  --ink-faint: #a39a8a;
-  --ink-ghost: #c9c0b0;
-  --hairline: #e5dfd3;
-  --hairline-2: #d9d2c0;
-  --terracotta: #b8472d;
-  --terracotta-soft: rgba(184, 71, 45, 0.08);
-  background-color: var(--page);
-  color: var(--ink);
+  /* Paper & ink */
+  --paper-0: #f7f1e6;
+  --paper-1: #faf5eb;
+  --paper-2: #fcf8f0;
+  --paper-3: #fffdf8;
+  --paper-edge: #efe6d4;
+  --ink-1: #1f1b16;
+  --ink-2: #4a4239;
+  --ink-3: #7a7064;
+  --ink-4: #a89e8e;
+  --ink-5: #c9bfae;
+
+  /* Accents */
+  --accent-1: #7a2618;
+  --accent-1-hover: #5c1c11;
+  --accent-1-press: #3e120a;
+  --accent-2: #d9a14b;
+  --accent-2-soft: #ead2a0;
+  --accent-3: #6b7a4a;
+  --accent-3-hover: #556138;
+  --accent-3-soft: #c9d2b0;
+
+  /* Typography families */
+  --font-serif-display: "Newsreader", "Inter Tight", Georgia, serif;
+  --font-serif-text: "Newsreader", "Inter Tight", Georgia, serif;
+  --font-sans-ui:
+    "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-numeral: "Cormorant Garamond", "Newsreader", serif;
+
+  /* Spacing rhythm */
+  --row-pad-y: 28px;
+
+  /* Display scale — controls masthead + TOC titles together */
+  --display-scale: 1;
+
+  /*
+   * Legacy aliases used by components written before the redesign
+   * (HorizonRow.tsx, CarryOverBanner.tsx, etc. predate this rename).
+   * Keeping them so the existing inline `var(--ink, ...)` references
+   * resolve. New code should prefer the --ink-N / --paper-N names.
+   */
+  --page: var(--paper-1);
+  --ref: var(--paper-2);
+  --ink: var(--ink-1);
+  --ink-muted: var(--ink-2);
+  --ink-faint: var(--ink-3);
+  --ink-ghost: var(--ink-5);
+  --hairline: var(--paper-edge);
+  --hairline-2: var(--ink-5);
+  --terracotta: var(--accent-1);
+  --terracotta-soft: rgba(122, 38, 24, 0.08);
+
+  background-color: var(--paper-1);
+  color: var(--ink-1);
+  font-family: var(--font-serif-text);
 }
 
-/* Strategic-layer save indicator — a 6px dot lower-right of each editor
- * that pulses softly while saving and settles to a steady terracotta when
- * saved. Used by SaveIndicator. */
+/* ----- Save indicator: pulses while saving, settles to accent on save. */
 @keyframes save-indicator-pulse {
   0%,
   100% {
@@ -123,19 +132,13 @@ body {
   animation: save-indicator-pulse 1.6s ease-in-out infinite;
 }
 
-/* Strategic-layer carry-over banner (Lapham marginalia register).
- *
- * Hover state on the "clear" link darkens the terracotta. Component-level
- * inline styles handle layout + idle color; this ruleset only owns the
- * hover state since Tailwind v4 doesn't yet have a clean way to express
- * hover on a CSS variable. */
+/* ----- Carry-over "clear" link hover — darker accent. */
 .carry-over-clear:hover {
-  color: #8c341e !important;
-  border-color: #8c341e !important;
+  color: var(--accent-1-hover) !important;
+  border-color: var(--accent-1-hover) !important;
 }
 
-/* Day-row portal hover — title turns terracotta to mirror the arrow.
- * The arrow's translateX is handled inline via Tailwind group-hover. */
+/* ----- Day-row portal hover — title turns accent to mirror the arrow. */
 .day-row-button:hover .row-day-title {
-  color: var(--terracotta, #b8472d) !important;
+  color: var(--accent-1) !important;
 }
