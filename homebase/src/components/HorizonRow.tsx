@@ -80,37 +80,67 @@ export function HorizonRow(props: HorizonRowProps) {
 
 function DayRow({ onDayClick }: { onDayClick?: () => void }) {
   return (
-    <div className="row-day border-b" style={{ borderColor: "var(--hairline, #E5DFD3)" }}>
+    <div
+      className="row-day"
+      style={{
+        borderTop: "1px solid var(--paper-edge)",
+        borderBottom: "1px solid var(--paper-edge)",
+      }}
+    >
       <button
         type="button"
         onClick={onDayClick}
-        className="day-row-button group grid w-full cursor-pointer items-baseline px-0 py-[22px] text-left transition-colors hover:bg-[rgba(184,71,45,0.08)]"
+        className="day-row-button group grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-2)]"
         style={{
-          gridTemplateColumns: "28px 1fr auto 24px",
+          gridTemplateColumns: "36px 1fr auto 30px",
+          gap: "14px",
+          paddingTop: "var(--row-pad-y)",
+          paddingBottom: "var(--row-pad-y)",
         }}
       >
         <span
-          className="self-center font-sans text-[10px] tracking-[0.1em]"
-          style={{ color: "var(--ink-ghost, #C9C0B0)" }}
+          className="italic"
+          style={{
+            fontFamily: "var(--font-numeral)",
+            fontSize: "16px",
+            color: "var(--ink-4)",
+            letterSpacing: "0.02em",
+          }}
         >
           {ROMAN.day}
         </span>
         <h2
-          className="row-day-title font-serif text-[28px] font-light italic leading-[1.1] tracking-tight transition-colors"
-          style={{ color: "var(--ink, #1A1614)" }}
+          className="row-day-title italic transition-colors"
+          style={{
+            fontFamily: "var(--font-serif-display)",
+            fontWeight: 400,
+            fontSize: "calc(36px * var(--display-scale, 1))",
+            lineHeight: 1,
+            letterSpacing: "-0.01em",
+            color: "var(--ink-1)",
+          }}
         >
           {TITLE.day}
         </h2>
         <span
-          className="row-day-meta whitespace-nowrap self-center px-4 font-sans text-[10px] uppercase tracking-[0.12em]"
-          style={{ color: "var(--terracotta, #B8472D)", opacity: 0.7 }}
+          className="whitespace-nowrap self-center font-sans text-[11px] font-medium uppercase"
+          style={{
+            color: "var(--accent-1)",
+            letterSpacing: "0.2em",
+          }}
         >
           {metaFor("day")}
         </span>
         <span
           aria-hidden="true"
-          className="row-day-arrow self-center text-center font-serif text-[18px] leading-none transition-transform duration-150 group-hover:translate-x-[4px]"
-          style={{ color: "var(--terracotta, #B8472D)" }}
+          className="row-day-arrow text-right transition-transform duration-200 group-hover:translate-x-[4px]"
+          style={{
+            fontFamily: "var(--font-sans-ui)",
+            fontSize: "22px",
+            fontWeight: 300,
+            lineHeight: 1,
+            color: "var(--accent-1)",
+          }}
         >
           →
         </span>
@@ -154,38 +184,66 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
   };
 
   return (
-    <div className="border-b" style={{ borderColor: "var(--hairline, #E5DFD3)" }}>
+    <div
+      className={row.expanded ? "toc-row-open" : undefined}
+      style={{
+        borderTop: "1px solid var(--paper-edge)",
+        background: row.expanded ? "var(--paper-2)" : "transparent",
+      }}
+    >
       <button
         type="button"
         onClick={onToggle}
-        className="grid w-full cursor-pointer items-baseline px-0 py-[22px] text-left transition-colors hover:bg-[rgba(184,71,45,0.08)]"
+        className="grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-2)]"
         style={{
-          gridTemplateColumns: "28px 1fr auto 24px",
+          gridTemplateColumns: "36px 1fr auto 30px",
+          gap: "14px",
+          paddingTop: "var(--row-pad-y)",
+          paddingBottom: "var(--row-pad-y)",
         }}
       >
         <span
-          className="self-center font-sans text-[10px] tracking-[0.1em]"
-          style={{ color: "var(--ink-ghost, #C9C0B0)" }}
+          className="italic"
+          style={{
+            fontFamily: "var(--font-numeral)",
+            fontSize: "16px",
+            color: "var(--ink-4)",
+            letterSpacing: "0.02em",
+          }}
         >
           {ROMAN[horizon]}
         </span>
         <h2
-          className="font-serif text-[28px] font-light italic leading-[1.1] tracking-tight"
-          style={{ color: "var(--ink, #1A1614)" }}
+          className="italic"
+          style={{
+            fontFamily: "var(--font-serif-display)",
+            fontWeight: 400,
+            fontSize: "calc(36px * var(--display-scale, 1))",
+            lineHeight: 1,
+            letterSpacing: "-0.01em",
+            color: "var(--ink-1)",
+          }}
         >
           {TITLE[horizon]}
         </h2>
         <span
-          className="whitespace-nowrap self-center px-4 font-sans text-[10px] uppercase tracking-[0.12em]"
-          style={{ color: "var(--ink-faint, #A39A8A)" }}
+          className="whitespace-nowrap font-sans text-[11px] font-medium uppercase"
+          style={{
+            color: "var(--ink-3)",
+            letterSpacing: "0.2em",
+          }}
         >
           {metaFor(horizon)}
         </span>
         <span
           aria-hidden="true"
-          className="self-center text-center font-serif text-[22px] leading-none transition-transform duration-[250ms]"
+          className="text-right transition-transform duration-200"
           style={{
-            color: "var(--ink-ghost, #C9C0B0)",
+            fontFamily: "var(--font-sans-ui)",
+            fontSize: "22px",
+            fontWeight: 300,
+            lineHeight: 1,
+            color: row.expanded ? "var(--ink-1)" : "var(--ink-3)",
             transform: row.expanded ? "rotate(45deg)" : "none",
           }}
         >
@@ -194,7 +252,10 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
       </button>
 
       {row.expanded && (
-        <div className="pb-9 pl-7 pt-1">
+        <div
+          className="pl-14 pr-2 pb-8 pt-1"
+          style={{ borderBottom: "1px solid var(--paper-edge)" }}
+        >
           {row.carryOver ? (
             <CarryOverBanner
               horizon={horizon}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 12" width="120" height="12">
+  <line x1="0" y1="6" x2="48" y2="6" stroke="#7A7064" stroke-width="1"></line>
+  <text x="60" y="10" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#7A7064">✣</text>
+  <line x1="72" y1="6" x2="120" y2="6" stroke="#7A7064" stroke-width="1"></line>
+</svg>

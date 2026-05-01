@@ -1,0 +1,290 @@
+/* ============================================================
+   Homebase — Colors & Type
+   Editorial system inspired by The New Criterion, with a more
+   modern serif and bold contrast in type sizes.
+   ============================================================ */
+
+/* ---------- Webfonts (Google Fonts substitutes) ---------- */
+/* PRIMARY DISPLAY: "Newsreader" — modern transitional serif w/ a beautiful italic
+   PRIMARY UI:      "Inter Tight" — clean, neutral grotesque (eyebrows, meta, UI)
+   ACCENT NUMERAL:  "Cormorant Garamond" — for roman numerals & ornamental figures
+   MONO:            "JetBrains Mono" — for any code or data display
+
+   ⚠️ FONT SUBSTITUTION FLAG: No font files were provided. These are
+   nearest Google Fonts matches. If Homebase has a defined typeface
+   (likely a custom serif near Caslon/Garamond), please provide the
+   .woff2/.ttf files and we'll swap them in.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ============================================================
+     COLOR — Paper & Ink
+     A cream/parchment ground with warm, slightly desaturated inks.
+     Avoid pure white & pure black — both feel clinical here.
+     ============================================================ */
+
+  /* --- Backgrounds (paper) --- */
+  --paper-0: #F7F1E6;     /* deepest cream — section backgrounds */
+  --paper-1: #FAF5EB;     /* primary page background */
+  --paper-2: #FCF8F0;     /* cards on paper */
+  --paper-3: #FFFDF8;     /* lifted surfaces */
+  --paper-edge: #EFE6D4;  /* hairline divider color */
+
+  /* --- Inks (text & strong fills) --- */
+  --ink-1: #1F1B16;       /* primary text — warm near-black */
+  --ink-2: #4A4239;       /* body text — softer */
+  --ink-3: #7A7064;       /* secondary / meta text */
+  --ink-4: #A89E8E;       /* tertiary / eyebrow gray */
+  --ink-5: #C9BFAE;       /* disabled / placeholder */
+
+  /* --- Accent (the dusty red — the magazine's signature) --- */
+  --accent-1: #7A2618;    /* primary accent — links, CTAs, marks (darker, more grounded) */
+  --accent-1-hover: #5C1C11;
+  --accent-1-press: #3E120A;
+  --accent-2: #D9A14B;    /* secondary accent — gilt / highlight */
+  --accent-2-soft: #EAD2A0;
+  --accent-3: #6B7A4A;    /* sage / olive — secondary links, quiet accents (per newcriterion.com) */
+  --accent-3-hover: #556138;
+  --accent-3-soft: #C9D2B0;
+
+  /* --- Semantic --- */
+  --success: #5C7A3F;     /* mossy green */
+  --warning: #B5862A;
+  --danger:  #9C2E1E;
+  --info:    #3F5A7A;
+
+  /* ============================================================
+     TYPOGRAPHY — Families
+     ============================================================ */
+  --font-serif-display: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-serif-text:    'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-sans:          'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-numeral:       'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono:          'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ============================================================
+     TYPOGRAPHY — Type Scale
+     Editorial: BIG contrast between display & body.
+     Display headers go up to ~96px on desktop; body sits at 17–18px.
+     ============================================================ */
+  --fs-eyebrow:   10px;   /* small caps — section labels */
+  --fs-meta:      12px;   /* dates, captions */
+  --fs-body-sm:   14px;
+  --fs-body:      16px;   /* main reading size */
+  --fs-body-lg:   22px;   /* lead paragraphs — bigger jump */
+  --fs-h6:        18px;
+  --fs-h5:        26px;
+  --fs-h4:        40px;
+  --fs-h3:        56px;
+  --fs-h2:        76px;
+  --fs-h1:        104px;
+  --fs-display:   160px;  /* magazine cover size — dramatic */
+
+  /* line heights */
+  --lh-tight:    1.05;
+  --lh-snug:     1.18;
+  --lh-normal:   1.5;
+  --lh-loose:    1.7;
+
+  /* letter spacing */
+  --ls-eyebrow:  0.18em;  /* generous tracking on small caps */
+  --ls-meta:     0.08em;
+  --ls-tight:    -0.015em;
+  --ls-display:  -0.02em;
+
+  /* ============================================================
+     SPACING (8pt-ish, but loose — editorial breathing room)
+     ============================================================ */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  24px;
+  --s-6:  32px;
+  --s-7:  48px;
+  --s-8:  64px;
+  --s-9:  96px;
+  --s-10: 128px;
+
+  /* ============================================================
+     RADIUS — restrained. Editorial = mostly square.
+     ============================================================ */
+  --r-0: 0;
+  --r-1: 2px;
+  --r-2: 4px;
+  --r-3: 8px;
+  --r-pill: 999px;
+
+  /* ============================================================
+     ELEVATION — very light, paper-on-paper
+     ============================================================ */
+  --shadow-0: none;
+  --shadow-1: 0 1px 2px rgba(31, 27, 22, 0.04), 0 1px 1px rgba(31, 27, 22, 0.03);
+  --shadow-2: 0 4px 12px rgba(31, 27, 22, 0.06), 0 1px 2px rgba(31, 27, 22, 0.04);
+  --shadow-3: 0 12px 36px rgba(31, 27, 22, 0.10), 0 2px 6px rgba(31, 27, 22, 0.05);
+
+  /* hairlines */
+  --hairline: 1px solid var(--paper-edge);
+  --hairline-strong: 1px solid var(--ink-4);
+  --rule-thick: 2px solid var(--ink-1);
+
+  /* layout */
+  --max-w-prose: 680px;
+  --max-w-page:  1200px;
+}
+
+/* ============================================================
+   SEMANTIC TYPE STYLES — apply these as classes
+   ============================================================ */
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+.meta {
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  letter-spacing: var(--ls-meta);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.display {
+  font-family: var(--font-serif-display);
+  font-size: var(--fs-display);
+  font-weight: 400;
+  font-style: italic;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.035em;
+  color: var(--ink-1);
+}
+
+h1, .h1 {
+  font-family: var(--font-serif-display);
+  font-size: var(--fs-h1);
+  font-weight: 400;
+  font-style: italic;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.03em;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+h2, .h2 {
+  font-family: var(--font-serif-display);
+  font-size: var(--fs-h2);
+  font-weight: 400;
+  font-style: italic;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--ink-1);
+  margin: 0;
+}
+
+h3, .h3 {
+  font-family: var(--font-serif-display);
+  font-size: var(--fs-h3);
+  font-weight: 400;
+  font-style: italic;
+  line-height: var(--lh-snug);
+  color: var(--ink-1);
+  margin: 0;
+}
+
+h4, .h4 {
+  font-family: var(--font-serif-display);
+  font-size: var(--fs-h4);
+  font-weight: 500;
+  font-style: normal;
+  line-height: var(--lh-snug);
+  color: var(--ink-1);
+  margin: 0;
+}
+
+h5, .h5 {
+  font-family: var(--font-serif-text);
+  font-size: var(--fs-h5);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+  color: var(--ink-1);
+  margin: 0;
+}
+
+h6, .h6 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-h6);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  color: var(--ink-1);
+  margin: 0;
+}
+
+p, .p {
+  font-family: var(--font-serif-text);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: var(--lh-loose);
+  color: var(--ink-2);
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.lead {
+  font-family: var(--font-serif-text);
+  font-size: var(--fs-body-lg);
+  font-style: italic;
+  font-weight: 400;
+  line-height: var(--lh-normal);
+  color: var(--ink-1);
+}
+
+.numeral {
+  font-family: var(--font-numeral);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-4);
+  font-feature-settings: "lnum" 0, "onum" 1;
+}
+
+code, .code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--paper-0);
+  padding: 0.1em 0.35em;
+  border-radius: var(--r-2);
+  color: var(--ink-1);
+}
+
+a, .link {
+  color: var(--accent-1);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  transition: color 120ms ease;
+}
+a:hover, .link:hover { color: var(--accent-1-hover); }
+a:active, .link:active { color: var(--accent-1-press); }
+
+hr, .rule {
+  border: 0;
+  border-top: var(--hairline);
+  margin: var(--s-6) 0;
+}
+
+.rule--short {
+  width: 48px;
+  border-top: 1px solid var(--ink-3);
+  margin: var(--s-4) auto;
+}
+
+/* base reset */
+html, body { background: var(--paper-1); color: var(--ink-1); }
+body { font-family: var(--font-serif-text); font-size: var(--fs-body); line-height: var(--lh-loose); }
+::selection { background: var(--accent-2-soft); color: var(--ink-1); }
