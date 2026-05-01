@@ -20,12 +20,10 @@
 // from the StrategyAccordion route container in #9; tasteful fallbacks
 // live in this component for isolated rendering / tests.
 
-import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { CarryOverBanner } from "./CarryOverBanner";
 import { HorizonInvitation } from "./HorizonInvitation";
-import { MarkdownEditor } from "./MarkdownEditor";
-import { SaveIndicator } from "./SaveIndicator";
-import { useAutosave } from "../hooks/useAutosave";
+import { SectionPreview } from "./SectionPreview";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { useStrategyStore } from "../store/strategy";
 
@@ -45,14 +43,6 @@ const TITLE: Record<Horizon | "day", string> = {
   month: "Month",
   week: "Week",
   day: "Day",
-};
-
-const PLACEHOLDER: Record<Horizon, string> = {
-  "life-values": "How do you want to live? Begin anywhere.",
-  "life-goals": "What are you aiming at? List the things that pull you forward.",
-  year: "What is this year for?",
-  month: "What is this month about?",
-  week: "What is this week for?",
 };
 
 /** Metadata text shown in the header's right column. */
@@ -152,28 +142,11 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
 // -- Strategy row (persistent + time-bound) -----------------------------
 
 function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) {
+  const navigate = useNavigate();
   const row = useStrategyStore((s) => s.rows[horizon]);
   const expandRow = useStrategyStore((s) => s.expandRow);
   const collapseRow = useStrategyStore((s) => s.collapseRow);
-  const setContent = useStrategyStore((s) => s.setContent);
   const clearCarryOver = useStrategyStore((s) => s.clearCarryOver);
-
-  // Wire autosave for this row. The hook subscribes to dirty/content and
-  // schedules saves; the indicator below reads saveStatus.
-  const { flushNow } = useAutosave(horizon);
-
-  // Flush any pending save when the component unmounts (route change /
-  // accordion teardown), guaranteeing no in-flight buffer is lost.
-  useEffect(() => {
-    return () => {
-      if (row.dirty) {
-        flushNow().catch(() => {});
-      }
-    };
-    // Read row.dirty/flushNow at unmount time. We deliberately don't
-    // re-subscribe — only the unmount cleanup matters here.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const onToggle = () => {
     if (row.expanded) {
@@ -181,6 +154,10 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
     } else {
       expandRow(horizon).catch(() => {});
     }
+  };
+
+  const openEditor = () => {
+    navigate({ to: "/horizon/$id", params: { id: horizon } });
   };
 
   return (
@@ -262,20 +239,43 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
               sourcePeriod={row.carryOver.sourcePeriod}
               onClear={() => clearCarryOver(horizon)}
             />
+          ) : row.loaded && row.content === "" ? (
+            <>
+              <HorizonInvitation horizon={horizon} />
+              <button
+                type="button"
+                onClick={openEditor}
+                className="cursor-pointer border-0 bg-transparent p-0 py-1 font-sans text-[11px] font-semibold uppercase transition-colors"
+                style={{
+                  color: "var(--accent-1)",
+                  letterSpacing: "0.22em",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                Begin
+                <span
+                  aria-hidden="true"
+                  className="italic"
+                  style={{
+                    fontFamily: "var(--font-serif-display)",
+                    fontSize: "16px",
+                    transform: "translateY(-1px)",
+                  }}
+                >
+                  →
+                </span>
+              </button>
+            </>
           ) : (
-            row.content === "" && <HorizonInvitation horizon={horizon} />
-          )}
-          <div className="relative max-w-[62ch]">
-            <MarkdownEditor
-              value={row.content}
-              onChange={(v) => setContent(horizon, v)}
-              placeholder={PLACEHOLDER[horizon]}
-              onSave={flushNow}
+            <SectionPreview
+              horizon={horizon}
+              content={row.content}
+              onOpen={openEditor}
+              onEdit={openEditor}
             />
-            <span className="absolute -right-2 bottom-0">
-              <SaveIndicator status={row.saveStatus} />
-            </span>
-          </div>
+          )}
         </div>
       )}
     </div>
