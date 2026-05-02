@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homebase</title>
+    <!--
+      SPA fallback for GitHub Pages.
+
+      GitHub Pages serves this file for any path it can't resolve as a
+      static asset, including unknown client-side routes like
+      /horizon/year. The script below encodes the requested path into a
+      query parameter, redirects to the app's index.html, and then
+      index.html's restoration script (in homebase/index.html) decodes
+      the param and rewrites history before TanStack Router boots.
+
+      Reference: https://github.com/rafgraph/spa-github-pages
+
+      Tuning: pathSegmentsToKeep = 1 because the app is deployed at
+      meninoebom.github.io/homebase/ — the leading "/homebase" segment
+      must be preserved through the redirect. Change to 0 if/when the
+      app moves to a custom domain at the root.
+    -->
+    <script type="text/javascript">
+      var pathSegmentsToKeep = 1;
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname
+            .split("/")
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join("/") +
+          "/?/" +
+          l.pathname
+            .slice(1)
+            .split("/")
+            .slice(pathSegmentsToKeep)
+            .join("/")
+            .replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash,
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
