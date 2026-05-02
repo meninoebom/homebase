@@ -1,84 +1,96 @@
 # homebase
 
-A personal daily writing workspace, shaped like a bullet journal. Time-axis is a dated markdown file per day in `log/`; topic-axis is a set of slot subdirectories — each a small, focused surface for one domain of Brandon's mornings (dreams, inner weather, piano, the algorithmic gym, reflections, creative projects, a daily briefing). Both live as plaintext on the filesystem. **The log file IS the memory; grep is the memory layer.**
+A strategic life guide. Open Homebase to ground yourself in what you've decided matters — life values, life goals, and yearly / monthly / weekly strategic plans — before you open your calendar. The morning writing ritual lives one click away as the **Day** row.
 
-## Current phase: Tauri v2 rebuild (April 10, 2026)
+Everything is plain markdown on your disk. **Your files; your machine; your edits.** There is no backend, no database, no account.
 
-This repo is mid-pivot from a bash shell prototype (now archived in `research/bash-shell-spike/`) to a Tauri v2 desktop app with a React + TanStack Router frontend and a Lapham's editorial aesthetic (warm cream, Charter serif, terracotta accent). The Tauri app lives at `app/` once scaffolded. See `docs/plan-morning-ritual.md` for the full plan and `.llm/active-plan.md` (gitignored) for the current working state.
+## Try it
 
-The design rules that constrain every decision in this project are in `docs/plan-morning-ritual.md` §15 (the five rules) and §16 (the self-audit checklist). In one sentence: **this is a writing practice that happens to be structured. It is not a life tracker.**
+**Live app:** [https://meninoebom.github.io/homebase/](https://meninoebom.github.io/homebase/)
 
-## Directory layout
+Open it in a Chromium browser (Chrome, Edge, Arc, Brave, Opera). The app needs the browser's File System Access API to read and write your markdown files. Safari and Firefox don't support that API yet.
+
+## Install as a desktop app
+
+Once you're on the live URL in Chromium, click the **install** button in the URL bar (or the 3-dot menu → "Install Homebase"). A standalone window appears, with a desktop icon you can pin to your dock. From then on you launch Homebase like any other app — no browser tab, no dev server.
+
+Updates roll out automatically the next time you open the app after a new version deploys. Your files are unaffected because they live on your disk, not on a server.
+
+## Your data stays on your disk
+
+On first launch, Homebase asks you to pick a folder. The recommended location is `~/Documents/homebase-strategy/` (you can choose anywhere). Your strategic plans live as plain markdown files in that folder, on your machine. Nothing is sent to a server. Nothing is stored in a database.
+
+If you ever want a real backup, the simplest move is `git init` inside your strategy folder and push it to a private repo. Strategic plans are exactly the kind of thing whose history is interesting — diffs over months show how your thinking evolved.
+
+The morning writing ritual writes to a separate folder (`~/Documents/homebase-log/`) for the same reason: durable plain text, your disk, no service to depend on. **The log file IS the memory; grep is the memory layer.**
+
+## What's in the app
+
+Six rows in a vertical accordion, top to bottom:
 
 ```
-homebase/
-├── app/                       # Tauri v2 application (scaffolds in issue 002)
-│   ├── src-tauri/             # Rust backend (log commands, filesystem, grep)
-│   └── src/                   # React frontend (routes, slots, store)
-├── docs/                      # Durable plans and design notes
-│   ├── plan-morning-ritual.md # THE plan — always the source of truth
-│   ├── plan-algorithmic-gym.md # Gym slot's own plan
-│   ├── idea-morning-ritual.md # Original idea brief
-│   ├── reading-list.md
-│   └── templates/
-│       └── inner-weather.md   # Editable prompt templates
-├── research/
-│   └── bash-shell-spike/      # Archived April 9 bash prototype (research only)
-├── log/                       # → ~/Documents/homebase-log/ (symlink)
-│                              #   dated markdown files, NOTES.md
-├── .llm/                      # AI workflow scratch (gitignored)
-│   ├── active-plan.md         # current working plan state
-│   └── issues/                # decomposed work items (001-housekeeping.md, etc.)
-└── .gitignore
+i.    Life values    PERSISTENT
+ii.   Life goals     PERSISTENT
+iii.  Year           2026
+iv.   Month          MAY 2026
+v.    Week           WEEK 18, 2026
+vi.   Day            OPEN MORNING RITUAL  →
 ```
 
-`log/` is a relative symlink to `~/Documents/homebase-log/`. The repo is disposable; the logs are the data. Deleting this repo does not delete a single morning's writing.
+Click any of i–v to expand a preview (lead paragraph + numbered items + Open/Edit actions). Click Open to drop into a full-page editor for that horizon. Click Day to launch the morning writing ritual unchanged.
 
-## The slot contract (v2, for the Tauri app)
+Time-bound rows (year/month/week) carry over from the prior period when you enter a new one — a banner shows "Carried from April 2026 — review and edit, or clear" so the prior thinking is the editable starting point, not a blank page.
 
-A slot is a directory under `app/src/slots/<slot-id>/` containing:
+## The design
 
-- **`index.tsx`** — React component exporting `default function Slot({ mode, onComplete, onDraft, initialDraft }: SlotProps)`
-- **`meta.ts`** — `{ id, kind: 'prompt' | 'workspace' | 'reminder' | 'fetch' | 'gated', goalState: string, component }`
-- **`template.md`** (for prompt slots) — markdown with editable `## headers`, substituted with `{{RITUAL_DATE}}` at render time
-- **`state.md`** (for workspace slots like piano) — persistent state the user edits directly between sessions
+Editorial system inspired by The New Criterion. Cream paper, dusty-red signature accent, italic Newsreader display + Inter Tight chrome. The strategic accordion's source-of-truth design canvas is at `Homebase Redesign/`.
 
-A slot is expected to append writing to the day log under a `## <slot-name>` header. That's the entire contract. No manifest, no JSON schema, no config file.
+This is a *writing practice that happens to be structured.* Not a life tracker. No streaks, no completion percentages, no scores.
 
-Full slot taxonomy and workspace-state pattern: `docs/plan-morning-ritual.md` §10.
+## Local development
 
-## Commands
+Repo layout:
 
-Run these from the repo root (`~/dev/homebase`). The root `package.json` forwards everything to `app/` via `pnpm -C app`, so you never need to `cd` into the subdirectory.
+```
+homebase/                      # the app — Vite+ + React + TanStack Router
+  src/                         # routes, components, store
+  public/                      # icons, manifest source
+  vite.config.ts               # Vite + PWA + Tailwind config
+docs/                          # durable design notes (plan, rationale, etc.)
+research/                      # archived prototypes (bash shell spike, etc.)
+Homebase Redesign/             # current design canvas (HTML + CSS + JSX prototype)
+.github/workflows/             # CI + Pages deploy
+.llm/                          # AI workflow scratch (gitignored)
+```
 
-    pnpm dev               # launches the full Tauri desktop app in dev mode
-    pnpm build             # production Tauri bundle (.app / .dmg / .msi)
-    pnpm build:frontend    # frontend only (vp build + tsc --noEmit)
-    pnpm check             # format + lint + typecheck in one command (vp check)
-    pnpm check:fix         # auto-fix formatting and lint issues
-    pnpm test              # run tests once
-    pnpm test:watch        # run tests in watch mode
-    pnpm typecheck         # tsc --noEmit only
-    pnpm tauri <cmd>       # forward any tauri CLI subcommand
-    pnpm install:app       # install/update dependencies inside app/
+Daily commands (run from the repo root — these forward to `homebase/`):
 
-Under the hood the frontend is Vite+ (`vp`) and the desktop layer is Tauri v2. Full command reference for the `vp` CLI lives in `app/AGENTS.md` and `app/README.md`. Daily entry point is `pnpm dev` — that's it.
+```bash
+pnpm dev          # Vite dev server (localhost)
+pnpm build        # production build to homebase/dist/
+pnpm check        # format + lint
+pnpm check:fix    # auto-fix
+pnpm test         # vitest run once
+pnpm test:watch   # vitest watch mode
+pnpm typecheck    # tsc --noEmit
+```
 
-For Rust-side checks from the repo root:
+Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + Oxfmt. See `homebase/AGENTS.md` for the full `vp` reference.
 
-    cargo check --manifest-path app/src-tauri/Cargo.toml
-    cargo test --manifest-path app/src-tauri/Cargo.toml
+## CI / deploy
 
-## The research framing
+Two workflows:
 
-This project is designed toward writing practice first, research material second, shippable product never. The bet under study is whether a dated plaintext log + a manifest of slots that read and write it is the minimum viable substrate for personalized software that survives a decade of model and vendor churn. The month-3 test for whether the framing earned itself: *"is there a written observation in NOTES.md you could not have made on day 1?"* (plan §12). The April 10 NOTES.md entry already satisfies this test once, six lessons deep.
+- `.github/workflows/ci.yml` — runs on every PR and push to main. Format + lint + typecheck + tests. Required check; gates auto-merge.
+- `.github/workflows/deploy.yml` — runs on push to main. Builds with `BASE_PATH=/homebase/` and publishes to GitHub Pages. The live URL above is the output.
+
+Branch protection on `main` requires the CI check to pass before merge.
 
 ## Pointers
 
-- **The plan:** `docs/plan-morning-ritual.md`
-- **The five rules:** `docs/plan-morning-ritual.md` §15
-- **The self-audit checklist for new slots:** §16
-- **The bash shell spike (archived research):** `research/bash-shell-spike/`
-- **The research log:** `log/NOTES.md` → `~/Documents/homebase-log/NOTES.md`
-- **Current active plan (gitignored):** `.llm/active-plan.md`
-- **Decomposed work items (gitignored):** `.llm/issues/`
+- **Active plan:** `.llm/active-plan.md` (gitignored — current in-flight work)
+- **Design canvas:** `Homebase Redesign/Homebase.html` (open in a browser; runs the prototype offline)
+- **Morning ritual plan (historical):** `docs/plan-morning-ritual.md`
+- **Five rules:** `docs/plan-morning-ritual.md` §15
+- **Strategic-layer rationale:** `.llm/design-strategic-layer/rationale.md`
+- **Engineering gym** (separate repo): `meninoebom/engineering-gym`
