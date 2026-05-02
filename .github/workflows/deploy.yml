@@ -1,0 +1,58 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Don't cancel an in-flight deploy when a new one queues — Pages serializes
+# them and a half-deployed asset state is worse than a brief delay.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: homebase
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      # BASE_PATH is read by vite.config.ts to scope the bundle under
+      # /homebase/ on GitHub Pages. If the app moves to a custom domain
+      # at the root, change this to BASE_PATH=/ (and the matching
+      # pathSegmentsToKeep in public/404.html).
+      - name: Build with /homebase/ base
+        run: vp build
+        env:
+          BASE_PATH: /homebase/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: homebase/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
