@@ -5,7 +5,13 @@ import { routeTree } from "./routeTree.gen";
 import { SetupGate } from "./components/SetupGate";
 import "./index.css";
 
-const router = createRouter({ routeTree });
+// basepath comes from Vite's base config (/ in dev, /homebase/ in prod
+// build per vite.config.ts). Trailing slash trimmed because TanStack
+// Router expects the basepath without one.
+const router = createRouter({
+  routeTree,
+  basepath: import.meta.env.BASE_URL.replace(/\/$/, "") || undefined,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
