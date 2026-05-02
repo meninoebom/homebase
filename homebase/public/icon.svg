@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Placeholder icon for the strategic accordion. Italic "H" on the
+       New Criterion-inspired cream background. The dusty red signature
+       accent forms the underline. Replace with a designed mark when
+       Brandon has one. -->
+  <rect width="512" height="512" fill="#FAF5EB"/>
+  <text
+    x="256"
+    y="320"
+    text-anchor="middle"
+    font-family="'Newsreader', 'Charter', 'Georgia', serif"
+    font-size="320"
+    font-weight="400"
+    font-style="italic"
+    fill="#1F1B16"
+  >H</text>
+  <rect x="200" y="380" width="112" height="6" fill="#7A2618"/>
+</svg>
