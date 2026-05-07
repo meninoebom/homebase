@@ -6,9 +6,12 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // Path the app is served under in production. The deploy workflow
 // (.github/workflows/deploy.yml) sets BASE_PATH=/homebase/ before
-// running `vp build`, so dev mode keeps "/" (localhost:3000) and
-// production gets the GitHub Pages subpath. Change to "/" in the
-// deploy workflow if/when a custom domain at the root is added.
+// running `vp build`, so dev mode keeps "/" and production gets the
+// GitHub Pages subpath. Change to "/" in the deploy workflow if/when
+// a custom domain at the root is added.
+//
+// Dev server runs on port 47823 (set in `server.port` below) to avoid
+// colliding with other Vite projects on the default 5173.
 //
 // Static-config form (not the `defineConfig(() => ({...}))` function
 // form) because vp's tool-config loader inspects the default export
@@ -18,6 +21,13 @@ const BASE_PATH = process.env.BASE_PATH || "/";
 // https://viteplus.dev/config
 export default defineConfig({
   base: BASE_PATH,
+  server: {
+    // Picked to dodge the conventional Vite default of 5173 (which collides
+    // with other JS projects running locally) while staying below the
+    // ephemeral port range (49152+) macOS uses for outbound sockets.
+    port: 47823,
+    strictPort: true,
+  },
   plugins: [
     // Order matters: TanStack Router plugin must run before the React plugin so
     // the generated routeTree.gen.ts exists before React compiles imports.
