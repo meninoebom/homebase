@@ -27,6 +27,7 @@ export interface RowState {
 export interface StrategyState {
   rows: Record<Horizon, RowState>;
   expandRow: (horizon: Horizon) => Promise<void>;
+  prefetchRow: (horizon: Horizon) => Promise<void>;
   collapseRow: (horizon: Horizon) => void;
   setContent: (horizon: Horizon, content: string) => void;
   clearCarryOver: (horizon: Horizon) => void;
@@ -125,6 +126,23 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
             // banner dismisses naturally on first edit.
             dirty: carryOver !== null,
           },
+        },
+      }));
+    },
+
+    // Read the file *without* expanding the row, so collapsed rows can
+    // surface a faint preview line. Strictly a file read — never runs the
+    // carry-over resolver, since that's an engagement moment that should
+    // only fire on an explicit expand.
+    prefetchRow: async (horizon) => {
+      if (get().rows[horizon].loaded) return;
+      const file = filenameFor(horizon);
+      const existing = await fs.read(file);
+      if (existing === null) return;
+      set((s) => ({
+        rows: {
+          ...s.rows,
+          [horizon]: { ...s.rows[horizon], content: existing, loaded: true },
         },
       }));
     },
