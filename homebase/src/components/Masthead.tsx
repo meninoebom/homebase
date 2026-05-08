@@ -1,15 +1,17 @@
 // Masthead — the top of the strategic accordion.
 //
-// Three lines of type:
+// Three lines of type, plus a quiet way-in for newcomers:
 //   eyebrow  — "A STRATEGIC LIFE GUIDE"  (Inter Tight 10px, 0.28em tracking)
 //   word     — "Homebase"                 (Newsreader italic 84px)
 //   meta     — dateline                   (Inter Tight 11px, 0.22em tracking)
+//   about    — "ABOUT THIS GUIDE →"       (Inter Tight 10px, 0.22em tracking)
 //
 // Plus a 48px horizontal rule below in --ink-4 to mark the end of the
 // cover register and the start of the table of contents.
 //
 // Per the redesign prototype at ~/dev/homebase/Homebase Redesign/.
 
+import { useNavigate } from "@tanstack/react-router";
 import { PeriodKey } from "../lib/period-key";
 
 const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
@@ -29,6 +31,7 @@ const MONTHS = [
 ];
 
 export function Masthead() {
+  const navigate = useNavigate();
   const now = new Date();
   const weekday = DAYS[now.getDay()];
   const date = `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
@@ -62,9 +65,18 @@ export function Masthead() {
       >
         {weekday} <span aria-hidden="true">·</span> {date} <span aria-hidden="true">·</span> {week}
       </div>
+      <button
+        type="button"
+        onClick={() => navigate({ to: "/about" })}
+        className="mt-3 inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[10px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+        style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+      >
+        About this guide
+        <span aria-hidden="true">→</span>
+      </button>
       <div
         aria-hidden="true"
-        className="mx-auto mt-[22px] mb-9 h-px w-12"
+        className="mx-auto mt-5 mb-9 h-px w-12"
         style={{ background: "var(--ink-4)" }}
       />
     </header>
