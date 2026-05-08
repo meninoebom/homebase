@@ -41,7 +41,16 @@ function StrategyAccordion() {
               className="font-sans text-[10px] font-medium uppercase"
               style={{ color: "var(--ink-4)", letterSpacing: "0.28em" }}
             >
-              VOL. I <span aria-hidden="true">·</span> HOMEBASE 2026
+              VOL. I <span aria-hidden="true">·</span> HOMEBASE 2026{" "}
+              <span aria-hidden="true">·</span>{" "}
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/about" })}
+                className="cursor-pointer border-0 bg-transparent p-0 transition-colors hover:text-[var(--ink-1)]"
+                style={{ color: "inherit", letterSpacing: "inherit", font: "inherit" }}
+              >
+                About
+              </button>
             </div>
           </footer>
         </div>

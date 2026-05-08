@@ -121,6 +121,12 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The HorizonInvitation already names the empty state in italic prose;
+  // showing the editor placeholder at the same time renders the same
+  // sentence twice (e.g. "How do you want to live? Begin anywhere." stacked).
+  // Suppress the placeholder while the invitation owns the screen.
+  const showInvitation = !row.carryOver && row.loaded && row.content === "";
+
   return (
     <div>
       <header className="mb-12 text-center">
@@ -157,14 +163,14 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
           onClear={() => clearCarryOver(horizon)}
         />
       ) : (
-        row.loaded && row.content === "" && <HorizonInvitation horizon={horizon} />
+        showInvitation && <HorizonInvitation horizon={horizon} />
       )}
 
       <div className="relative max-w-[62ch]">
         <MarkdownEditor
           value={row.content}
           onChange={(v) => setContent(horizon, v)}
-          placeholder={PLACEHOLDER[horizon]}
+          placeholder={showInvitation ? "" : PLACEHOLDER[horizon]}
           onSave={flushNow}
           autoFocus
         />

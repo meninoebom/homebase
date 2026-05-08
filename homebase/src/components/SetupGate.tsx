@@ -13,6 +13,18 @@ type GateState =
   | { kind: "ready" }
   | { kind: "error"; message: string };
 
+// Routes that should render before the gate prompts. /about is a colophon
+// that explains what Homebase is; a first-time visitor should be able to
+// read it before deciding whether to grant filesystem access.
+//
+// SetupGate is mounted outside RouterProvider, so this check only runs on
+// the initial render; client-side nav within a session won't re-evaluate
+// it. That's acceptable — the protected routes (/horizon/$id, /, /morning)
+// have their own per-feature gates or runtime fail-closed checks.
+function isPublicRoute(pathname: string): boolean {
+  return /\/about\/?$/.test(pathname);
+}
+
 export function SetupGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<GateState>({ kind: "checking" });
 
@@ -30,6 +42,9 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  if (typeof window !== "undefined" && isPublicRoute(window.location.pathname)) {
+    return <>{children}</>;
+  }
   if (state.kind === "ready") return <>{children}</>;
   if (state.kind === "checking") return null;
 
