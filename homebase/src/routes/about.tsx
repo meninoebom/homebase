@@ -1,9 +1,9 @@
-// /about — colophon-style explanation of what Homebase is and how to use it.
+// /about: colophon-style explanation of what Homebase is and how to use it.
 //
-// Reached from the footer link on /. Mirrors the page chrome of horizon.$id.tsx
-// (back link, max-w-[760px] container, centered title with eyebrow + rule)
-// so the back-button affordance and visual register stay consistent across
-// secondary pages.
+// Reached from the "ABOUT THIS GUIDE" link in the Masthead on /. Mirrors the
+// page chrome of horizon.$id.tsx (back link, max-w-[760px] container, centered
+// title with eyebrow + rule) so the back-button affordance and visual register
+// stay consistent across secondary pages.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -70,7 +70,7 @@ function AboutPage() {
         >
           <Section title="What this is">
             <p>
-              Homebase is a strategic life guide — a quiet surface for naming what your life is
+              Homebase is a strategic life guide. A quiet surface for naming what your life is
               about, at five nested time horizons: <em>life values</em>, <em>life goals</em>, the{" "}
               <em>year</em>, the <em>month</em>, the <em>week</em>. A sixth row, the <em>day</em>,
               opens the morning ritual.
@@ -85,7 +85,12 @@ function AboutPage() {
           <Section title="How to use it">
             <ol className="list-decimal space-y-3 pl-5">
               <li>
-                <strong>Pick a folder.</strong> Anywhere on your disk —{" "}
+                <strong>Open in Chrome.</strong> Homebase relies on the File System Access API,
+                which today is supported only by Chromium browsers. Chrome, Edge, Brave, and Arc all
+                work. Firefox and Safari don't, yet.
+              </li>
+              <li>
+                <strong>Pick a folder.</strong> Anywhere on your disk.{" "}
                 <code className="font-mono text-[15px]">~/Documents/homebase-log</code> works well.
                 Homebase writes plain markdown there. You can open the same files in any editor.
               </li>
@@ -110,8 +115,8 @@ function AboutPage() {
             <p>
               Homebase is hosted as a static site on GitHub Pages, but it has{" "}
               <em>no server and no database</em>. Your writing never leaves your machine. The
-              browser's File System Access API lets the app read and write the folder you pick — and
-              even that access ends when you close the tab.
+              browser's File System Access API lets the app read and write the folder you pick. That
+              access ends when you close the tab.
             </p>
             <p>
               You can install Homebase as a desktop app (look for the install button in your address
