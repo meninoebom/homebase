@@ -13,6 +13,10 @@ Use judgment to plan appropriately for the task:
 
 The branch protection on `main` requires the CI check to pass. Auto-merge is fine once CI is green; the deploy workflow rolls the change to `meninoebom.github.io/homebase/` automatically.
 
+## Auto-merge
+
+PRs in this repo use auto-merge. After creating a PR, run `gh pr merge --auto --squash`. GitHub will hold the merge until the required `check` status reports green, then squash + delete the branch automatically. No babysitting required.
+
 ## Code Quality
 
 - `vp check` (or `pnpm check`) before committing — format + lint + typecheck.
