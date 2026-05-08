@@ -20,10 +20,12 @@
 // from the StrategyAccordion route container in #9; tasteful fallbacks
 // live in this component for isolated rendering / tests.
 
+import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CarryOverBanner } from "./CarryOverBanner";
 import { HorizonInvitation } from "./HorizonInvitation";
 import { SectionPreview } from "./SectionPreview";
+import { extractCollapsedPreview } from "../lib/markdown-preview";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { useStrategyStore } from "../store/strategy";
 
@@ -47,7 +49,7 @@ const TITLE: Record<Horizon | "day", string> = {
 
 /** Metadata text shown in the header's right column. */
 function metaFor(horizon: Horizon | "day"): string {
-  if (horizon === "day") return "Open morning ritual";
+  if (horizon === "day") return "Open today's page";
   if (horizon === "life-values" || horizon === "life-goals") return "Persistent";
   const key = PeriodKey.current(horizon);
   if (!key) return "";
@@ -145,8 +147,15 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
   const navigate = useNavigate();
   const row = useStrategyStore((s) => s.rows[horizon]);
   const expandRow = useStrategyStore((s) => s.expandRow);
+  const prefetchRow = useStrategyStore((s) => s.prefetchRow);
   const collapseRow = useStrategyStore((s) => s.collapseRow);
   const clearCarryOver = useStrategyStore((s) => s.clearCarryOver);
+
+  // Pull saved content into state on mount so collapsed rows can show a
+  // faint preview line. Skips the carry-over resolver — see prefetchRow.
+  useEffect(() => {
+    prefetchRow(horizon).catch(() => {});
+  }, [horizon, prefetchRow]);
 
   const onToggle = () => {
     if (row.expanded) {
@@ -155,6 +164,9 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
       expandRow(horizon).catch(() => {});
     }
   };
+
+  const collapsedPreview =
+    !row.expanded && row.content ? extractCollapsedPreview(row.content) : null;
 
   const openEditor = () => {
     navigate({ to: "/horizon/$id", params: { id: horizon } });
@@ -226,6 +238,26 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
         >
           +
         </span>
+        {collapsedPreview && (
+          <span
+            className="italic"
+            style={{
+              gridColumn: 2,
+              gridRow: 2,
+              marginTop: "6px",
+              minWidth: 0,
+              fontFamily: "var(--font-serif-text)",
+              fontSize: "14px",
+              lineHeight: 1.4,
+              color: "var(--ink-5)",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {collapsedPreview}
+          </span>
+        )}
       </button>
 
       {row.expanded && (

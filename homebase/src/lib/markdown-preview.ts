@@ -44,6 +44,20 @@ export function extractLead(content: string): string | null {
 }
 
 /**
+ * Extract a single-line preview for a *collapsed* row — the very faint
+ * line shown under the title to hint that the section already has saved
+ * writing. Lead paragraph wins; falls back to the first bullet item so
+ * bullet-only sections still show something. Returns null when the file
+ * has no extractable content.
+ */
+export function extractCollapsedPreview(content: string): string | null {
+  const lead = extractLead(content);
+  if (lead) return lead;
+  const [first] = extractItems(content, 1);
+  return first ?? null;
+}
+
+/**
  * Extract top-level bullet items as a flat list of plain strings. Strips
  * GFM checkboxes (`- [ ]` / `- [x]`) so the preview reads as content,
  * not as a checklist with state. Skips nested bullets (anything indented).
