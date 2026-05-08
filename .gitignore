@@ -17,3 +17,6 @@ homebase/dist/
 .vscode/
 .idea/
 Thumbs.db
+
+# Playwright CLI snapshot artifacts (created on demand by playwright-cli)
+.playwright-cli/
