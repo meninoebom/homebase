@@ -42,14 +42,6 @@ const TITLE: Record<Horizon, string> = {
   week: "Week",
 };
 
-const PLACEHOLDER: Record<Horizon, string> = {
-  "life-values": "How do you want to live? Begin anywhere.",
-  "life-goals": "What are you aiming at? List the things that pull you forward.",
-  year: "What is this year for?",
-  month: "What is this month about?",
-  week: "What is this week for?",
-};
-
 function HorizonEditorPage() {
   const { id } = useParams({ from: "/horizon/$id" });
   const navigate = useNavigate();
@@ -121,10 +113,6 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The HorizonInvitation already names the empty state in italic prose;
-  // showing the editor placeholder at the same time renders the same
-  // sentence twice (e.g. "How do you want to live? Begin anywhere." stacked).
-  // Suppress the placeholder while the invitation owns the screen.
   const showInvitation = !row.carryOver && row.loaded && row.content === "";
 
   return (
@@ -166,11 +154,18 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
         showInvitation && <HorizonInvitation horizon={horizon} />
       )}
 
+      {/* No editor placeholder: HorizonInvitation owns the empty state above
+          the editor, and CarryOverBanner provides context post-load. The
+          previous attempt to suppress the placeholder via a `showInvitation`
+          ternary failed because MarkdownEditor's CodeMirror state captures
+          the placeholder on first mount (useEffect with empty deps) — by
+          the time `row.loaded` flipped to true, the placeholder was already
+          baked in and could not be retracted. Dropping it entirely is the
+          cleanest fix. */}
       <div className="relative max-w-[62ch]">
         <MarkdownEditor
           value={row.content}
           onChange={(v) => setContent(horizon, v)}
-          placeholder={showInvitation ? "" : PLACEHOLDER[horizon]}
           onSave={flushNow}
           autoFocus
         />
