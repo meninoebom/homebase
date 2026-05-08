@@ -66,7 +66,7 @@ Homebase Redesign/             # current design canvas (HTML + CSS + JSX prototy
 Daily commands (run from the repo root — these forward to `homebase/`):
 
 ```bash
-pnpm dev          # Vite dev server (localhost)
+pnpm dev          # Vite dev server at http://localhost:47823
 pnpm build        # production build to homebase/dist/
 pnpm check        # format + lint
 pnpm check:fix    # auto-fix
@@ -75,7 +75,9 @@ pnpm test:watch   # vitest watch mode
 pnpm typecheck    # tsc --noEmit
 ```
 
-Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + Oxfmt. See `homebase/AGENTS.md` for the full `vp` reference.
+The dev server is pinned to **port 47823** (not the Vite default 5173) to dodge collisions with other Vite projects on the same machine; `strictPort: true` makes a collision fail loudly instead of silently picking the next port. Configured in `homebase/vite.config.ts` under `server.port`.
+
+Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + Oxfmt. See `homebase/AGENTS.md` for the full `vp` reference, and `CLAUDE.md` (root) for project-specific gotchas.
 
 ## CI / deploy
 
