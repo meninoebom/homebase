@@ -22,18 +22,21 @@ function MorningHub() {
   const saving = useRitualStore((s) => s.saving);
   const lastSavedAt = useRitualStore((s) => s.lastSavedAt);
   const drafts = useRitualStore((s) => s.drafts);
+  const loaded = useRitualStore((s) => s.loaded);
 
   useEffect(() => {
     void loadToday();
   }, [loadToday]);
 
-  // Auto-save 800ms after any draft change
+  // Auto-save 800ms after any draft change. Gated on `loaded` so we don't
+  // race-write an empty file before the disk read completes.
   useEffect(() => {
+    if (!loaded) return;
     const timer = setTimeout(() => {
       void saveNow();
     }, 800);
     return () => clearTimeout(timer);
-  }, [drafts, saveNow]);
+  }, [drafts, saveNow, loaded]);
 
   const today = new Date();
   const dateline = today
@@ -66,27 +69,28 @@ function MorningHub() {
           </p>
         </div>
 
-        {slotOrder.map((slotId, i) => {
-          const slot = getSlot(slotId);
-          if (!slot) return null;
-          const SlotComponent = slot.component;
-          const title = SECTION_TITLES[slotId];
+        {loaded &&
+          slotOrder.map((slotId, i) => {
+            const slot = getSlot(slotId);
+            if (!slot) return null;
+            const SlotComponent = slot.component;
+            const title = SECTION_TITLES[slotId];
 
-          return (
-            <section key={slotId} className={i > 0 ? "mt-4 border-t border-[#EBEBEB] pt-3" : ""}>
-              {title && (
-                <h2 className="mb-1 font-serif text-[17px] font-light italic text-[#111]">
-                  {title}
-                </h2>
-              )}
-              <SlotComponent
-                mode="morning"
-                initialDraft={drafts[slotId] ?? ""}
-                onDraft={(body) => setDraft(slotId, body)}
-              />
-            </section>
-          );
-        })}
+            return (
+              <section key={slotId} className={i > 0 ? "mt-4 border-t border-[#EBEBEB] pt-3" : ""}>
+                {title && (
+                  <h2 className="mb-1 font-serif text-[17px] font-light italic text-[#111]">
+                    {title}
+                  </h2>
+                )}
+                <SlotComponent
+                  mode="morning"
+                  initialDraft={drafts[slotId] ?? ""}
+                  onDraft={(body) => setDraft(slotId, body)}
+                />
+              </section>
+            );
+          })}
       </div>
 
       <footer className="sticky bottom-0 flex items-center justify-end border-t border-[#EBEBEB] bg-white px-6 py-1.5">

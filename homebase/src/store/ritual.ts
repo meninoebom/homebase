@@ -11,6 +11,7 @@ export type SlotId = string;
 
 interface RitualState {
   drafts: Record<SlotId, string>;
+  loaded: boolean;
   saving: boolean;
   lastSavedAt: number | null;
 
@@ -21,12 +22,17 @@ interface RitualState {
 
 export const useRitualStore = create<RitualState>()((set, get) => ({
   drafts: {},
+  loaded: false,
   saving: false,
   lastSavedAt: null,
 
   loadToday: async () => {
     const sections = await readDaySections(todayISO());
-    set({ drafts: sections });
+    // CodeMirror is uncontrolled: each RitualEditor seeds its doc once at
+    // mount from initialContent. If we render slots before `loaded` is true,
+    // every editor gets an empty doc and never picks up the disk content
+    // when it arrives — silent data loss on each new tab.
+    set({ drafts: sections, loaded: true });
   },
 
   setDraft: (slotId, body) => {
