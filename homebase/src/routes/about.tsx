@@ -70,16 +70,15 @@ function AboutPage() {
         >
           <Section title="What this is">
             <p>
-              Homebase is a strategic life guide — a quiet surface for naming what
-              your life is about, at five nested time horizons:{" "}
-              <em>life values</em>, <em>life goals</em>, the <em>year</em>, the{" "}
-              <em>month</em>, the <em>week</em>. A sixth row, the <em>day</em>,
+              Homebase is a strategic life guide — a quiet surface for naming what your life is
+              about, at five nested time horizons: <em>life values</em>, <em>life goals</em>, the{" "}
+              <em>year</em>, the <em>month</em>, the <em>week</em>. A sixth row, the <em>day</em>,
               opens the morning ritual.
             </p>
             <p>
-              The accordion at the front door is the table of contents. Each
-              horizon is its own page, not a form. Writing at one horizon
-              carries forward to the next when a new period begins.
+              The accordion at the front door is the table of contents. Each horizon is its own
+              page, not a form. Writing at one horizon carries forward to the next when a new period
+              begins.
             </p>
           </Section>
 
@@ -87,24 +86,22 @@ function AboutPage() {
             <ol className="list-decimal space-y-3 pl-5">
               <li>
                 <strong>Pick a folder.</strong> Anywhere on your disk —{" "}
-                <code className="font-mono text-[15px]">~/Documents/homebase-log</code>{" "}
-                works well. Homebase writes plain markdown there. You can open
-                the same files in any editor.
+                <code className="font-mono text-[15px]">~/Documents/homebase-log</code> works well.
+                Homebase writes plain markdown there. You can open the same files in any editor.
               </li>
               <li>
-                <strong>Begin where there's least resistance.</strong> A blank
-                life-values page can feel intimidating; a blank week can't. You
-                don't have to start at the top.
+                <strong>Begin where there's least resistance.</strong> A blank life-values page can
+                feel intimidating; a blank week can't. You don't have to start at the top.
               </li>
               <li>
-                <strong>Write a little, often.</strong> Autosave runs in the
-                background. <Key>⌘</Key>
+                <strong>Write a little, often.</strong> Autosave runs in the background.{" "}
+                <Key>⌘</Key>
                 <Key>↩</Key> commits immediately if you want to see it land.
               </li>
               <li>
-                <strong>Let carry-over do the work.</strong> When a new week
-                (or month, or year) begins, last period's writing is offered as
-                a draft. Edit it, accept it, or clear it.
+                <strong>Let carry-over do the work.</strong> When a new week (or month, or year)
+                begins, last period's writing is offered as a draft. Edit it, accept it, or clear
+                it.
               </li>
             </ol>
           </Section>
@@ -112,15 +109,13 @@ function AboutPage() {
           <Section title="Where your writing lives">
             <p>
               Homebase is hosted as a static site on GitHub Pages, but it has{" "}
-              <em>no server and no database</em>. Your writing never leaves
-              your machine. The browser's File System Access API lets the app
-              read and write the folder you pick — and even that access ends
-              when you close the tab.
+              <em>no server and no database</em>. Your writing never leaves your machine. The
+              browser's File System Access API lets the app read and write the folder you pick — and
+              even that access ends when you close the tab.
             </p>
             <p>
-              You can install Homebase as a desktop app (look for the install
-              button in your address bar). The app shell works offline after
-              the first load.
+              You can install Homebase as a desktop app (look for the install button in your address
+              bar). The app shell works offline after the first load.
             </p>
           </Section>
         </div>
