@@ -22,10 +22,9 @@ interface Props {
   horizon: Horizon;
   content: string;
   onOpen: () => void;
-  onEdit: () => void;
 }
 
-export function SectionPreview({ horizon, content, onOpen, onEdit }: Props) {
+export function SectionPreview({ horizon, content, onOpen }: Props) {
   const lead = extractLead(content);
   const items = extractItems(content);
   const isTimeBound = horizon === "year" || horizon === "month" || horizon === "week";
@@ -90,28 +89,19 @@ export function SectionPreview({ horizon, content, onOpen, onEdit }: Props) {
 
       <div className="mt-[22px] flex flex-wrap items-center gap-7">
         <ActionButton label="Open" onClick={onOpen} />
-        <ActionButton label="Edit" onClick={onEdit} quiet />
       </div>
     </div>
   );
 }
 
-function ActionButton({
-  label,
-  onClick,
-  quiet,
-}: {
-  label: string;
-  onClick: () => void;
-  quiet?: boolean;
-}) {
+function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className="cursor-pointer border-0 bg-transparent p-0 py-1 font-sans text-[11px] font-semibold uppercase transition-colors"
       style={{
-        color: quiet ? "var(--ink-3)" : "var(--accent-1)",
+        color: "var(--accent-1)",
         letterSpacing: "0.22em",
         display: "inline-flex",
         alignItems: "center",

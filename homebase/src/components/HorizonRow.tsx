@@ -301,12 +301,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
               </button>
             </>
           ) : (
-            <SectionPreview
-              horizon={horizon}
-              content={row.content}
-              onOpen={openEditor}
-              onEdit={openEditor}
-            />
+            <SectionPreview horizon={horizon} content={row.content} onOpen={openEditor} />
           )}
         </div>
       )}
