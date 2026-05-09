@@ -30,6 +30,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useRitualStore } from "../store/ritual";
 import type {
+  BriefingConfig,
   HomebaseConfig,
   PromptSlotConfig,
   SlotConfig,
@@ -125,9 +126,84 @@ function SettingsPage() {
           <AddButton label="Add a writing prompt" onClick={() => void addSlot("prompt")} />
           <AddButton label="Add a workspace" onClick={() => void addSlot("workspace")} />
         </div>
+
+        <BriefingSection
+          briefing={config.briefing}
+          onChange={(next) => void updateConfig((c) => ({ ...c, briefing: next }))}
+        />
       </div>
     </main>
   );
+}
+
+function BriefingSection({
+  briefing,
+  onChange,
+}: {
+  briefing: BriefingConfig;
+  onChange: (next: BriefingConfig) => void;
+}) {
+  // Local mirror of the textarea so keystrokes feel responsive. Debounced
+  // flush keeps disk writes off the keystroke path.
+  const [quotesText, setQuotesText] = useState(briefing.quotes.join("\n"));
+
+  useEffect(() => {
+    setQuotesText(briefing.quotes.join("\n"));
+  }, [briefing.quotes]);
+
+  useEffect(() => {
+    const parsed = quotesText
+      .split("\n")
+      .map((q) => q.trim())
+      .filter((q) => q.length > 0);
+    if (arraysEqual(parsed, briefing.quotes)) return;
+
+    const t = setTimeout(() => {
+      onChange({ ...briefing, quotes: parsed });
+    }, SAVE_DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [quotesText, briefing, onChange]);
+
+  return (
+    <section className="mt-12">
+      <h2 className="mb-3 font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-[#9CA3AF]">
+        Briefing
+      </h2>
+
+      <label className="flex cursor-pointer items-center gap-3 font-serif text-[14px] text-[#111]">
+        <input
+          type="checkbox"
+          checked={briefing.enabled}
+          onChange={(e) => onChange({ ...briefing, enabled: e.target.checked })}
+          className="h-4 w-4"
+        />
+        Show a daily quote at the top of the morning page
+      </label>
+
+      <div className="mt-4">
+        <span className="mb-1 block font-sans text-[10px] font-medium uppercase tracking-[0.14em] text-[#9CA3AF]">
+          Quotes (one per line)
+        </span>
+        <textarea
+          value={quotesText}
+          onChange={(e) => setQuotesText(e.target.value)}
+          rows={6}
+          placeholder={
+            briefing.quotes.length === 0
+              ? "Add quotes you want to see in the morning. One rotates in each day."
+              : ""
+          }
+          className="w-full resize-y rounded border border-[#E5E7EB] bg-white px-2 py-1 font-serif text-[14px] leading-snug focus:border-[#9CA3AF] focus:outline-none"
+        />
+      </div>
+    </section>
+  );
+}
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
 }
 
 function SlotList({
