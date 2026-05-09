@@ -180,8 +180,9 @@ export function serializeConfig(config: HomebaseConfig): string {
 
 /**
  * Neutral starter config for fresh users (empty log dir).
- * No Piano. No Brandon-isms. Four slots that imply a journaling
- * practice without prescribing one.
+ * No Piano. No Brandon-isms. Time-of-day-neutral copy: someone who
+ * uses Homebase as an evening journal or a midday check-in shouldn't
+ * trip over "this morning" prompts.
  */
 export function defaultConfig(): HomebaseConfig {
   return {
@@ -196,7 +197,7 @@ export function defaultConfig(): HomebaseConfig {
         id: "inner-weather",
         kind: "prompt",
         title: "Inner Weather",
-        prompt: "What's alive in you this morning?",
+        prompt: "What's alive in you right now?",
         hints: ["weighing on you", "needs to be said", "giving you life", "gratitude"],
       },
       {
@@ -209,7 +210,7 @@ export function defaultConfig(): HomebaseConfig {
         id: "today",
         kind: "prompt",
         title: "Today",
-        prompt: "What do you want to do today?",
+        prompt: "What's on your mind today?",
       },
     ],
     briefing: {
