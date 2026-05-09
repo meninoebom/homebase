@@ -113,7 +113,7 @@ body {
   --terracotta: var(--accent-1);
   --terracotta-soft: rgba(122, 38, 24, 0.08);
 
-  background-color: var(--paper-1);
+  background-color: var(--paper-2);
   color: var(--ink-1);
   font-family: var(--font-serif-text);
 }

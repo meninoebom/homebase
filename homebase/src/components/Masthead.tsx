@@ -41,8 +41,8 @@ export function Masthead() {
   return (
     <header className="masthead text-center">
       <div
-        className="font-sans text-[10px] font-medium uppercase"
-        style={{ color: "var(--ink-3)", letterSpacing: "0.28em" }}
+        className="font-sans text-[11px] font-medium uppercase"
+        style={{ color: "var(--ink-2)", letterSpacing: "0.28em" }}
       >
         A Strategic Life Guide
       </div>
@@ -60,8 +60,8 @@ export function Masthead() {
         Homebase
       </h1>
       <div
-        className="font-sans text-[11px] font-medium uppercase"
-        style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+        className="font-sans text-[12px] font-medium uppercase"
+        style={{ color: "var(--ink-2)", letterSpacing: "0.22em" }}
       >
         {weekday} <span aria-hidden="true">·</span> {date} <span aria-hidden="true">·</span> {week}
       </div>
@@ -69,8 +69,8 @@ export function Masthead() {
         <button
           type="button"
           onClick={() => navigate({ to: "/about" })}
-          className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[10px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
-          style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+          className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[12px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-2)", letterSpacing: "0.22em" }}
         >
           About this guide
           <span aria-hidden="true">→</span>
@@ -78,8 +78,8 @@ export function Masthead() {
         <button
           type="button"
           onClick={() => navigate({ to: "/settings" })}
-          className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[10px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
-          style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+          className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[12px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-2)", letterSpacing: "0.22em" }}
         >
           Customize
           <span aria-hidden="true">→</span>
