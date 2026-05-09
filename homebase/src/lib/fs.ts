@@ -113,6 +113,21 @@ export async function writeNested(segments: string[], text: string): Promise<voi
   return writeAt(logDirOrThrow(), segments, text);
 }
 
+/**
+ * List top-level filenames in the log dir. Used to detect whether the
+ * directory already contains user data (any `YYYY-MM-DD.md` day file)
+ * — drives the choice between `legacyDefaultConfig()` (existing user
+ * migrating from a pre-config build) and `defaultConfig()` (fresh user).
+ */
+export async function listTopLevelFiles(): Promise<string[]> {
+  const dir = logDirOrThrow();
+  const names: string[] = [];
+  for await (const [name, handle] of dir.entries()) {
+    if (handle.kind === "file") names.push(name);
+  }
+  return names;
+}
+
 async function readAt(root: FileSystemDirectoryHandle, segments: string[]): Promise<string> {
   try {
     let dir = root;
