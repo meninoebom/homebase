@@ -49,6 +49,7 @@ function SettingsPage() {
   const loaded = useRitualStore((s) => s.loaded);
   const loadToday = useRitualStore((s) => s.loadToday);
   const updateConfig = useRitualStore((s) => s.updateConfig);
+  const resetToDefaults = useRitualStore((s) => s.resetToDefaults);
 
   useEffect(() => {
     if (!loaded) void loadToday();
@@ -131,8 +132,56 @@ function SettingsPage() {
           briefing={config.briefing}
           onChange={(next) => void updateConfig((c) => ({ ...c, briefing: next }))}
         />
+
+        <ResetSection onReset={() => void resetToDefaults()} />
       </div>
     </main>
+  );
+}
+
+function ResetSection({ onReset }: { onReset: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <div className="mt-16 rounded border border-[#FECACA] bg-[#FEF2F2] p-4">
+        <p className="mb-3 font-serif text-[14px] leading-relaxed text-[#991B1B]">
+          Reset to defaults? This will replace your current slots and briefing with the standard
+          starter set. Your day-file content will be left alone.
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setConfirming(false);
+              onReset();
+            }}
+            className="cursor-pointer rounded bg-[#B91C1C] px-3 py-1.5 font-sans text-[13px] text-white hover:bg-[#991B1B]"
+          >
+            Yes, reset
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className="cursor-pointer rounded border border-[#E5E7EB] bg-white px-3 py-1.5 font-sans text-[13px] text-[#374151] hover:bg-[#F3F4F6]"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-16 flex justify-center">
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="cursor-pointer border-0 bg-transparent p-1 font-sans text-[12px] text-[#9CA3AF] hover:text-[#B91C1C]"
+      >
+        Reset to defaults
+      </button>
+    </div>
   );
 }
 
