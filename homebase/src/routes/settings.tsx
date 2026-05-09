@@ -492,11 +492,11 @@ function WorkspaceFields({
 }) {
   return (
     <>
-      <Field label="State label">
+      <Field label="Header label">
         <input
           type="text"
           value={draft.stateLabel ?? ""}
-          placeholder="Editable and persistent"
+          placeholder="e.g. Goals, Working on, Repertoire"
           onChange={(e) =>
             onChange({
               ...draft,
@@ -505,6 +505,10 @@ function WorkspaceFields({
           }
           className="w-full rounded border border-[#E5E7EB] bg-white px-2 py-1 font-serif text-[14px] focus:border-[#9CA3AF] focus:outline-none"
         />
+        <p className="mt-1 font-sans text-[11px] leading-snug text-[#6B7280]">
+          Small caps text shown above the saved area — tells you what to think of it as. Defaults to
+          "Editable and persistent" if left empty.
+        </p>
       </Field>
       <Field label="Today prompt (optional)">
         <textarea

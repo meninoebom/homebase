@@ -82,7 +82,7 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
       <button
         type="button"
         onClick={onDayClick}
-        className="day-row-button group grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-2)]"
+        className="day-row-button group grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-3)]"
         style={{
           gridTemplateColumns: "36px 1fr auto 30px",
           gap: "14px",
@@ -115,7 +115,7 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
           {TITLE.day}
         </h2>
         <span
-          className="whitespace-nowrap self-center font-sans text-[11px] font-medium uppercase"
+          className="whitespace-nowrap self-center font-sans text-[12px] font-medium uppercase"
           style={{
             color: "var(--accent-1)",
             letterSpacing: "0.2em",
@@ -177,13 +177,13 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
       className={row.expanded ? "toc-row-open" : undefined}
       style={{
         borderTop: "1px solid var(--paper-edge)",
-        background: row.expanded ? "var(--paper-2)" : "transparent",
+        background: row.expanded ? "var(--paper-3)" : "transparent",
       }}
     >
       <button
         type="button"
         onClick={onToggle}
-        className="grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-2)]"
+        className="grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-3)]"
         style={{
           gridTemplateColumns: "36px 1fr auto 30px",
           gap: "14px",
@@ -216,9 +216,9 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
           {TITLE[horizon]}
         </h2>
         <span
-          className="whitespace-nowrap font-sans text-[11px] font-medium uppercase"
+          className="whitespace-nowrap font-sans text-[12px] font-medium uppercase"
           style={{
-            color: "var(--ink-3)",
+            color: "var(--ink-2)",
             letterSpacing: "0.2em",
           }}
         >

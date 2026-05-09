@@ -1,9 +1,8 @@
-// /about: colophon-style explanation of what Homebase is and how to use it.
+// /about — what Homebase is, how to use it.
 //
-// Reached from the "ABOUT THIS GUIDE" link in the Masthead on /. Mirrors the
-// page chrome of horizon.$id.tsx (back link, max-w-[760px] container, centered
-// title with eyebrow + rule) so the back-button affordance and visual register
-// stay consistent across secondary pages.
+// Reached from the Masthead "About this guide" link. Kept short and
+// usage-oriented: a first-time visitor should be able to read this in
+// two minutes and walk away knowing what to do.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -20,8 +19,8 @@ function AboutPage() {
         <button
           type="button"
           onClick={() => navigate({ to: "/" })}
-          className="mb-14 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 py-1.5 font-sans text-[11px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
-          style={{ color: "var(--ink-3)", letterSpacing: "0.24em" }}
+          className="mb-14 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 py-1.5 font-sans text-[12px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-2)", letterSpacing: "0.22em" }}
         >
           <span
             aria-hidden="true"
@@ -38,24 +37,18 @@ function AboutPage() {
         </button>
 
         <header className="mb-12 text-center">
-          <div
-            className="mb-3 font-sans text-[11px] font-medium uppercase"
-            style={{ color: "var(--accent-1)", letterSpacing: "0.24em" }}
-          >
-            Colophon
-          </div>
           <h1
             className="italic"
             style={{
               fontFamily: "var(--font-serif-display)",
               fontWeight: 400,
-              fontSize: "calc(72px * var(--display-scale, 1))",
+              fontSize: "calc(64px * var(--display-scale, 1))",
               lineHeight: 1.05,
               letterSpacing: "-0.02em",
               color: "var(--ink-1)",
             }}
           >
-            About
+            About Homebase
           </h1>
           <div
             aria-hidden="true"
@@ -66,62 +59,119 @@ function AboutPage() {
 
         <div
           className="mx-auto max-w-[62ch] font-serif text-[17px] leading-[1.65]"
-          style={{ color: "var(--ink-2)" }}
+          style={{ color: "var(--ink-1)" }}
         >
-          <Section title="What this is">
+          <Section title="What it is">
             <p>
-              Homebase is a strategic life guide. A quiet surface for naming what your life is
-              about, at five nested time horizons: <em>life values</em>, <em>life goals</em>, the{" "}
-              <em>year</em>, the <em>month</em>, the <em>week</em>. A sixth row, the <em>day</em>,
-              opens the morning ritual.
+              Homebase is a personal writing tool with two surfaces: a <em>home page</em> for
+              reflection at long horizons (your values, your goals, the year, the month, the week),
+              and a <em>daily page</em> for whatever you want to write today.
             </p>
             <p>
-              The accordion at the front door is the table of contents. Each horizon is its own
-              page, not a form. Writing at one horizon carries forward to the next when a new period
-              begins.
+              Everything you write is plain markdown saved to a folder you choose on your own
+              computer. There is no server, no account, no sync. Open the same files in any text
+              editor; back them up however you back up files.
             </p>
           </Section>
 
-          <Section title="How to use it">
-            <ol className="list-decimal space-y-3 pl-5">
+          <Section title="The home page">
+            <p>
+              The accordion at <code className="font-mono text-[15px]">/</code> is your map. Each
+              row is a horizon — Life values, Life goals, Year, Month, Week. Click to expand, write,
+              collapse. Writing at one horizon carries forward to the next when a new period begins,
+              so a fresh week starts with last week's draft instead of a blank page.
+            </p>
+            <p>The Day row at the bottom doesn't open inline; it links to your daily page.</p>
+          </Section>
+
+          <Section title="The daily page">
+            <p>
+              Whatever you do every day. Some people use it as a morning ritual. Some journal in the
+              evening. Some leave it open and add to it through the day. It's just a writing page
+              with sections you arrange to suit your practice.
+            </p>
+            <p>
+              Sections are called <em>slots</em>, and there are two kinds.
+            </p>
+
+            <h3
+              className="mt-6 mb-2 font-sans text-[12px] font-medium uppercase tracking-[0.16em]"
+              style={{ color: "var(--ink-2)" }}
+            >
+              Prompt slots
+            </h3>
+            <p>
+              A single writing field with an optional question above it. Each day starts blank.
+              Write, save, move on. Examples: Dreams, Inner Weather, Gratitude, Today.
+            </p>
+
+            <h3
+              className="mt-6 mb-2 font-sans text-[12px] font-medium uppercase tracking-[0.16em]"
+              style={{ color: "var(--ink-2)" }}
+            >
+              Workspace slots
+            </h3>
+            <p>
+              Two areas stacked. A <em>persistent</em> area at the top that{" "}
+              <em>doesn't change day to day</em> — a small whiteboard you only edit when something
+              genuinely changes. Below it, an optional today-writing field that does reset each day,
+              like a prompt slot.
+            </p>
+            <p>
+              Use a workspace when there's standing context you want to see <em>before</em> writing
+              today's entry. Goals for a project. The book you're reading. The instrument you're
+              practicing. "Working on" lists. Anything where "what was I doing here?" is a useful
+              question to answer first.
+            </p>
+            <p>
+              Most slots will probably be prompts. Workspaces are for the few areas where a small
+              dashboard above the day's writing earns its place.
+            </p>
+          </Section>
+
+          <Section title="Customize it">
+            <p>
+              Click <strong>Customize</strong> in the home-page header (or in the daily-page footer)
+              to open settings. From there you can:
+            </p>
+            <ul className="ml-5 list-disc space-y-1">
+              <li>Reorder slots by dragging the handle</li>
               <li>
-                <strong>Open in Chrome.</strong> Homebase relies on the File System Access API,
-                which today is supported only by Chromium browsers. Chrome, Edge, Brave, and Arc all
-                work. Firefox and Safari don't, yet.
+                Rename a slot's title (the <em>id</em> stays fixed so your history doesn't break)
+              </li>
+              <li>Edit prompts and the small hint chips</li>
+              <li>Add a new prompt or workspace</li>
+              <li>Remove a slot — its file stays on disk; it just stops rendering</li>
+              <li>Toggle the briefing panel and supply your own quotes</li>
+            </ul>
+            <p>
+              All edits save to a file called{" "}
+              <code className="font-mono text-[15px]">homebase.config.json</code> in your log
+              folder. You can hand-edit it in any text editor. If you break it, Homebase shows a
+              recovery screen with a "Reset to defaults" button.
+            </p>
+          </Section>
+
+          <Section title="Practical">
+            <ul className="ml-5 list-disc space-y-1">
+              <li>
+                <strong>Browser:</strong> Chrome, Edge, Brave, Arc — anything Chromium-based.
+                Homebase uses the File System Access API; Firefox and Safari don't support it yet.
               </li>
               <li>
-                <strong>Pick a folder.</strong> Anywhere on your disk.{" "}
+                <strong>Folder:</strong>{" "}
                 <code className="font-mono text-[15px]">~/Documents/homebase-log</code> works well.
-                Homebase writes plain markdown there. You can open the same files in any editor.
+                You only pick it once.
               </li>
               <li>
-                <strong>Begin where there's least resistance.</strong> A blank life-values page can
-                feel intimidating; a blank week can't. You don't have to start at the top.
+                <strong>Offline:</strong> install Homebase as a desktop app via the install button
+                in your address bar. The shell works offline after the first load.
               </li>
               <li>
-                <strong>Write a little, often.</strong> Autosave runs in the background.{" "}
-                <Key>⌘</Key>
+                <strong>Save:</strong> autosave runs in the background. <Key>⌘</Key>
                 <Key>↩</Key> commits immediately if you want to see it land.
               </li>
-              <li>
-                <strong>Let carry-over do the work.</strong> When a new week (or month, or year)
-                begins, last period's writing is offered as a draft. Edit it, accept it, or clear
-                it.
-              </li>
-            </ol>
-          </Section>
-
-          <Section title="Where your writing lives">
-            <p>
-              Homebase is hosted as a static site on GitHub Pages, but it has{" "}
-              <em>no server and no database</em>. Your writing never leaves your machine. The
-              browser's File System Access API lets the app read and write the folder you pick. That
-              access ends when you close the tab.
-            </p>
-            <p>
-              You can install Homebase as a desktop app (look for the install button in your address
-              bar). The app shell works offline after the first load.
-            </p>
+            </ul>
           </Section>
         </div>
       </div>
@@ -133,8 +183,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section className="mb-14">
       <h2
-        className="mb-5 font-sans text-[11px] font-medium uppercase"
-        style={{ color: "var(--accent-1)", letterSpacing: "0.24em" }}
+        className="mb-5 font-sans text-[12px] font-medium uppercase"
+        style={{ color: "var(--accent-1)", letterSpacing: "0.22em" }}
       >
         {title}
       </h2>
@@ -148,7 +198,7 @@ function Key({ children }: { children: React.ReactNode }) {
     <span
       className="mx-[3px] inline-block px-[7px] py-[2px] font-sans text-[10px] uppercase tracking-[0.1em] not-italic"
       style={{
-        color: "var(--ink-faint, #A39A8A)",
+        color: "var(--ink-3)",
         border: "1px solid var(--hairline-2, #D9D2C0)",
         borderRadius: "3px",
       }}
