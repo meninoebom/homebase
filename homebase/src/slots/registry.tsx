@@ -35,21 +35,13 @@ function buildComponent(config: SlotConfig): ComponentType<SlotProps> {
   if (config.kind === "prompt") {
     return function BoundPromptSlot(props: SlotProps) {
       return (
-        <PromptSlot
-          config={config}
-          initialDraft={props.initialDraft}
-          onDraft={props.onDraft}
-        />
+        <PromptSlot config={config} initialDraft={props.initialDraft} onDraft={props.onDraft} />
       );
     };
   }
   return function BoundWorkspaceSlot(props: SlotProps) {
     return (
-      <WorkspaceSlot
-        config={config}
-        initialDraft={props.initialDraft}
-        onDraft={props.onDraft}
-      />
+      <WorkspaceSlot config={config} initialDraft={props.initialDraft} onDraft={props.onDraft} />
     );
   };
 }

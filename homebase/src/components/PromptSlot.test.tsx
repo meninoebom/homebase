@@ -36,22 +36,14 @@ describe("PromptSlot", () => {
     expect(a.querySelectorAll("p").length).toBe(0);
 
     const { container: b } = render(
-      <PromptSlot
-        config={{ ...baseConfig, hints: [] }}
-        initialDraft=""
-        onDraft={() => {}}
-      />,
+      <PromptSlot config={{ ...baseConfig, hints: [] }} initialDraft="" onDraft={() => {}} />,
     );
     expect(b.querySelectorAll("p").length).toBe(0);
   });
 
   it("renders initialDraft into the editor", () => {
     render(
-      <PromptSlot
-        config={baseConfig}
-        initialDraft="The demo is tomorrow."
-        onDraft={() => {}}
-      />,
+      <PromptSlot config={baseConfig} initialDraft="The demo is tomorrow." onDraft={() => {}} />,
     );
     expect(screen.getByText("The demo is tomorrow.")).toBeInTheDocument();
   });
