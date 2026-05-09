@@ -1,6 +1,6 @@
 // /horizon/:id — full-page editor for one strategic horizon.
 //
-// Reached from the SectionPreview's "Open" or "Edit" actions on the
+// Reached from the SectionPreview's "Open" action on the
 // accordion at /. Re-uses the same StrategyStore, MarkdownEditor,
 // CarryOverBanner, HorizonInvitation, SaveIndicator, and useAutosave
 // hook — the only thing this route adds is the page chrome (back link,
