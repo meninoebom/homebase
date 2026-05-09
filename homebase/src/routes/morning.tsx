@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { PromptSlot } from "../components/PromptSlot";
@@ -11,6 +11,7 @@ export const Route = createFileRoute("/morning")({
 });
 
 function MorningHub() {
+  const navigate = useNavigate();
   const loadToday = useRitualStore((s) => s.loadToday);
   const setDraft = useRitualStore((s) => s.setDraft);
   const saveNow = useRitualStore((s) => s.saveNow);
@@ -78,7 +79,14 @@ function MorningHub() {
           ))}
       </div>
 
-      <footer className="sticky bottom-0 flex items-center justify-end border-t border-[#EBEBEB] bg-white px-6 py-1.5">
+      <footer className="sticky bottom-0 flex items-center justify-between border-t border-[#EBEBEB] bg-white px-6 py-1.5">
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/settings" })}
+          className="cursor-pointer border-0 bg-transparent p-0 font-sans text-[11px] uppercase tracking-[0.18em] text-[#9CA3AF] hover:text-[#111]"
+        >
+          Customize
+        </button>
         <span className="font-sans text-[11px] text-[#D1D5DB]">
           {saving ? "saving…" : savedLabel}
         </span>

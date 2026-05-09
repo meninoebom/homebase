@@ -38,6 +38,14 @@ interface RitualState {
   setDraft: (slotId: SlotId, body: string) => void;
   saveNow: () => Promise<void>;
   resetToDefaults: () => Promise<void>;
+
+  /**
+   * Mutate the config in-memory and persist to disk. Used by the
+   * settings page for reorder / add / remove / edit. The updater is
+   * called with the current config; if it returns the same reference
+   * (no change), no write happens.
+   */
+  updateConfig: (updater: (config: HomebaseConfig) => HomebaseConfig) => Promise<void>;
 }
 
 const DAY_FILE_PATTERN = /^\d{4}-\d{2}-\d{2}\.md$/;
@@ -105,6 +113,15 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       set({ saving: false });
       throw err;
     }
+  },
+
+  updateConfig: async (updater) => {
+    const current = get().config;
+    if (!current) return;
+    const next = updater(current);
+    if (next === current) return;
+    set({ config: next });
+    await writeConfig(next);
   },
 
   resetToDefaults: async () => {

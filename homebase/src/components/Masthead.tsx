@@ -65,15 +65,26 @@ export function Masthead() {
       >
         {weekday} <span aria-hidden="true">·</span> {date} <span aria-hidden="true">·</span> {week}
       </div>
-      <button
-        type="button"
-        onClick={() => navigate({ to: "/about" })}
-        className="mt-3 inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[10px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
-        style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
-      >
-        About this guide
-        <span aria-hidden="true">→</span>
-      </button>
+      <div className="mt-3 flex items-center justify-center gap-6">
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/about" })}
+          className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[10px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+        >
+          About this guide
+          <span aria-hidden="true">→</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/settings" })}
+          className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[10px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+        >
+          Customize
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
       <div
         aria-hidden="true"
         className="mx-auto mt-5 mb-9 h-px w-12"
