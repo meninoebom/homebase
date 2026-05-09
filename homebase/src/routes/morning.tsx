@@ -62,6 +62,10 @@ function MorningHub() {
 
         {loaded && config && <BriefingPanel config={config} />}
 
+        {loaded && config && config.slots.length === 0 && (
+          <EmptyState onCustomize={() => navigate({ to: "/settings" })} />
+        )}
+
         {loaded &&
           config?.slots.map((slot, i) => (
             <section key={slot.id} className={i > 0 ? "mt-4 border-t border-[#EBEBEB] pt-3" : ""}>
@@ -92,6 +96,23 @@ function MorningHub() {
         </span>
       </footer>
     </main>
+  );
+}
+
+function EmptyState({ onCustomize }: { onCustomize: () => void }) {
+  return (
+    <div className="mt-12 flex flex-col items-center gap-4 rounded border border-dashed border-[#E5E7EB] px-6 py-12 text-center">
+      <p className="font-serif text-[16px] italic text-[#6B7280]">
+        Your homebase has no slots yet.
+      </p>
+      <button
+        type="button"
+        onClick={onCustomize}
+        className="cursor-pointer rounded bg-[#111] px-4 py-2 font-sans text-[13px] font-medium text-white hover:bg-[#374151]"
+      >
+        Customize your homebase →
+      </button>
+    </div>
   );
 }
 
@@ -157,6 +178,13 @@ function ConfigRecoveryScreen({
         <p className="mb-3 font-serif text-[15px] leading-relaxed text-[#374151]">
           The file <code className="font-mono text-[13px]">homebase.config.json</code> in your log
           directory couldn't be loaded. Until it's fixed or reset, the morning page can't render.
+        </p>
+
+        <p className="mb-3 font-sans text-[11px] uppercase tracking-[0.14em] text-[#9CA3AF]">
+          {error.kind === "parse-error" ? "Parse error" : "Schema error"} ·{" "}
+          <span className="lowercase tracking-normal text-[#6B7280]">
+            you can also fix this by editing the file directly in any text editor
+          </span>
         </p>
 
         {error.kind === "parse-error" ? (
