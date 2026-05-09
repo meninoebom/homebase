@@ -1,20 +1,34 @@
 // /about — what Homebase is, how to use it.
 //
-// Reached from the Masthead "About this guide" link. Kept short and
-// usage-oriented: a first-time visitor should be able to read this in
-// two minutes and walk away knowing what to do.
+// Layout: centered 760px reading column with a small fixed TOC in the
+// left gutter (lg+ only). The TOC anchors to each section by id and
+// highlights the section currently in view via IntersectionObserver,
+// so a first-time reader can see at a glance what's covered without
+// scrolling, and click straight to the part they need.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
 });
 
+const SECTIONS: { id: string; title: string }[] = [
+  { id: "what-it-is", title: "What it is" },
+  { id: "home-page", title: "The home page" },
+  { id: "daily-page", title: "The daily page" },
+  { id: "customize", title: "Customize it" },
+  { id: "practical", title: "Practical" },
+];
+
 function AboutPage() {
   const navigate = useNavigate();
+  const activeId = useActiveSection(SECTIONS.map((s) => s.id));
 
   return (
     <div className="strategy-scope min-h-screen">
+      <TableOfContents sections={SECTIONS} activeId={activeId} />
+
       <div className="mx-auto max-w-[760px] px-8 pt-10 pb-24">
         <button
           type="button"
@@ -61,7 +75,7 @@ function AboutPage() {
           className="mx-auto max-w-[62ch] font-serif text-[17px] leading-[1.65]"
           style={{ color: "var(--ink-1)" }}
         >
-          <Section title="What it is">
+          <Section id="what-it-is" title="What it is">
             <p>
               Homebase is a personal writing tool with two surfaces: a <em>home page</em> for
               reflection at long horizons (your values, your goals, the year, the month, the week),
@@ -74,7 +88,7 @@ function AboutPage() {
             </p>
           </Section>
 
-          <Section title="The home page">
+          <Section id="home-page" title="The home page">
             <p>
               The accordion at <code className="font-mono text-[15px]">/</code> is your map. Each
               row is a horizon — Life values, Life goals, Year, Month, Week. Click to expand, write,
@@ -84,7 +98,7 @@ function AboutPage() {
             <p>The Day row at the bottom doesn't open inline; it links to your daily page.</p>
           </Section>
 
-          <Section title="The daily page">
+          <Section id="daily-page" title="The daily page">
             <p>
               Whatever you do every day. Some people use it as a morning ritual. Some journal in the
               evening. Some leave it open and add to it through the day. It's just a writing page
@@ -129,7 +143,7 @@ function AboutPage() {
             </p>
           </Section>
 
-          <Section title="Customize it">
+          <Section id="customize" title="Customize it">
             <p>
               Click <strong>Customize</strong> in the home-page header (or in the daily-page footer)
               to open settings. From there you can:
@@ -152,7 +166,7 @@ function AboutPage() {
             </p>
           </Section>
 
-          <Section title="Practical">
+          <Section id="practical" title="Practical">
             <ul className="ml-5 list-disc space-y-1">
               <li>
                 <strong>Browser:</strong> Chrome, Edge, Brave, Arc — anything Chromium-based.
@@ -179,11 +193,62 @@ function AboutPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function TableOfContents({
+  sections,
+  activeId,
+}: {
+  sections: { id: string; title: string }[];
+  activeId: string | null;
+}) {
   return (
-    <section className="mb-14">
+    <nav
+      aria-label="Page contents"
+      className="pointer-events-none fixed top-24 left-6 z-10 hidden w-[160px] lg:block"
+    >
+      <div className="pointer-events-auto">
+        <p
+          className="mb-3 font-sans text-[10px] font-medium uppercase"
+          style={{ color: "var(--ink-3)", letterSpacing: "0.22em" }}
+        >
+          Contents
+        </p>
+        <ul className="flex flex-col gap-2">
+          {sections.map((s) => {
+            const isActive = activeId === s.id;
+            return (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="block cursor-pointer font-sans text-[12px] leading-snug transition-colors"
+                  style={{
+                    color: isActive ? "var(--accent-1)" : "var(--ink-2)",
+                    fontWeight: isActive ? 500 : 400,
+                  }}
+                >
+                  {s.title}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
+function Section({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="mb-14 scroll-mt-20">
       <h2
-        className="mb-5 font-sans text-[12px] font-medium uppercase"
+        className="mb-5 font-sans text-[13px] font-medium uppercase"
         style={{ color: "var(--accent-1)", letterSpacing: "0.22em" }}
       >
         {title}
@@ -206,4 +271,46 @@ function Key({ children }: { children: React.ReactNode }) {
       {children}
     </span>
   );
+}
+
+/**
+ * Track which section is currently in view as the user scrolls.
+ * Uses IntersectionObserver with a top-of-viewport rootMargin so the
+ * "active" section flips when its heading reaches the upper third of
+ * the screen — feels right for reading flow, where the eye lands
+ * above the middle.
+ */
+function useActiveSection(ids: string[]): string | null {
+  const [active, setActive] = useState<string | null>(ids[0] ?? null);
+
+  useEffect(() => {
+    const elements = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Pick the topmost section currently intersecting; falls back
+        // to whichever section's heading is closest to the top of the
+        // viewport.
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) {
+          setActive(visible[0].target.id);
+        }
+      },
+      {
+        // Activate when the heading is in the top ~third of the viewport.
+        rootMargin: "0px 0px -66% 0px",
+        threshold: 0,
+      },
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [ids]);
+
+  return active;
 }
