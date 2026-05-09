@@ -263,8 +263,8 @@ export function legacyDefaultConfig(): HomebaseConfig {
       {
         id: "orient",
         kind: "prompt",
-        title: "Orient",
-        prompt: "What's the shape of your day?",
+        prompt:
+          "According to my deepest understanding, how can I live that understanding more deeply?",
       },
     ],
     briefing: {
