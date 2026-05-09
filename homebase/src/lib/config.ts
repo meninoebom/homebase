@@ -252,7 +252,7 @@ export function legacyDefaultConfig(): HomebaseConfig {
         id: "piano",
         kind: "workspace",
         title: "Piano",
-        stateLabel: "Goals",
+        prompt: "What did you practice? What clicked, what needs work?",
       },
       {
         id: "creative",
