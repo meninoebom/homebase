@@ -58,7 +58,16 @@ function MorningHub() {
   return (
     <main className="min-h-screen bg-white">
       <div className="mx-auto max-w-[780px] px-8 pb-12 pt-6">
-        <p className="mb-4 font-sans text-[11px] tracking-[0.1em] text-[#9CA3AF]">{dateline}</p>
+        <div className="mb-4 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/" })}
+            className="cursor-pointer border-0 bg-transparent p-0 font-sans text-[11px] uppercase tracking-[0.18em] text-[#9CA3AF] hover:text-[#111]"
+          >
+            ← Homebase
+          </button>
+          <p className="font-sans text-[11px] tracking-[0.1em] text-[#9CA3AF]">{dateline}</p>
+        </div>
 
         {loaded && config && <BriefingPanel config={config} />}
 
@@ -177,7 +186,7 @@ function ConfigRecoveryScreen({
         </h1>
         <p className="mb-3 font-serif text-[15px] leading-relaxed text-[#374151]">
           The file <code className="font-mono text-[13px]">homebase.config.json</code> in your log
-          directory couldn't be loaded. Until it's fixed or reset, the morning page can't render.
+          directory couldn't be loaded. Until it's fixed or reset, your daily page can't render.
         </p>
 
         <p className="mb-3 font-sans text-[11px] uppercase tracking-[0.14em] text-[#9CA3AF]">

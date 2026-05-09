@@ -113,7 +113,7 @@ function SettingsPage() {
         </p>
 
         <h2 className="mb-3 font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-[#9CA3AF]">
-          Your morning page
+          Your daily page
         </h2>
 
         <SlotList
@@ -226,7 +226,7 @@ function BriefingSection({
           onChange={(e) => onChange({ ...briefing, enabled: e.target.checked })}
           className="h-4 w-4"
         />
-        Show a daily quote at the top of the morning page
+        Show a daily quote at the top of your daily page
       </label>
 
       <div className="mt-4">
@@ -239,7 +239,7 @@ function BriefingSection({
           rows={6}
           placeholder={
             briefing.quotes.length === 0
-              ? "Add quotes you want to see in the morning. One rotates in each day."
+              ? "Add quotes you want to see each day. One rotates in by date."
               : ""
           }
           className="w-full resize-y rounded border border-[#E5E7EB] bg-white px-2 py-1 font-serif text-[14px] leading-snug focus:border-[#9CA3AF] focus:outline-none"
