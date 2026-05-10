@@ -1,6 +1,6 @@
 // /horizon/:id — full-page editor for one strategic horizon.
 //
-// Reached from the SectionPreview's "Open" or "Edit" actions on the
+// Reached from the SectionPreview's "Open" action on the
 // accordion at /. Re-uses the same StrategyStore, MarkdownEditor,
 // CarryOverBanner, HorizonInvitation, SaveIndicator, and useAutosave
 // hook — the only thing this route adds is the page chrome (back link,
@@ -40,14 +40,6 @@ const TITLE: Record<Horizon, string> = {
   year: "Year",
   month: "Month",
   week: "Week",
-};
-
-const PLACEHOLDER: Record<Horizon, string> = {
-  "life-values": "How do you want to live? Begin anywhere.",
-  "life-goals": "What are you aiming at? List the things that pull you forward.",
-  year: "What is this year for?",
-  month: "What is this month about?",
-  week: "What is this week for?",
 };
 
 function HorizonEditorPage() {
@@ -121,6 +113,8 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const showInvitation = !row.carryOver && row.loaded && row.content === "";
+
   return (
     <div>
       <header className="mb-12 text-center">
@@ -157,14 +151,21 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
           onClear={() => clearCarryOver(horizon)}
         />
       ) : (
-        row.loaded && row.content === "" && <HorizonInvitation horizon={horizon} />
+        showInvitation && <HorizonInvitation horizon={horizon} />
       )}
 
+      {/* No editor placeholder: HorizonInvitation owns the empty state above
+          the editor, and CarryOverBanner provides context post-load. The
+          previous attempt to suppress the placeholder via a `showInvitation`
+          ternary failed because MarkdownEditor's CodeMirror state captures
+          the placeholder on first mount (useEffect with empty deps) — by
+          the time `row.loaded` flipped to true, the placeholder was already
+          baked in and could not be retracted. Dropping it entirely is the
+          cleanest fix. */}
       <div className="relative max-w-[62ch]">
         <MarkdownEditor
           value={row.content}
           onChange={(v) => setContent(horizon, v)}
-          placeholder={PLACEHOLDER[horizon]}
           onSave={flushNow}
           autoFocus
         />

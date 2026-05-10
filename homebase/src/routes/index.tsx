@@ -38,8 +38,8 @@ function StrategyAccordion() {
           </div>
           <footer className="mt-18 text-center">
             <div
-              className="font-sans text-[10px] font-medium uppercase"
-              style={{ color: "var(--ink-4)", letterSpacing: "0.28em" }}
+              className="font-sans text-[11px] font-medium uppercase"
+              style={{ color: "var(--ink-3)", letterSpacing: "0.28em" }}
             >
               VOL. I <span aria-hidden="true">·</span> HOMEBASE 2026
             </div>
