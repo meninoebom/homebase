@@ -2,7 +2,7 @@
 
 A personal writing tool. Plain markdown. Your folder. No server.
 
-**[Try it →](https://meninoebom.github.io/homebase/)**
+**[Try it →](https://homebase.you)**
 
 Homebase has two surfaces:
 
@@ -13,7 +13,7 @@ Everything you write is plain markdown saved to a folder you choose on your own 
 
 ## Try it
 
-Open **[meninoebom.github.io/homebase](https://meninoebom.github.io/homebase/)** in a Chromium browser (Chrome, Edge, Brave, Arc). Homebase uses the browser's File System Access API to read and write your markdown files; Firefox and Safari don't support that yet.
+Open **[homebase.you](https://homebase.you)** in a Chromium browser (Chrome, Edge, Brave, Arc). Homebase uses the browser's File System Access API to read and write your markdown files; Firefox and Safari don't support that yet.
 
 On first launch you pick a folder. `~/Documents/homebase-log` works well, but anywhere is fine. You only pick it once.
 
@@ -86,7 +86,7 @@ Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + 
 Two workflows:
 
 - `.github/workflows/ci.yml` — runs on every PR and push to main. Format + lint + typecheck + tests. Required check; gates auto-merge.
-- `.github/workflows/deploy.yml` — runs on push to main. Builds with `BASE_PATH=/homebase/` and publishes to GitHub Pages.
+- `.github/workflows/deploy.yml` — runs on push to main. Builds with `BASE_PATH=/` and publishes to GitHub Pages, served at the custom domain `homebase.you` (configured via `homebase/public/CNAME`).
 
 Branch protection on `main` requires the CI check to pass before merge.
 
