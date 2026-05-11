@@ -1,12 +1,15 @@
-// File System Access API wrapper for the morning-ritual log directory,
-// with IndexedDB handle persistence (via ./idb).
+// File System Access API wrapper for the one folder Homebase uses.
 //
-// Homebase's substrate is real plaintext markdown on disk — same folder the
-// Tauri version used (~/Documents/homebase-log/). The user picks the
-// folder once via showDirectoryPicker(). We store the resulting
-// FileSystemDirectoryHandle in IndexedDB so it survives page reloads; on
-// subsequent loads we just need to re-confirm permission (usually silent
-// once granted).
+// Homebase's substrate is real plaintext markdown on disk. The user picks
+// ONE folder via showDirectoryPicker(); both the morning-ritual log
+// (dated `YYYY-MM-DD.md` files, plus per-slot subdirs) and the strategy
+// files (`values.md`, `year-…`, `month-…`, etc.) live in that one folder.
+// Filenames don't collide (strategy files are all prefixed; log files are
+// date-named), so a single flat folder works.
+//
+// We store the chosen FileSystemDirectoryHandle in IndexedDB so it
+// survives page reloads. On subsequent loads we just need to re-confirm
+// permission (usually silent once granted).
 //
 // Browser support: Chromium-based only (Chrome, Edge, Arc, Brave, Opera).
 // Firefox and Safari: absent. This is a deliberate trade — preserving §15
@@ -15,7 +18,11 @@
 
 import { idbGet, idbSet } from "./idb";
 
-const HANDLE_KEY = "logDir";
+const HANDLE_KEY = "homebaseRoot";
+// One-time migration: pre-rewrite, the log used "logDir" and strategy
+// used "strategyDir". If "homebaseRoot" is missing but "logDir" exists,
+// the user's existing log folder is promoted to the unified root.
+const LEGACY_LOG_KEY = "logDir";
 
 // -- Directory handle resolution ----------------------------------------
 
@@ -35,16 +42,32 @@ export function fsaSupported(): boolean {
 }
 
 /**
- * Return the saved directory handle if permission is still granted, else
- * null. Never prompts the user — that's pickLogDir's job. Used by the
- * setup gate to decide whether to render the picker or the app.
+ * Look up any persisted handle (new key first, then legacy log-dir key for
+ * one-time migration). Returns the raw handle without permission checks.
  */
-export async function getSavedLogDir(): Promise<FileSystemDirectoryHandle | null> {
+async function loadPersistedHandle(): Promise<FileSystemDirectoryHandle | null> {
+  const saved = await idbGet<FileSystemDirectoryHandle>(HANDLE_KEY);
+  if (saved) return saved;
+  const legacy = await idbGet<FileSystemDirectoryHandle>(LEGACY_LOG_KEY);
+  if (!legacy) return null;
+  // Promote legacy log handle to the unified key so future loads skip the
+  // migration check.
+  await idbSet(HANDLE_KEY, legacy);
+  return legacy;
+}
+
+/**
+ * Return the saved homebase folder handle if permission is still granted,
+ * else null. Never prompts the user — that's pickHomebaseFolder's job.
+ * Used by the setup gate to decide whether to render the picker or the
+ * app.
+ */
+export async function getSavedHomebaseFolder(): Promise<FileSystemDirectoryHandle | null> {
   if (cachedDir) {
     const ok = await verifyPermission(cachedDir);
     return ok ? cachedDir : null;
   }
-  const saved = await idbGet<FileSystemDirectoryHandle>(HANDLE_KEY);
+  const saved = await loadPersistedHandle();
   if (!saved) return null;
   const ok = await verifyPermission(saved);
   if (!ok) return null;
@@ -53,10 +76,21 @@ export async function getSavedLogDir(): Promise<FileSystemDirectoryHandle | null
 }
 
 /**
- * Prompt the user to pick a directory. Must be called from a user gesture
+ * True if a folder handle is persisted (regardless of permission state).
+ * The setup gate uses this to distinguish "first run" (no handle yet,
+ * full-bleed welcome copy) from "re-confirm permission" (handle exists
+ * but browser dropped the grant, friendlier "click to reconnect" copy).
+ */
+export async function hasSavedHomebaseFolder(): Promise<boolean> {
+  if (cachedDir) return true;
+  return (await loadPersistedHandle()) !== null;
+}
+
+/**
+ * Prompt the user to pick a folder. Must be called from a user gesture
  * (click). Persists the chosen handle in IndexedDB.
  */
-export async function pickLogDir(): Promise<FileSystemDirectoryHandle> {
+export async function pickHomebaseFolder(): Promise<FileSystemDirectoryHandle> {
   const handle = await window.showDirectoryPicker({ mode: "readwrite" });
   await idbSet(HANDLE_KEY, handle);
   cachedDir = handle;
@@ -68,8 +102,8 @@ export async function pickLogDir(): Promise<FileSystemDirectoryHandle> {
  * if the user granted previously; otherwise shows a permission prompt.
  * Must be called from a user gesture.
  */
-export async function requestLogDirPermission(): Promise<FileSystemDirectoryHandle | null> {
-  const saved = await idbGet<FileSystemDirectoryHandle>(HANDLE_KEY);
+export async function requestHomebaseFolderPermission(): Promise<FileSystemDirectoryHandle | null> {
+  const saved = await loadPersistedHandle();
   if (!saved) return null;
   const perm = await saved.requestPermission({ mode: "readwrite" });
   if (perm !== "granted") return null;
@@ -82,12 +116,21 @@ async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<bool
   return status === "granted";
 }
 
-function logDirOrThrow(): FileSystemDirectoryHandle {
+function rootOrThrow(): FileSystemDirectoryHandle {
   if (!cachedDir) {
     throw new Error(
-      "log directory handle not initialized — the setup gate should have blocked app render",
+      "homebase folder handle not initialized — the setup gate should have blocked app render",
     );
   }
+  return cachedDir;
+}
+
+/**
+ * Internal: expose the cached root for strategy-fs.ts, which shares the
+ * same folder. Returns null if not yet initialized; callers should ensure
+ * the setup gate has run first.
+ */
+export function getCachedHomebaseRoot(): FileSystemDirectoryHandle | null {
   return cachedDir;
 }
 
@@ -95,22 +138,22 @@ function logDirOrThrow(): FileSystemDirectoryHandle {
 
 /** Read a top-level file by name. Returns "" if it doesn't exist. */
 export async function readFile(name: string): Promise<string> {
-  return readAt(logDirOrThrow(), [name]);
+  return readAt(rootOrThrow(), [name]);
 }
 
 /** Read a nested file, e.g. readNested(["piano", "state.md"]). */
 export async function readNested(segments: string[]): Promise<string> {
-  return readAt(logDirOrThrow(), segments);
+  return readAt(rootOrThrow(), segments);
 }
 
 /** Write a top-level file, creating it if needed. */
 export async function writeFile(name: string, text: string): Promise<void> {
-  return writeAt(logDirOrThrow(), [name], text);
+  return writeAt(rootOrThrow(), [name], text);
 }
 
 /** Write a nested file, creating intermediate directories as needed. */
 export async function writeNested(segments: string[], text: string): Promise<void> {
-  return writeAt(logDirOrThrow(), segments, text);
+  return writeAt(rootOrThrow(), segments, text);
 }
 
 /**
@@ -120,7 +163,7 @@ export async function writeNested(segments: string[], text: string): Promise<voi
  * migrating from a pre-config build) and `defaultConfig()` (fresh user).
  */
 export async function listTopLevelFiles(): Promise<string[]> {
-  const dir = logDirOrThrow();
+  const dir = rootOrThrow();
   const names: string[] = [];
   for await (const [name, handle] of dir.entries()) {
     if (handle.kind === "file") names.push(name);

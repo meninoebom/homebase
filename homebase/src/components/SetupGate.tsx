@@ -1,15 +1,29 @@
-// First-run gate. If the user has not yet picked the log directory (or
-// re-opened the app and the permission hasn't been re-confirmed), we block
-// the whole app and show a single button that triggers showDirectoryPicker.
-// Must be a user click — File System Access API refuses to prompt otherwise.
+// First-run gate. Blocks the whole app until the user has picked the
+// folder Homebase keeps its files in. Once picked, the choice is
+// remembered (IndexedDB) — the user shouldn't see this screen again
+// unless the browser drops the permission (e.g. site data cleared).
+//
+// The File System Access API requires a user gesture to prompt, so the
+// gate renders an explicit "Choose folder" button rather than auto-firing
+// the picker.
 
 import { useEffect, useState } from "react";
-import { fsaSupported, getSavedLogDir, pickLogDir, requestLogDirPermission } from "../lib/fs";
+import {
+  fsaSupported,
+  getSavedHomebaseFolder,
+  hasSavedHomebaseFolder,
+  pickHomebaseFolder,
+  requestHomebaseFolderPermission,
+} from "../lib/fs";
 
 type GateState =
   | { kind: "checking" }
   | { kind: "unsupported" }
-  | { kind: "needs-pick"; hasSaved: boolean }
+  // first-time setup: no handle saved yet
+  | { kind: "first-run" }
+  // handle saved but browser dropped the grant; one click silently
+  // reconnects in the common case
+  | { kind: "reconnect" }
   | { kind: "ready" }
   | { kind: "error"; message: string };
 
@@ -33,13 +47,15 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
       setState({ kind: "unsupported" });
       return;
     }
-    getSavedLogDir().then((saved) => {
+    (async () => {
+      const saved = await getSavedHomebaseFolder();
       if (saved) {
         setState({ kind: "ready" });
-      } else {
-        setState({ kind: "needs-pick", hasSaved: false });
+        return;
       }
-    });
+      const hasSaved = await hasSavedHomebaseFolder();
+      setState({ kind: hasSaved ? "reconnect" : "first-run" });
+    })();
   }, []);
 
   if (typeof window !== "undefined" && isPublicRoute(window.location.pathname)) {
@@ -54,47 +70,66 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
         <>
           <h1 className="font-serif text-2xl text-[#374151]">Homebase needs a Chromium browser.</h1>
           <p className="font-serif text-[15px] italic text-[#6B7280]">
-            The File System Access API is how Homebase reads and writes your morning log as real
-            markdown files. Open this page in Chrome, Edge, Arc, or Brave.
+            Homebase saves your notes as real markdown files on your computer, which needs an API
+            that Chrome, Edge, Arc, Brave, and Opera support. Firefox and Safari don&rsquo;t yet.
           </p>
         </>
       )}
 
-      {state.kind === "needs-pick" && (
+      {state.kind === "first-run" && (
         <>
-          <h1 className="font-serif text-2xl text-[#374151]">Homebase</h1>
+          <h1 className="font-serif text-2xl text-[#374151]">Welcome to Homebase.</h1>
           <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
-            Pick the folder where your morning log lives. Typically{" "}
-            <code className="font-mono text-[13px]">~/Documents/homebase-log</code>. Your choice is
-            remembered for next time.
+            Homebase stores everything you write as plain text files in a folder on your computer.
+            You pick the folder; Homebase never moves it, and you can back it up like any other
+            folder.
           </p>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await pickLogDir();
-                  setState({ kind: "ready" });
-                } catch (err) {
-                  if (err instanceof Error && err.name === "AbortError") return;
-                  setState({ kind: "error", message: String(err) });
-                }
-              }}
-              className="rounded bg-[#374151] px-4 py-2 font-sans text-[13px] text-white hover:bg-[#1F2937]"
-            >
-              Choose folder
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                const handle = await requestLogDirPermission();
-                if (handle) setState({ kind: "ready" });
-              }}
-              className="rounded border border-[#E5E7EB] px-4 py-2 font-sans text-[13px] text-[#6B7280] hover:bg-[#F3F4F6]"
-            >
-              Re-use saved folder
-            </button>
-          </div>
+          <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
+            Choose any folder you like &mdash;{" "}
+            <code className="font-mono text-[13px]">Documents/homebase</code> works well. You only
+            need to do this once.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await pickHomebaseFolder();
+                setState({ kind: "ready" });
+              } catch (err) {
+                if (err instanceof Error && err.name === "AbortError") return;
+                setState({ kind: "error", message: String(err) });
+              }
+            }}
+            className="rounded bg-[#374151] px-4 py-2 font-sans text-[13px] text-white hover:bg-[#1F2937]"
+          >
+            Choose folder
+          </button>
+        </>
+      )}
+
+      {state.kind === "reconnect" && (
+        <>
+          <h1 className="font-serif text-2xl text-[#374151]">Welcome back.</h1>
+          <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
+            Your browser needs you to re-confirm access to your Homebase folder. Click below to
+            reconnect &mdash; you shouldn&rsquo;t need to pick the folder again.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              const handle = await requestHomebaseFolderPermission();
+              if (handle) {
+                setState({ kind: "ready" });
+                return;
+              }
+              // Permission still denied. Fall back to picking again (rare:
+              // e.g. user revoked or deleted the folder).
+              setState({ kind: "first-run" });
+            }}
+            className="rounded bg-[#374151] px-4 py-2 font-sans text-[13px] text-white hover:bg-[#1F2937]"
+          >
+            Reconnect
+          </button>
         </>
       )}
 
@@ -104,7 +139,7 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
           <p className="font-mono text-[13px] text-[#6B7280]">{state.message}</p>
           <button
             type="button"
-            onClick={() => setState({ kind: "needs-pick", hasSaved: false })}
+            onClick={() => setState({ kind: "first-run" })}
             className="rounded bg-[#374151] px-4 py-2 font-sans text-[13px] text-white hover:bg-[#1F2937]"
           >
             Try again
