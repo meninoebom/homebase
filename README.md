@@ -15,7 +15,7 @@ Everything you write is plain markdown saved to a folder you choose on your own 
 
 Open **[homebase.you](https://homebase.you)** in a Chromium browser (Chrome, Edge, Brave, Arc). Homebase uses the browser's File System Access API to read and write your markdown files; Firefox and Safari don't support that yet.
 
-On first launch you pick a folder. `~/Documents/homebase-log` works well, but anywhere is fine. You only pick it once.
+On first launch you pick a folder. `~/Documents/homebase` works well, but anywhere is fine. You only pick it once. Both your home-page horizons and your daily entries live in that one folder.
 
 To install as a desktop app, click the install button in the address bar (or the 3-dot menu → "Install Homebase"). The app shell works offline after first load.
 
@@ -28,7 +28,7 @@ Most things you'd want to change are configurable from the **Customize** link on
 - Toggle the briefing panel and supply your own quotes
 - Reset to defaults if you want a clean slate
 
-All edits save to a file called `homebase.config.json` in your log folder. You can hand-edit it in any text editor; if you break it, Homebase shows a recovery screen with a "Reset to defaults" button.
+All edits save to a file called `homebase.config.json` in your homebase folder. You can hand-edit it in any text editor; if you break it, Homebase shows a recovery screen with a "Reset to defaults" button.
 
 The two slot kinds:
 
@@ -39,7 +39,7 @@ The two slot kinds:
 
 The app is a static site hosted on GitHub Pages. There is no backend, no database, no telemetry. Your writing never leaves your machine. The browser's File System Access API lets the app read and write the folder you pick; that access ends when you close the tab.
 
-For a real backup: `git init` inside your log folder and push to a private repo. Diffs over months tell you something interesting about how your thinking shifted.
+For a real backup: `git init` inside your homebase folder and push to a private repo. Diffs over months tell you something interesting about how your thinking shifted.
 
 ## Contribute
 

@@ -42,14 +42,17 @@ If you ever need a reactive placeholder, the CodeMirror-idiomatic fix is a `Comp
 
 ### `/about` is whitelisted past `SetupGate`
 
-`SetupGate` (`homebase/src/components/SetupGate.tsx`) wraps the entire `RouterProvider` in `main.tsx`, which means *every* route is gated behind the log-folder picker. `/about` opts out via a path check (`isPublicRoute()`) so a first-time visitor can read what Homebase is before granting filesystem access.
+`SetupGate` (`homebase/src/components/SetupGate.tsx`) wraps the entire `RouterProvider` in `main.tsx`, which means *every* other route is gated behind the homebase-folder picker. `/about` opts out via a path check (`isPublicRoute()`) so a first-time visitor can read what Homebase is before granting filesystem access.
 
-Two things to know:
+The check reads `window.location.pathname` once. SetupGate is rendered outside `RouterProvider`, so client-side nav does *not* re-evaluate it. User-visible bug surface: someone landing on `/about` and then navigating to `/morning` would bypass SetupGate; `/morning` would fail at runtime when it tries to read the folder. If you add another colophon-style public route (privacy, FAQ), extend `isPublicRoute()` — and ideally only allow it as the entry route, not as a navigation target from inside the gated app.
 
-1. **The check reads `window.location.pathname` once.** SetupGate is rendered outside `RouterProvider`, so client-side nav does *not* re-evaluate it. The user-visible bug surface: someone landing on `/about` and then navigating to `/morning` would bypass SetupGate; `/morning` would fail at runtime when it tries to read the log dir.
-2. **The strategy routes (`/`, `/horizon/$id`) are independently safe.** They wrap themselves in `StrategyPermissionGate`, so even if SetupGate is bypassed, accordion content stays gated.
+### One folder, one gate
 
-If you add another colophon-style public route (privacy, FAQ), extend `isPublicRoute()`. If you add a *protected* route that needs the log dir, prefer wrapping it per-route à la `StrategyPermissionGate` rather than depending on the root gate.
+Homebase used to keep two separate directory handles — log (`logDir`) and strategy (`strategyDir`) — gated by two near-identical permission screens (`SetupGate` and the now-deleted `StrategyPermissionGate`). First-time users perceived this as the picker asking twice for the same thing. PR #68 collapsed both into a single root handle (`homebaseRoot`) under one gate. Strategy and log files coexist in the same folder; filenames don't collide (strategy is horizon-prefixed, log is date-named).
+
+There is a one-time IDB migration: `loadPersistedHandle()` in `lib/fs.ts` falls back to the legacy `logDir` key and promotes it to `homebaseRoot` on first read. Don't remove that fallback until enough time has passed that no installed PWA still has only the old key.
+
+If you ever need a *second* directory for genuinely-separate data (e.g. exports), give it its own picker reachable from settings — don't reintroduce a second first-run gate.
 
 ## After Completing Work
 
