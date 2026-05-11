@@ -89,10 +89,12 @@ The dev server is pinned to **port 47823** (`strictPort: true` in `vite.config.t
 
 ## Where data lives
 
-- **`homebase.config.json`** — slots + briefing config, written next to the user's day files. See `lib/config.ts` for schema and validation.
+Everything lives in the single folder the user picks at first run (one directory handle, persisted in IndexedDB under `homebaseRoot`). Filenames don't collide because strategy files are horizon-prefixed and daily files are date-named:
+
+- **`homebase.config.json`** — slots + briefing config. See `lib/config.ts` for schema and validation.
 - **`YYYY-MM-DD.md`** — one file per day, with `## slot-id` sections inside.
 - **`<slot-id>/state.md`** — persistent body for workspace slots.
-- **Strategic horizons** live in a separate folder (a different directory handle, persisted in IndexedDB). `life-values.md`, `life-goals.md`, `year-2026.md`, `month-2026-05.md`, `week-2026-W19.md`.
+- **Strategic horizons** — `life-values.md`, `life-goals.md`, `year-2026.md`, `month-2026-05.md`, `week-2026-W19.md`, in the same folder.
 
 ## Tooling notes
 
