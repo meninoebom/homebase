@@ -17,7 +17,6 @@ import { CarryOverBanner } from "../components/CarryOverBanner";
 import { HorizonInvitation } from "../components/HorizonInvitation";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { SaveIndicator } from "../components/SaveIndicator";
-import { StrategyPermissionGate } from "../components/StrategyPermissionGate";
 import { useAutosave } from "../hooks/useAutosave";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { useStrategyStore } from "../store/strategy";
@@ -58,32 +57,30 @@ function HorizonEditorPage() {
   const horizon = id as Horizon;
 
   return (
-    <StrategyPermissionGate>
-      <div className="strategy-scope min-h-screen">
-        <div className="mx-auto max-w-[760px] px-8 pt-10 pb-24">
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/" })}
-            className="mb-14 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 py-1.5 font-sans text-[11px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
-            style={{ color: "var(--ink-3)", letterSpacing: "0.24em" }}
+    <div className="strategy-scope min-h-screen">
+      <div className="mx-auto max-w-[760px] px-8 pt-10 pb-24">
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/" })}
+          className="mb-14 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 py-1.5 font-sans text-[11px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-3)", letterSpacing: "0.24em" }}
+        >
+          <span
+            aria-hidden="true"
+            className="italic"
+            style={{
+              fontFamily: "var(--font-serif-display)",
+              fontSize: "16px",
+              transform: "translateY(-1px)",
+            }}
           >
-            <span
-              aria-hidden="true"
-              className="italic"
-              style={{
-                fontFamily: "var(--font-serif-display)",
-                fontSize: "16px",
-                transform: "translateY(-1px)",
-              }}
-            >
-              ←
-            </span>
-            Homebase
-          </button>
-          <EditorBody horizon={horizon} />
-        </div>
+            ←
+          </span>
+          Homebase
+        </button>
+        <EditorBody horizon={horizon} />
       </div>
-    </StrategyPermissionGate>
+    </div>
   );
 }
 

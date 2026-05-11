@@ -6,6 +6,9 @@
 # AI workflow scratch (ephemeral, per ~/.claude/CLAUDE.md convention)
 .llm/
 
+# Playwright CLI snapshots/screenshots/console logs (ephemeral)
+.playwright-cli/
+
 # Node / pnpm
 node_modules/
 pnpm-debug.log*

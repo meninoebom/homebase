@@ -15,7 +15,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { HorizonRow } from "../components/HorizonRow";
 import { Masthead } from "../components/Masthead";
-import { StrategyPermissionGate } from "../components/StrategyPermissionGate";
 
 export const Route = createFileRoute("/")({
   component: StrategyAccordion,
@@ -24,28 +23,26 @@ export const Route = createFileRoute("/")({
 function StrategyAccordion() {
   const navigate = useNavigate();
   return (
-    <StrategyPermissionGate>
-      <div className="strategy-scope min-h-screen">
-        <div className="mx-auto max-w-[760px] px-8 pt-16 pb-24">
-          <Masthead />
-          <div className="toc flex flex-col">
-            <HorizonRow horizon="life-values" />
-            <HorizonRow horizon="life-goals" />
-            <HorizonRow horizon="year" />
-            <HorizonRow horizon="month" />
-            <HorizonRow horizon="week" />
-            <HorizonRow horizon="day" onDayClick={() => navigate({ to: "/morning" })} />
-          </div>
-          <footer className="mt-18 text-center">
-            <div
-              className="font-sans text-[11px] font-medium uppercase"
-              style={{ color: "var(--ink-3)", letterSpacing: "0.28em" }}
-            >
-              VOL. I <span aria-hidden="true">·</span> HOMEBASE 2026
-            </div>
-          </footer>
+    <div className="strategy-scope min-h-screen">
+      <div className="mx-auto max-w-[760px] px-8 pt-16 pb-24">
+        <Masthead />
+        <div className="toc flex flex-col">
+          <HorizonRow horizon="life-values" />
+          <HorizonRow horizon="life-goals" />
+          <HorizonRow horizon="year" />
+          <HorizonRow horizon="month" />
+          <HorizonRow horizon="week" />
+          <HorizonRow horizon="day" onDayClick={() => navigate({ to: "/morning" })} />
         </div>
+        <footer className="mt-18 text-center">
+          <div
+            className="font-sans text-[11px] font-medium uppercase"
+            style={{ color: "var(--ink-3)", letterSpacing: "0.28em" }}
+          >
+            VOL. I <span aria-hidden="true">·</span> HOMEBASE 2026
+          </div>
+        </footer>
       </div>
-    </StrategyPermissionGate>
+    </div>
   );
 }
