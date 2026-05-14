@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { quoteForDate } from "../lib/briefing-quotes";
 import { getSlot, slotOrder } from "../slots/registry";
 import { useRitualStore } from "../store/ritual";
 
@@ -45,6 +46,8 @@ function MorningHub() {
     })
     .toUpperCase();
 
+  const briefing = quoteForDate(today);
+
   const savedLabel = lastSavedAt
     ? `saved ${new Date(lastSavedAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }).toLowerCase()}`
     : "";
@@ -62,7 +65,10 @@ function MorningHub() {
             </span>
           </div>
           <p className="mt-1 font-serif text-[13px] italic leading-snug text-[#9CA3AF]">
-            "The only way to do great work is to love what you do."
+            “{briefing.text}”
+            <span className="ml-2 not-italic text-[11px] tracking-[0.04em] text-[#BFBFBF]">
+              — {briefing.source}
+            </span>
           </p>
         </div>
 

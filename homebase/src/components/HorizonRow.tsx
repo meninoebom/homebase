@@ -80,7 +80,7 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
       <button
         type="button"
         onClick={onDayClick}
-        className="day-row-button group grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-2)]"
+        className="day-row-button group grid w-full cursor-pointer items-baseline px-4 text-left transition-colors hover:bg-[var(--paper-2)]"
         style={{
           gridTemplateColumns: "36px 1fr auto 30px",
           gap: "14px",
@@ -171,7 +171,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
       <button
         type="button"
         onClick={onToggle}
-        className="grid w-full cursor-pointer items-baseline px-1 text-left transition-colors hover:bg-[var(--paper-2)]"
+        className="grid w-full cursor-pointer items-baseline px-4 text-left transition-colors hover:bg-[var(--paper-2)]"
         style={{
           gridTemplateColumns: "36px 1fr auto 30px",
           gap: "14px",
@@ -230,7 +230,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
 
       {row.expanded && (
         <div
-          className="pl-14 pr-2 pb-8 pt-1"
+          className="pl-[68px] pr-5 pb-8 pt-1"
           style={{ borderBottom: "1px solid var(--paper-edge)" }}
         >
           {row.carryOver ? (
