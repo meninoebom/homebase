@@ -1,6 +1,6 @@
 // /horizon/:id — full-page editor for one strategic horizon.
 //
-// Reached from the SectionPreview's "Open" or "Edit" actions on the
+// Reached from the SectionPreview's "Open" action on the
 // accordion at /. Re-uses the same StrategyStore, MarkdownEditor,
 // CarryOverBanner, HorizonInvitation, SaveIndicator, and useAutosave
 // hook — the only thing this route adds is the page chrome (back link,
@@ -17,7 +17,6 @@ import { CarryOverBanner } from "../components/CarryOverBanner";
 import { HorizonInvitation } from "../components/HorizonInvitation";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { SaveIndicator } from "../components/SaveIndicator";
-import { StrategyPermissionGate } from "../components/StrategyPermissionGate";
 import { useAutosave } from "../hooks/useAutosave";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { useStrategyStore } from "../store/strategy";
@@ -42,14 +41,6 @@ const TITLE: Record<Horizon, string> = {
   week: "Week",
 };
 
-const PLACEHOLDER: Record<Horizon, string> = {
-  "life-values": "How do you want to live? Begin anywhere.",
-  "life-goals": "What are you aiming at? List the things that pull you forward.",
-  year: "What is this year for?",
-  month: "What is this month about?",
-  week: "What is this week for?",
-};
-
 function HorizonEditorPage() {
   const { id } = useParams({ from: "/horizon/$id" });
   const navigate = useNavigate();
@@ -66,32 +57,30 @@ function HorizonEditorPage() {
   const horizon = id as Horizon;
 
   return (
-    <StrategyPermissionGate>
-      <div className="strategy-scope min-h-screen">
-        <div className="mx-auto max-w-[760px] px-8 pt-10 pb-24">
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/" })}
-            className="mb-14 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 py-1.5 font-sans text-[11px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
-            style={{ color: "var(--ink-3)", letterSpacing: "0.24em" }}
+    <div className="strategy-scope min-h-screen">
+      <div className="mx-auto max-w-[760px] px-8 pt-10 pb-24">
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/" })}
+          className="mb-14 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 py-1.5 font-sans text-[11px] font-medium uppercase transition-colors hover:text-[var(--ink-1)]"
+          style={{ color: "var(--ink-3)", letterSpacing: "0.24em" }}
+        >
+          <span
+            aria-hidden="true"
+            className="italic"
+            style={{
+              fontFamily: "var(--font-serif-display)",
+              fontSize: "16px",
+              transform: "translateY(-1px)",
+            }}
           >
-            <span
-              aria-hidden="true"
-              className="italic"
-              style={{
-                fontFamily: "var(--font-serif-display)",
-                fontSize: "16px",
-                transform: "translateY(-1px)",
-              }}
-            >
-              ←
-            </span>
-            Homebase
-          </button>
-          <EditorBody horizon={horizon} />
-        </div>
+            ←
+          </span>
+          Homebase
+        </button>
+        <EditorBody horizon={horizon} />
       </div>
-    </StrategyPermissionGate>
+    </div>
   );
 }
 
@@ -120,6 +109,8 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
     // Subscribed-once cleanup; the latest dirty/flushNow read at unmount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const showInvitation = !row.carryOver && row.loaded && row.content === "";
 
   return (
     <div>
@@ -157,14 +148,21 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
           onClear={() => clearCarryOver(horizon)}
         />
       ) : (
-        row.loaded && row.content === "" && <HorizonInvitation horizon={horizon} />
+        showInvitation && <HorizonInvitation horizon={horizon} />
       )}
 
+      {/* No editor placeholder: HorizonInvitation owns the empty state above
+          the editor, and CarryOverBanner provides context post-load. The
+          previous attempt to suppress the placeholder via a `showInvitation`
+          ternary failed because MarkdownEditor's CodeMirror state captures
+          the placeholder on first mount (useEffect with empty deps) — by
+          the time `row.loaded` flipped to true, the placeholder was already
+          baked in and could not be retracted. Dropping it entirely is the
+          cleanest fix. */}
       <div className="relative max-w-[62ch]">
         <MarkdownEditor
           value={row.content}
           onChange={(v) => setContent(horizon, v)}
-          placeholder={PLACEHOLDER[horizon]}
           onSave={flushNow}
           autoFocus
         />

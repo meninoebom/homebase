@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { HorizonRow } from "./HorizonRow";
 
 describe("HorizonRow", () => {
-  it("Day row shows 'Open morning ritual' and a → arrow", () => {
+  it("Day row shows 'Open today's page' and a → arrow", () => {
     render(<HorizonRow horizon="day" />);
     expect(screen.getByText("Day")).toBeInTheDocument();
-    expect(screen.getByText("Open morning ritual")).toBeInTheDocument();
+    expect(screen.getByText("Open today's page")).toBeInTheDocument();
     expect(screen.getByText("→")).toBeInTheDocument();
   });
 

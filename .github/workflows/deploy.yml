@@ -32,14 +32,15 @@ jobs:
       - name: Install dependencies
         run: vp install
 
-      # BASE_PATH is read by vite.config.ts to scope the bundle under
-      # /homebase/ on GitHub Pages. If the app moves to a custom domain
-      # at the root, change this to BASE_PATH=/ (and the matching
-      # pathSegmentsToKeep in public/404.html).
-      - name: Build with /homebase/ base
+      # BASE_PATH is read by vite.config.ts to scope the bundle. The site
+      # serves at the root of homebase.you (custom domain configured via
+      # public/CNAME), so assets are bundled at /. If the custom domain
+      # is removed, restore BASE_PATH=/homebase/ here and pathSegmentsToKeep=1
+      # in public/404.html so the github.io/homebase/ URL works again.
+      - name: Build with root base
         run: vp build
         env:
-          BASE_PATH: /homebase/
+          BASE_PATH: /
 
       - uses: actions/configure-pages@v5
 

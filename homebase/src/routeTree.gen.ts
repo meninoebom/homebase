@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as NotesRouteImport } from './routes/notes'
 import { Route as MorningRouteImport } from './routes/morning'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspaceNameRouteImport } from './routes/workspace.$name'
 import { Route as SlotNameRouteImport } from './routes/slot.$name'
 import { Route as HorizonIdRouteImport } from './routes/horizon.$id'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotesRoute = NotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -24,6 +31,11 @@ const NotesRoute = NotesRouteImport.update({
 const MorningRoute = MorningRouteImport.update({
   id: '/morning',
   path: '/morning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,16 +61,20 @@ const HorizonIdRoute = HorizonIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/horizon/$id': typeof HorizonIdRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/horizon/$id': typeof HorizonIdRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
@@ -66,8 +82,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/horizon/$id': typeof HorizonIdRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
@@ -76,24 +94,30 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/morning'
     | '/notes'
+    | '/settings'
     | '/horizon/$id'
     | '/slot/$name'
     | '/workspace/$name'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/morning'
     | '/notes'
+    | '/settings'
     | '/horizon/$id'
     | '/slot/$name'
     | '/workspace/$name'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/morning'
     | '/notes'
+    | '/settings'
     | '/horizon/$id'
     | '/slot/$name'
     | '/workspace/$name'
@@ -101,8 +125,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   MorningRoute: typeof MorningRoute
   NotesRoute: typeof NotesRoute
+  SettingsRoute: typeof SettingsRoute
   HorizonIdRoute: typeof HorizonIdRoute
   SlotNameRoute: typeof SlotNameRoute
   WorkspaceNameRoute: typeof WorkspaceNameRoute
@@ -110,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notes': {
       id: '/notes'
       path: '/notes'
@@ -122,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/morning'
       fullPath: '/morning'
       preLoaderRoute: typeof MorningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,8 +197,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   MorningRoute: MorningRoute,
   NotesRoute: NotesRoute,
+  SettingsRoute: SettingsRoute,
   HorizonIdRoute: HorizonIdRoute,
   SlotNameRoute: SlotNameRoute,
   WorkspaceNameRoute: WorkspaceNameRoute,

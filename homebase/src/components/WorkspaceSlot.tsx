@@ -1,54 +1,54 @@
-// Piano — workspace slot with three parts:
-//   1. Editable & persistent — free-form goals/working-on. Saves to
-//      piano/state.md on blur. Stays until Brandon edits it.
-//   2. Yesterday — read-only, pulled from yesterday's ## piano section.
-//   3. Today — editable, saved into today's log as ## piano (via the
-//      hub's save_day mechanism). What you type here is tomorrow's
-//      "Yesterday."
+// Generic workspace slot — persistent body + optional today field.
+//
+// Replaces the bespoke Piano slot. The persistent body is a textarea
+// stored at <id>/state.md, save-on-blur. The optional today field is
+// a RitualEditor wired into today's day-file via the parent's draft
+// store, identical to PromptSlot's draft round-trip.
+//
+// Yesterday-section narrative behavior from the bespoke PianoSlot is
+// deliberately not preserved — it's a Brandon-specific journaling
+// pattern that doesn't generalize, and the strategy accordion's Week
+// row already covers "what carried over from yesterday" framing.
 
 import { useEffect, useRef, useState } from "react";
-import { RitualEditor } from "../../components/RitualEditor";
-import { localDateISO, readDay, readState, writeState } from "../../lib/log";
-import type { SlotProps } from "../registry";
-import { extractSection } from "./parse";
+import { RitualEditor } from "./RitualEditor";
+import { readState, writeState } from "../lib/log";
+import type { WorkspaceSlotConfig } from "../lib/config";
 
-function yesterdayISO(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return localDateISO(d);
+interface WorkspaceSlotProps {
+  config: WorkspaceSlotConfig;
+  initialDraft: string;
+  onDraft: (body: string) => void;
 }
 
-export function PianoSlot({ initialDraft, onDraft }: SlotProps) {
+export function WorkspaceSlot({ config, initialDraft, onDraft }: WorkspaceSlotProps) {
   const [persistent, setPersistent] = useState<string>("");
   const [persistentDirty, setPersistentDirty] = useState(false);
-  const [yesterday, setYesterday] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const lastSavedRef = useRef<string>("");
 
   useEffect(() => {
-    Promise.all([readState("piano"), readDay(yesterdayISO())])
-      .then(([stateMd, dayMd]) => {
-        setPersistent(stateMd);
-        lastSavedRef.current = stateMd;
-        setYesterday(extractSection(dayMd, "piano"));
+    readState(config.id)
+      .then((md) => {
+        setPersistent(md);
+        lastSavedRef.current = md;
         setLoaded(true);
       })
       .catch((err: unknown) => {
         setLoadError(err instanceof Error ? err.message : String(err));
         setLoaded(true);
       });
-  }, []);
+  }, [config.id]);
 
   async function handlePersistentBlur() {
-    if (!persistentDirty) return;
-    if (persistent === lastSavedRef.current) {
+    if (!persistentDirty || persistent === lastSavedRef.current) {
       setPersistentDirty(false);
       return;
     }
     try {
-      await writeState("piano", persistent);
+      await writeState(config.id, persistent);
       lastSavedRef.current = persistent;
       setPersistentDirty(false);
       setSaveError(null);
@@ -62,17 +62,19 @@ export function PianoSlot({ initialDraft, onDraft }: SlotProps) {
   if (loadError) {
     return (
       <p className="font-mono text-[13px] text-[#B91C1C]">
-        piano: couldn't load state — {loadError}
+        {config.id}: couldn't load state — {loadError}
       </p>
     );
   }
+
+  const stateLabel = config.stateLabel ?? "Editable and persistent";
 
   return (
     <div className="space-y-5">
       <div>
         <div className="mb-1 flex items-baseline justify-between">
           <p className="font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
-            Editable and persistent
+            {stateLabel}
           </p>
           {persistentDirty && (
             <span className="font-sans text-[10px] italic text-[#9CA3AF]">
@@ -96,27 +98,18 @@ export function PianoSlot({ initialDraft, onDraft }: SlotProps) {
         />
       </div>
 
-      {yesterday && (
+      {config.prompt !== undefined && (
         <div>
           <p className="mb-1 font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
-            Yesterday
+            Today
           </p>
-          <p className="whitespace-pre-wrap font-serif text-[15px] italic leading-relaxed text-[#9CA3AF]">
-            {yesterday}
-          </p>
+          <RitualEditor
+            initialContent={initialDraft}
+            onChange={onDraft}
+            placeholderText={config.prompt}
+          />
         </div>
       )}
-
-      <div>
-        <p className="mb-1 font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">
-          Today
-        </p>
-        <RitualEditor
-          initialContent={initialDraft}
-          onChange={onDraft}
-          placeholderText="What did you practice? What clicked, what needs work?"
-        />
-      </div>
     </div>
   );
 }

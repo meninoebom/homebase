@@ -1,51 +1,56 @@
-# homebase
+# Homebase
 
-A strategic life guide. Open Homebase to ground yourself in what you've decided matters — life values, life goals, and yearly / monthly / weekly strategic plans — before you open your calendar. The morning writing ritual lives one click away as the **Day** row.
+A personal writing tool. Plain markdown. Your folder. No server.
 
-Everything is plain markdown on your disk. **Your files; your machine; your edits.** There is no backend, no database, no account.
+**[Try it →](https://homebase.you)**
+
+Homebase has two surfaces:
+
+- A **home page** for reflection at long horizons — your values, your goals, the year, the month, the week. Writing at one horizon carries forward to the next when a new period begins, so a fresh week starts with last week's draft instead of a blank page.
+- A **daily page** for whatever you want to write today. Sections (called *slots*) are arranged to suit your practice — morning ritual, evening journal, midday check-in, all the same surface.
+
+Everything you write is plain markdown saved to a folder you choose on your own computer. There is no server, no account, no sync. Open the same files in any text editor; back them up however you back up files.
 
 ## Try it
 
-**Live app:** [https://meninoebom.github.io/homebase/](https://meninoebom.github.io/homebase/)
+Open **[homebase.you](https://homebase.you)** in a Chromium browser (Chrome, Edge, Brave, Arc). Homebase uses the browser's File System Access API to read and write your markdown files; Firefox and Safari don't support that yet.
 
-Open it in a Chromium browser (Chrome, Edge, Arc, Brave, Opera). The app needs the browser's File System Access API to read and write your markdown files. Safari and Firefox don't support that API yet.
+On first launch you pick a folder. `~/Documents/homebase` works well, but anywhere is fine. You only pick it once. Both your home-page horizons and your daily entries live in that one folder.
 
-## Install as a desktop app
+To install as a desktop app, click the install button in the address bar (or the 3-dot menu → "Install Homebase"). The app shell works offline after first load.
 
-Once you're on the live URL in Chromium, click the **install** button in the URL bar (or the 3-dot menu → "Install Homebase"). A standalone window appears, with a desktop icon you can pin to your dock. From then on you launch Homebase like any other app — no browser tab, no dev server.
+## Customize it
 
-Updates roll out automatically the next time you open the app after a new version deploys. Your files are unaffected because they live on your disk, not on a server.
+Most things you'd want to change are configurable from the **Customize** link on the home page or daily page footer:
+
+- Reorder, rename, add, or remove slots on the daily page
+- Edit the prompts and small hint chips
+- Toggle the briefing panel and supply your own quotes
+- Reset to defaults if you want a clean slate
+
+All edits save to a file called `homebase.config.json` in your homebase folder. You can hand-edit it in any text editor; if you break it, Homebase shows a recovery screen with a "Reset to defaults" button.
+
+The two slot kinds:
+
+- **Prompt slot** — single writing field, optional question above it. Each day starts blank. Examples: Dreams, Inner Weather, Gratitude, Today.
+- **Workspace slot** — a small whiteboard above a writing field. The whiteboard persists across days; the writing field resets daily. Use a workspace when there's standing context you want to see *before* writing today's entry — goals for a project, the book you're reading, the instrument you're practicing.
 
 ## Your data stays on your disk
 
-On first launch, Homebase asks you to pick a folder. The recommended location is `~/Documents/homebase-strategy/` (you can choose anywhere). Your strategic plans live as plain markdown files in that folder, on your machine. Nothing is sent to a server. Nothing is stored in a database.
+The app is a static site hosted on GitHub Pages. There is no backend, no database, no telemetry. Your writing never leaves your machine. The browser's File System Access API lets the app read and write the folder you pick; that access ends when you close the tab.
 
-If you ever want a real backup, the simplest move is `git init` inside your strategy folder and push it to a private repo. Strategic plans are exactly the kind of thing whose history is interesting — diffs over months show how your thinking evolved.
+For a real backup: `git init` inside your homebase folder and push to a private repo. Diffs over months tell you something interesting about how your thinking shifted.
 
-The morning writing ritual writes to a separate folder (`~/Documents/homebase-log/`) for the same reason: durable plain text, your disk, no service to depend on. **The log file IS the memory; grep is the memory layer.**
+## Contribute
 
-## What's in the app
+Homebase is small and personal, but it's open source ([MIT](LICENSE)) and contributions are welcome. Some ways in:
 
-Six rows in a vertical accordion, top to bottom:
+- **Try it and tell me what's broken.** [Open an issue](https://github.com/meninoebom/homebase/issues/new/choose).
+- **Pick up a [`good first issue`](https://github.com/meninoebom/homebase/labels/good%20first%20issue).**
+- **Translate the default prompts** into another language.
+- **Build something niche** — a slot kind for habits with reps, a calendar overlay, a different briefing source. PRs welcome.
 
-```
-i.    Life values    PERSISTENT
-ii.   Life goals     PERSISTENT
-iii.  Year           2026
-iv.   Month          MAY 2026
-v.    Week           WEEK 18, 2026
-vi.   Day            OPEN MORNING RITUAL  →
-```
-
-Click any of i–v to expand a preview (lead paragraph + numbered items + Open/Edit actions). Click Open to drop into a full-page editor for that horizon. Click Day to launch the morning writing ritual unchanged.
-
-Time-bound rows (year/month/week) carry over from the prior period when you enter a new one — a banner shows "Carried from April 2026 — review and edit, or clear" so the prior thinking is the editable starting point, not a blank page.
-
-## The design
-
-Editorial system inspired by The New Criterion. Cream paper, dusty-red signature accent, italic Newsreader display + Inter Tight chrome. The strategic accordion's source-of-truth design canvas is at `Homebase Redesign/`.
-
-This is a *writing practice that happens to be structured.* Not a life tracker. No streaks, no completion percentages, no scores.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and conventions.
 
 ## Local development
 
@@ -54,43 +59,37 @@ Repo layout:
 ```
 homebase/                      # the app — Vite+ + React + TanStack Router
   src/                         # routes, components, store
-  public/                      # icons, manifest source
+  public/                      # icons, manifest
   vite.config.ts               # Vite + PWA + Tailwind config
-docs/                          # durable design notes (plan, rationale, etc.)
-research/                      # archived prototypes (bash shell spike, etc.)
-Homebase Redesign/             # current design canvas (HTML + CSS + JSX prototype)
+docs/                          # durable design notes
 .github/workflows/             # CI + Pages deploy
-.llm/                          # AI workflow scratch (gitignored)
 ```
 
-Daily commands (run from the repo root — these forward to `homebase/`):
+Daily commands (from the repo root):
 
 ```bash
-pnpm dev          # Vite dev server (localhost)
-pnpm build        # production build to homebase/dist/
+pnpm install      # first time only
+pnpm dev          # Vite dev server at http://localhost:47823
+pnpm test         # vitest run once
+pnpm typecheck    # tsc --noEmit
 pnpm check        # format + lint
 pnpm check:fix    # auto-fix
-pnpm test         # vitest run once
-pnpm test:watch   # vitest watch mode
-pnpm typecheck    # tsc --noEmit
+pnpm build        # production build to homebase/dist/
 ```
 
-Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + Oxfmt. See `homebase/AGENTS.md` for the full `vp` reference.
+The dev server is pinned to port 47823 to dodge collisions with other Vite projects (`strictPort: true` fails loudly instead of picking the next port).
+
+Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + Oxfmt. See [homebase/AGENTS.md](homebase/AGENTS.md) for the full `vp` reference and [CLAUDE.md](CLAUDE.md) for project-specific gotchas.
 
 ## CI / deploy
 
 Two workflows:
 
 - `.github/workflows/ci.yml` — runs on every PR and push to main. Format + lint + typecheck + tests. Required check; gates auto-merge.
-- `.github/workflows/deploy.yml` — runs on push to main. Builds with `BASE_PATH=/homebase/` and publishes to GitHub Pages. The live URL above is the output.
+- `.github/workflows/deploy.yml` — runs on push to main. Builds with `BASE_PATH=/` and publishes to GitHub Pages, served at the custom domain `homebase.you` (configured via `homebase/public/CNAME`).
 
 Branch protection on `main` requires the CI check to pass before merge.
 
-## Pointers
+## License
 
-- **Active plan:** `.llm/active-plan.md` (gitignored — current in-flight work)
-- **Design canvas:** `Homebase Redesign/Homebase.html` (open in a browser; runs the prototype offline)
-- **Morning ritual plan (historical):** `docs/plan-morning-ritual.md`
-- **Five rules:** `docs/plan-morning-ritual.md` §15
-- **Strategic-layer rationale:** `.llm/design-strategic-layer/rationale.md`
-- **Engineering gym** (separate repo): `meninoebom/engineering-gym`
+[MIT](LICENSE) — do whatever you want with it; just keep the copyright notice.
