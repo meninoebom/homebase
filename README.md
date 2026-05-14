@@ -25,7 +25,7 @@ Most things you'd want to change are configurable from the **Customize** link on
 
 - Reorder, rename, add, or remove slots on the daily page
 - Edit the prompts and small hint chips
-- Toggle the briefing panel and supply your own quotes
+- Toggle the briefing panel; comes pre-seeded with a curated quote rotation drawn from non-dual, contemplative, and deeper Stoic traditions — replace or extend at will
 - Reset to defaults if you want a clean slate
 
 All edits save to a file called `homebase.config.json` in your homebase folder. You can hand-edit it in any text editor; if you break it, Homebase shows a recovery screen with a "Reset to defaults" button.
