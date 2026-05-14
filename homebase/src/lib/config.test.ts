@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   defaultConfig,
   legacyDefaultConfig,
+  migrateLoadedConfig,
   parseConfig,
   serializeConfig,
   validateConfig,
@@ -180,6 +181,64 @@ describe("legacyDefaultConfig", () => {
   it("includes the existing briefing quote so Brandon's setup looks identical post-migration", () => {
     const config = legacyDefaultConfig();
     expect(config.briefing.quotes.length).toBeGreaterThan(0);
+  });
+});
+
+describe("migrateLoadedConfig", () => {
+  function withQuotes(quotes: string[]): HomebaseConfig {
+    return {
+      ...defaultConfig(),
+      briefing: { enabled: true, quotes },
+    };
+  }
+
+  it("backfills the curated rotation when quotes is exactly the legacy Jobs quote", () => {
+    const before = withQuotes(["The only way to do great work is to love what you do."]);
+    const { config, migrated } = migrateLoadedConfig(before);
+    expect(migrated).toBe(true);
+    expect(config.briefing.quotes.length).toBeGreaterThan(1);
+    expect(config.briefing.quotes).not.toContain(
+      "The only way to do great work is to love what you do.",
+    );
+  });
+
+  it("backfills the curated rotation when quotes is empty", () => {
+    const { config, migrated } = migrateLoadedConfig(withQuotes([]));
+    expect(migrated).toBe(true);
+    expect(config.briefing.quotes.length).toBeGreaterThan(1);
+  });
+
+  it("leaves a deliberately curated list untouched", () => {
+    const mine = ["my favorite quote", "another one I picked"];
+    const before = withQuotes(mine);
+    const { config, migrated } = migrateLoadedConfig(before);
+    expect(migrated).toBe(false);
+    expect(config.briefing.quotes).toEqual(mine);
+  });
+
+  it("leaves a list with the legacy quote plus user additions untouched", () => {
+    const mine = ["The only way to do great work is to love what you do.", "one I added"];
+    const { config, migrated } = migrateLoadedConfig(withQuotes(mine));
+    expect(migrated).toBe(false);
+    expect(config.briefing.quotes).toEqual(mine);
+  });
+
+  it("is idempotent — re-running on a migrated config returns migrated:false", () => {
+    const first = migrateLoadedConfig(withQuotes([]));
+    expect(first.migrated).toBe(true);
+    const second = migrateLoadedConfig(first.config);
+    expect(second.migrated).toBe(false);
+    expect(second.config.briefing.quotes).toEqual(first.config.briefing.quotes);
+  });
+
+  it("preserves briefing.enabled and other config fields", () => {
+    const before: HomebaseConfig = {
+      ...withQuotes([]),
+      briefing: { enabled: false, quotes: [] },
+    };
+    const { config } = migrateLoadedConfig(before);
+    expect(config.briefing.enabled).toBe(false);
+    expect(config.slots).toEqual(before.slots);
   });
 });
 

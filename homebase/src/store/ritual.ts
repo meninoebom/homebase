@@ -13,6 +13,7 @@ import { create } from "zustand";
 import {
   defaultConfig,
   legacyDefaultConfig,
+  migrateLoadedConfig,
   readConfig,
   writeConfig,
   type HomebaseConfig,
@@ -86,7 +87,11 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       set({ configError: result, loaded: true });
       return;
     } else {
-      config = result.config;
+      const migration = migrateLoadedConfig(result.config);
+      config = migration.config;
+      if (migration.migrated) {
+        await writeConfig(config);
+      }
     }
 
     const sections = await readDaySections(todayISO());

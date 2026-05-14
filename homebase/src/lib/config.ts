@@ -176,6 +176,45 @@ export function serializeConfig(config: HomebaseConfig): string {
   return JSON.stringify(config, null, 2) + "\n";
 }
 
+// -- Migrations ---------------------------------------------------------
+
+/**
+ * Legacy seed: the single Steve Jobs quote that pre-curation builds
+ * shipped as the entire briefing rotation. We match against this exact
+ * value so the backfill only touches configs that were never actually
+ * customized by the user.
+ */
+const LEGACY_SINGLE_QUOTE = "The only way to do great work is to love what you do.";
+
+/**
+ * One-time backfill for users who landed before the curated briefing
+ * rotation shipped. Replaces `briefing.quotes` with the default
+ * rotation if and only if the existing list is empty or contains
+ * exactly the legacy single-Jobs-quote — never overwrites a list the
+ * user has deliberately curated.
+ *
+ * Returns `{ config, migrated }` so the caller can persist the result
+ * exactly once. Idempotent: after migration the quotes no longer
+ * match the legacy pattern, so subsequent calls are no-ops.
+ */
+export function migrateLoadedConfig(config: HomebaseConfig): {
+  config: HomebaseConfig;
+  migrated: boolean;
+} {
+  const quotes = config.briefing.quotes;
+  const isLegacyOnly = quotes.length === 1 && quotes[0] === LEGACY_SINGLE_QUOTE;
+  if (quotes.length !== 0 && !isLegacyOnly) {
+    return { config, migrated: false };
+  }
+  return {
+    config: {
+      ...config,
+      briefing: { ...config.briefing, quotes: [...DEFAULT_BRIEFING_QUOTES] },
+    },
+    migrated: true,
+  };
+}
+
 // -- Defaults -----------------------------------------------------------
 
 /**
