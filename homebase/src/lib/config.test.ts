@@ -164,10 +164,10 @@ describe("defaultConfig", () => {
     expect(config.slots.find((s) => s.id === "piano")).toBeUndefined();
   });
 
-  it("has briefing enabled with no quotes (so renders nothing until user adds them)", () => {
+  it("ships a curated briefing rotation so new users see something meaningful on day one", () => {
     const config = defaultConfig();
     expect(config.briefing.enabled).toBe(true);
-    expect(config.briefing.quotes).toEqual([]);
+    expect(config.briefing.quotes.length).toBeGreaterThan(0);
   });
 });
 

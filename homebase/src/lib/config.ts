@@ -183,6 +183,10 @@ export function serializeConfig(config: HomebaseConfig): string {
  * No Piano. No Brandon-isms. Time-of-day-neutral copy: someone who
  * uses Homebase as an evening journal or a midday check-in shouldn't
  * trip over "this morning" prompts.
+ *
+ * Ships with a curated briefing rotation drawn from non-dual,
+ * contemplative, and deeper Stoic traditions so new users see
+ * something meaningful before they've customized anything.
  */
 export function defaultConfig(): HomebaseConfig {
   return {
@@ -215,10 +219,38 @@ export function defaultConfig(): HomebaseConfig {
     ],
     briefing: {
       enabled: true,
-      quotes: [],
+      quotes: [...DEFAULT_BRIEFING_QUOTES],
     },
   };
 }
+
+/**
+ * Curated briefing quotes — non-dual, contemplative, deeper Stoic.
+ * Tone: disciplined, courageous, soulful. Shipped as the default
+ * rotation; users can replace or extend via Settings.
+ */
+const DEFAULT_BRIEFING_QUOTES: ReadonlyArray<string> = [
+  "The wound is the place where the Light enters you. — Rumi",
+  "Set your life on fire. Seek those who fan your flames. — Rumi",
+  "The Self, ever radiant, dances in every act of seeing, knowing, doing. — Abhinavagupta",
+  "To study the self is to forget the self. To forget the self is to be enlightened by all things. — Dōgen",
+  "If you cannot find the truth right where you are, where else do you expect to find it? — Dōgen",
+  "Your own Self-realization is the greatest service you can render the world. — Ramana Maharshi",
+  "Wisdom tells me I am nothing. Love tells me I am everything. Between the two, my life flows. — Nisargadatta Maharaj",
+  "I wish I could show you, when you are lonely or in darkness, the astonishing light of your own being. — Hafiz",
+  "Mastering others is strength; mastering yourself is true power. — Lao Tzu",
+  "Flow with whatever may happen and let your mind be free. Stay centered by accepting whatever you are doing. — Chuang Tzu",
+  "Waste no more time arguing what a good man should be. Be one. — Marcus Aurelius",
+  "Difficulties strengthen the mind, as labor does the body. — Seneca",
+  "Only to the extent that we expose ourselves over and over to annihilation can that which is indestructible in us be found. — Pema Chödrön",
+  "The essence of warriorship is refusing to give up on anyone or anything. — Chögyam Trungpa",
+  "The most precious gift we can offer anyone is our attention. — Thich Nhat Hanh",
+  "If a problem can be solved, why worry? If it cannot be solved, what use is there in worrying? — Shantideva",
+  "Wherever you are is the entry point. — Kabir",
+  "Perhaps all the dragons in our lives are princesses who are only waiting to see us act, just once, with beauty and courage. — Rainer Maria Rilke",
+  "Not knowing how near the truth is, we seek it far away — what a pity. — Hakuin",
+  "The mind unborn does not arise; it does not pass away. Stop trying to grasp it, and it is right here. — Bankei",
+];
 
 /**
  * Existing-user migration: mirrors the current hardcoded slot registry
@@ -270,7 +302,7 @@ export function legacyDefaultConfig(): HomebaseConfig {
     ],
     briefing: {
       enabled: true,
-      quotes: ["The only way to do great work is to love what you do."],
+      quotes: [...DEFAULT_BRIEFING_QUOTES],
     },
   };
 }
