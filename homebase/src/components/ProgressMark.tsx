@@ -47,7 +47,7 @@ function BarMark({ current, total, unit }: { current: number; total: number; uni
         className="italic whitespace-nowrap"
         style={{
           fontFamily: "var(--font-numeral)",
-          fontSize: "14px",
+          fontSize: "16px",
           color: "var(--ink-3)",
         }}
       >
@@ -67,7 +67,7 @@ function BarMark({ current, total, unit }: { current: number; total: number; uni
         className="italic whitespace-nowrap"
         style={{
           fontFamily: "var(--font-numeral)",
-          fontSize: "14px",
+          fontSize: "16px",
           color: "var(--ink-3)",
         }}
       >

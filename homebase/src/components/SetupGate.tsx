@@ -33,7 +33,7 @@ type GateState =
 //
 // SetupGate is mounted outside RouterProvider, so this check only runs on
 // the initial render; client-side nav within a session won't re-evaluate
-// it. That's acceptable — the protected routes (/horizon/$id, /, /morning)
+// it. That's acceptable — the protected routes (/horizon/$id, /, /day)
 // have their own per-feature gates or runtime fail-closed checks.
 function isPublicRoute(pathname: string): boolean {
   return /\/about\/?$/.test(pathname);

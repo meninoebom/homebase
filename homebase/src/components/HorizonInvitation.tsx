@@ -55,7 +55,7 @@ export function HorizonInvitation({ horizon }: Props) {
 function Block({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="horizon-invitation mb-3 max-w-[62ch] font-serif text-[16px] italic leading-[1.5]"
+      className="horizon-invitation mb-3 max-w-[62ch] font-serif text-[18px] italic leading-[1.5]"
       style={{ color: "var(--ink-ghost, #C9C0B0)" }}
     >
       {children}

@@ -91,19 +91,27 @@ export function RitualEditor({
 }
 
 // -- Theme: compact hub editors ------------------------------------------
+//
+// Inter Tight at 18px — modernized 2026-05-15 alongside the /day rename.
+// The prior Charter/serif italic register was too small-feeling for a
+// daily writing surface; the new system matches the strategic accordion
+// (Inter Tight, roman) while keeping the writing surface white.
+
+const DAY_EDITOR_FONT =
+  "'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif";
 
 const hubTheme = EditorView.theme({
   "&": {
-    fontSize: "16px",
+    fontSize: "18px",
     backgroundColor: "transparent",
   },
   ".cm-scroller": {
     overflow: "visible",
-    fontFamily: "var(--font-serif)",
+    fontFamily: DAY_EDITOR_FONT,
   },
   ".cm-content": {
-    fontFamily: "var(--font-serif)",
-    fontSize: "16px",
+    fontFamily: DAY_EDITOR_FONT,
+    fontSize: "18px",
     lineHeight: "1.55",
     color: "var(--color-ink)",
     caretColor: "var(--color-ink)",
@@ -118,7 +126,7 @@ const hubTheme = EditorView.theme({
   },
   ".cm-placeholder": {
     color: "var(--color-ink-faint)",
-    fontStyle: "italic",
+    fontStyle: "normal",
   },
   ".cm-cursor": {
     borderLeftColor: "var(--color-ink)",
@@ -139,24 +147,25 @@ const hubTheme = EditorView.theme({
 });
 
 // -- Syntax highlighting -------------------------------------------------
+//
+// Headings now use weight to differentiate, not italic. Emphasis (single
+// asterisks) still renders italic because that's what the markdown
+// semantics call for — the user explicitly typed it.
 
 const ritualHighlighting = HighlightStyle.define([
   {
     tag: tags.heading1,
-    fontStyle: "italic",
-    fontWeight: "normal",
+    fontWeight: "700",
     color: "var(--color-ink)",
   },
   {
     tag: tags.heading2,
-    fontStyle: "italic",
-    fontWeight: "normal",
-    color: "var(--color-ink-muted)",
+    fontWeight: "600",
+    color: "var(--color-ink)",
   },
   {
     tag: tags.heading3,
-    fontStyle: "italic",
-    fontWeight: "normal",
+    fontWeight: "600",
     color: "var(--color-ink-muted)",
   },
   {
