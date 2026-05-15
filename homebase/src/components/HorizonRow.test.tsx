@@ -3,8 +3,31 @@
 // what jsdom can verify reliably.
 
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { HorizonRow } from "./HorizonRow";
+import { useStrategyStore, type RowState } from "../store/strategy";
+import type { Horizon } from "../lib/period-key";
+
+// Inject row state for tests that exercise content/carry-over branches.
+// The production store is a singleton — set state directly rather than mock fs.
+function setRowState(horizon: Horizon, patch: Partial<RowState>) {
+  useStrategyStore.setState((s) => ({
+    rows: { ...s.rows, [horizon]: { ...s.rows[horizon], ...patch } },
+  }));
+}
+
+afterEach(() => {
+  for (const h of ["life-values", "life-goals", "year", "month", "week"] as const) {
+    setRowState(h, {
+      expanded: false,
+      content: "",
+      carryOver: null,
+      saveStatus: "idle",
+      dirty: false,
+      loaded: false,
+    });
+  }
+});
 
 describe("HorizonRow", () => {
   it("Day row shows 'Open today's page' and a → arrow", () => {
@@ -53,5 +76,37 @@ describe("HorizonRow", () => {
     render(<HorizonRow horizon="week" />);
     expect(screen.getByText("Week")).toBeInTheDocument();
     expect(screen.getByText(/^Week \d{1,2}, \d{4}$/)).toBeInTheDocument();
+  });
+
+  it("week row with carry-over swaps the header label to 'Carried · Week N' (no year)", () => {
+    setRowState("week", {
+      loaded: true,
+      content: "carried body",
+      carryOver: { content: "carried body", sourcePeriod: "2026-W18" },
+    });
+    render(<HorizonRow horizon="week" />);
+    expect(screen.getByText("Carried")).toBeInTheDocument();
+    // Short label drops the year.
+    expect(screen.getByText(/^Week \d{1,2}$/)).toBeInTheDocument();
+    // The full "Week N, YYYY" form does NOT appear when carried.
+    expect(screen.queryByText(/^Week \d{1,2}, \d{4}$/)).toBeNull();
+  });
+
+  it("expanded week row with carry-over renders the banner AND the preview body", () => {
+    setRowState("week", {
+      expanded: true,
+      loaded: true,
+      content: "Carried preview lead.\n\n- one\n- two",
+      carryOver: { content: "Carried preview lead.\n\n- one\n- two", sourcePeriod: "2026-W18" },
+    });
+    render(<HorizonRow horizon="week" />);
+    // Banner is present (marginalia register)...
+    expect(screen.getByText(/Carried from/)).toBeInTheDocument();
+    // ...and the preview body renders alongside it.
+    expect(screen.getByText("Carried preview lead.")).toBeInTheDocument();
+    expect(screen.getByText("one")).toBeInTheDocument();
+    expect(screen.getByText("two")).toBeInTheDocument();
+    // Open action remains available so the user can drill into the editor.
+    expect(screen.getByText("Open")).toBeInTheDocument();
   });
 });
