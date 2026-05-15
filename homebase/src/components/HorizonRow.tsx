@@ -258,17 +258,16 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
         </span>
         <span
           aria-hidden="true"
-          className="text-right transition-transform duration-200"
+          className="text-right"
           style={{
             fontFamily: "var(--font-sans-ui)",
             fontSize: "28px",
             fontWeight: 300,
             lineHeight: 1,
             color: row.expanded ? "var(--ink-1)" : "var(--ink-3)",
-            transform: row.expanded ? "rotate(45deg)" : "none",
           }}
         >
-          +
+          {row.expanded ? "−" : "+"}
         </span>
         {collapsedPreview && (
           <span
