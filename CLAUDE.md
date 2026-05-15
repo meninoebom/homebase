@@ -46,6 +46,29 @@ If you ever need a reactive placeholder, the CodeMirror-idiomatic fix is a `Comp
 
 The check reads `window.location.pathname` once. SetupGate is rendered outside `RouterProvider`, so client-side nav does *not* re-evaluate it. User-visible bug surface: someone landing on `/about` and then navigating to `/morning` would bypass SetupGate; `/morning` would fail at runtime when it tries to read the folder. If you add another colophon-style public route (privacy, FAQ), extend `isPublicRoute()` — and ideally only allow it as the entry route, not as a navigation target from inside the gated app.
 
+### A rotated `+` reads as `×`, not "collapse"
+
+PR #77 fixed a TOC toggle that used `transform: rotate(45deg)` on a `+` glyph to indicate "expanded." The character is technically still a plus, but visual cognition reads *shape* — a 45°-rotated plus is identical to an X, and X triggers "delete / close / destroy" priors regardless of intent. Brandon flagged it as "I'm afraid to click it because I don't want to lose the things that I've saved."
+
+The fix is dumb and right: swap glyphs (`+` ↔ `−`), don't rotate. If you find yourself reaching for a rotation to communicate state change on an interactive control, ask whether the rotated form will be mistaken for a different glyph entirely. Especially watch for: `+` → `×`, `−` → `|`, arrows that flip into different arrow directions.
+
+Code pointer: `homebase/src/components/HorizonRow.tsx`, the `toc-row__icon` span.
+
+### Auto-merge eats subsequent pushes to the same branch
+
+The auto-merge workflow (`gh pr merge --auto --squash`) is great for CI-gated merges, but it has one teeth-grinding interaction: once the merge fires, the source branch is deleted from origin. A subsequent `git push` from your local copy of the same branch name will succeed as `* [new branch]`, but it pushes an *orphaned* branch — the PR is closed, so nothing references the new commits. Your "small follow-up tweak" silently goes nowhere.
+
+The fix when you catch it: branch off the latest `origin/main`, cherry-pick the orphaned commit, open a fresh PR. PR #77 followed this pattern. The lesson: after running `gh pr merge --auto`, treat that branch as frozen — if you have a follow-up, branch off main fresh rather than pushing more commits to the same name.
+
+### Two rooms, two registers — and now both speak Inter Tight
+
+The strategic accordion at `/` and the day page at `/day` (renamed from `/morning` on 2026-05-15) deliberately have different backgrounds — warm bone for the accordion, white for the writing surface. Both share Inter Tight as the type system but apply it at different scales. If you're adding a new screen, ask which "room" it belongs to:
+
+- **Strategic / cover surface** (`/`, `/horizon/$id`): warm bone (`--paper-1: #ECE6DA`), marigold accent (`--accent-2: #C18A2A`), Inter Tight at confident scales (50–124px display), lining figures for numerals.
+- **Writing surface** (`/day`, anywhere with a CodeMirror editor): white, Inter Tight at 18px body, no italics in the chrome. Italic is reserved for markdown semantics that the user typed.
+
+Don't try to unify them — they're intentionally different rooms in the same magazine.
+
 ### One folder, one gate
 
 Homebase used to keep two separate directory handles — log (`logDir`) and strategy (`strategyDir`) — gated by two near-identical permission screens (`SetupGate` and the now-deleted `StrategyPermissionGate`). First-time users perceived this as the picker asking twice for the same thing. PR #68 collapsed both into a single root handle (`homebaseRoot`) under one gate. Strategy and log files coexist in the same folder; filenames don't collide (strategy is horizon-prefixed, log is date-named).
