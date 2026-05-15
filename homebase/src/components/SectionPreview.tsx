@@ -36,7 +36,7 @@ export function SectionPreview({ horizon, content, onOpen }: Props) {
           className="my-2 mb-[18px] italic"
           style={{
             fontFamily: "var(--font-serif-display)",
-            fontSize: "22px",
+            fontSize: "24px",
             lineHeight: 1.35,
             letterSpacing: "-0.005em",
             color: "var(--ink-1)",
@@ -66,7 +66,7 @@ export function SectionPreview({ horizon, content, onOpen }: Props) {
               style={{
                 gridTemplateColumns: "26px 1fr",
                 fontFamily: "var(--font-serif-text)",
-                fontSize: "17px",
+                fontSize: "19px",
                 color: "var(--ink-2)",
                 lineHeight: 1.55,
               }}
@@ -75,7 +75,7 @@ export function SectionPreview({ horizon, content, onOpen }: Props) {
                 className="italic"
                 style={{
                   fontFamily: "var(--font-numeral)",
-                  fontSize: "15px",
+                  fontSize: "16px",
                   color: "var(--ink-4)",
                 }}
               >

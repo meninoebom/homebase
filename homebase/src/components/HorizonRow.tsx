@@ -29,13 +29,17 @@ import { extractCollapsedPreview } from "../lib/markdown-preview";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { useStrategyStore } from "../store/strategy";
 
-const ROMAN: Record<Horizon | "day", string> = {
-  "life-values": "i.",
-  "life-goals": "ii.",
-  year: "iii.",
-  month: "iv.",
-  week: "v.",
-  day: "vi.",
+// Lining figures replace the prior roman numerals (i. / ii. / …) per
+// the May 2026 redesign — the brief explicitly moved away from
+// "classical / serif main characters." Rendered in marigold via
+// .row-num below.
+const NUM: Record<Horizon | "day", string> = {
+  "life-values": "01",
+  "life-goals": "02",
+  year: "03",
+  month: "04",
+  week: "05",
+  day: "06",
 };
 
 const TITLE: Record<Horizon | "day", string> = {
@@ -95,43 +99,47 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
       <button
         type="button"
         onClick={onDayClick}
-        className="day-row-button group grid w-full cursor-pointer items-baseline px-4 text-left transition-colors hover:bg-[var(--paper-3)]"
+        className="day-row-button group grid w-full cursor-pointer items-center px-4 text-left transition-colors hover:bg-[var(--paper-3)]"
         style={{
-          gridTemplateColumns: "36px 1fr auto 30px",
-          gap: "14px",
+          gridTemplateColumns: "64px 1fr auto 36px",
+          gap: "24px",
           paddingTop: "var(--row-pad-y)",
           paddingBottom: "var(--row-pad-y)",
         }}
       >
         <span
-          className="italic"
           style={{
             fontFamily: "var(--font-numeral)",
-            fontSize: "16px",
-            color: "var(--ink-4)",
-            letterSpacing: "0.02em",
+            fontFeatureSettings: "'lnum' 1, 'tnum' 1",
+            fontWeight: 600,
+            fontSize: "30px",
+            lineHeight: 1,
+            letterSpacing: "-0.02em",
+            color: "var(--accent-2)",
           }}
         >
-          {ROMAN.day}
+          {NUM.day}
         </span>
         <h2
-          className="row-day-title italic transition-colors"
+          className="row-day-title transition-colors"
           style={{
             fontFamily: "var(--font-serif-display)",
-            fontWeight: 400,
-            fontSize: "calc(36px * var(--display-scale, 1))",
+            fontWeight: 600,
+            fontSize: "calc(50px * var(--display-scale, 1))",
             lineHeight: 1,
-            letterSpacing: "-0.01em",
+            letterSpacing: "-0.035em",
             color: "var(--ink-1)",
           }}
         >
           {TITLE.day}
         </h2>
         <span
-          className="whitespace-nowrap self-center font-sans text-[12px] font-medium uppercase"
+          className="whitespace-nowrap self-center"
           style={{
+            fontFamily: "var(--font-sans-ui)",
+            fontSize: "16px",
+            fontWeight: 700,
             color: "var(--accent-1)",
-            letterSpacing: "0.2em",
           }}
         >
           {metaFor("day")}
@@ -141,8 +149,8 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
           className="row-day-arrow text-right transition-transform duration-200 group-hover:translate-x-[4px]"
           style={{
             fontFamily: "var(--font-sans-ui)",
-            fontSize: "22px",
-            fontWeight: 300,
+            fontSize: "28px",
+            fontWeight: 500,
             lineHeight: 1,
             color: "var(--accent-1)",
           }}
@@ -196,48 +204,51 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
       <button
         type="button"
         onClick={onToggle}
-        className="grid w-full cursor-pointer items-baseline px-4 text-left transition-colors hover:bg-[var(--paper-3)]"
+        className="grid w-full cursor-pointer items-center px-4 text-left transition-colors hover:bg-[var(--paper-3)]"
         style={{
-          gridTemplateColumns: "36px 1fr auto 30px",
-          gap: "14px",
+          gridTemplateColumns: "64px 1fr auto 36px",
+          gap: "24px",
           paddingTop: "var(--row-pad-y)",
           paddingBottom: "var(--row-pad-y)",
         }}
       >
         <span
-          className="italic"
           style={{
             fontFamily: "var(--font-numeral)",
-            fontSize: "16px",
-            color: "var(--ink-4)",
-            letterSpacing: "0.02em",
+            fontFeatureSettings: "'lnum' 1, 'tnum' 1",
+            fontWeight: 600,
+            fontSize: "30px",
+            lineHeight: 1,
+            letterSpacing: "-0.02em",
+            color: "var(--accent-2)",
           }}
         >
-          {ROMAN[horizon]}
+          {NUM[horizon]}
         </span>
         <h2
-          className="italic"
           style={{
             fontFamily: "var(--font-serif-display)",
-            fontWeight: 400,
-            fontSize: "calc(36px * var(--display-scale, 1))",
+            fontWeight: 600,
+            fontSize: "calc(50px * var(--display-scale, 1))",
             lineHeight: 1,
-            letterSpacing: "-0.01em",
+            letterSpacing: "-0.035em",
             color: "var(--ink-1)",
           }}
         >
           {TITLE[horizon]}
         </h2>
         <span
-          className="whitespace-nowrap font-sans text-[12px] font-medium uppercase"
+          className="whitespace-nowrap"
           style={{
+            fontFamily: "var(--font-sans-ui)",
+            fontSize: "16px",
+            fontWeight: 600,
             color: "var(--ink-2)",
-            letterSpacing: "0.2em",
           }}
         >
           {row.carryOver && horizon !== "life-values" && horizon !== "life-goals" ? (
             <>
-              <span style={{ color: "var(--terracotta, #B8472D)" }}>Carried</span>
+              <span style={{ color: "var(--accent-1)", fontWeight: 700 }}>Carried</span>
               <span aria-hidden="true"> · </span>
               {shortMetaFor(horizon)}
             </>
@@ -250,7 +261,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
           className="text-right transition-transform duration-200"
           style={{
             fontFamily: "var(--font-sans-ui)",
-            fontSize: "22px",
+            fontSize: "28px",
             fontWeight: 300,
             lineHeight: 1,
             color: row.expanded ? "var(--ink-1)" : "var(--ink-3)",
@@ -261,16 +272,16 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
         </span>
         {collapsedPreview && (
           <span
-            className="italic"
             style={{
               gridColumn: 2,
               gridRow: 2,
-              marginTop: "6px",
+              marginTop: "8px",
               minWidth: 0,
-              fontFamily: "var(--font-serif-text)",
-              fontSize: "14px",
+              fontFamily: "var(--font-sans-ui)",
+              fontSize: "15px",
+              fontWeight: 500,
               lineHeight: 1.4,
-              color: "var(--ink-5)",
+              color: "var(--ink-3)",
               overflow: "hidden",
               whiteSpace: "nowrap",
               textOverflow: "ellipsis",
@@ -283,7 +294,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
 
       {row.expanded && (
         <div
-          className="pl-[68px] pr-5 pb-8 pt-1"
+          className="pl-[88px] pr-5 pb-8 pt-1"
           style={{ borderBottom: "1px solid var(--paper-edge)" }}
         >
           {row.carryOver && (
@@ -299,23 +310,25 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
               <button
                 type="button"
                 onClick={openEditor}
-                className="cursor-pointer border-0 bg-transparent p-0 py-1 font-sans text-[11px] font-semibold uppercase transition-colors"
+                className="group cursor-pointer border-0 bg-transparent p-0 py-1 transition-colors hover:text-[var(--accent-1-hover)]"
                 style={{
+                  fontFamily: "var(--font-sans-ui)",
+                  fontSize: "15px",
+                  fontWeight: 700,
                   color: "var(--accent-1)",
-                  letterSpacing: "0.22em",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "12px",
+                  gap: "10px",
                 }}
               >
                 Begin
                 <span
                   aria-hidden="true"
-                  className="italic"
+                  className="transition-transform duration-200 group-hover:translate-x-[2px]"
                   style={{
-                    fontFamily: "var(--font-serif-display)",
-                    fontSize: "16px",
-                    transform: "translateY(-1px)",
+                    fontFamily: "var(--font-sans-ui)",
+                    fontSize: "18px",
+                    fontWeight: 500,
                   }}
                 >
                   →

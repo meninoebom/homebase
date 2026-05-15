@@ -41,7 +41,7 @@ export function CarryOverBanner({ horizon, sourcePeriod, onClear }: Props) {
         ※
       </span>
       <p
-        className="font-serif text-[14px] italic leading-[1.55]"
+        className="font-serif text-[16px] italic leading-[1.55]"
         style={{ color: "var(--ink-muted, #7A7268)" }}
       >
         Carried from <strong className="not-italic">{sourceLabel}</strong> — review and edit, or{" "}

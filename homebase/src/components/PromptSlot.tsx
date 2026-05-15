@@ -19,7 +19,17 @@ export function PromptSlot({ config, initialDraft, onDraft }: PromptSlotProps) {
   return (
     <div>
       {config.hints && config.hints.length > 0 && (
-        <p className="mb-2 font-serif text-[13px] italic text-[#9CA3AF]">
+        <p
+          className="mb-2"
+          style={{
+            fontFamily:
+              "'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif",
+            fontSize: "15px",
+            fontWeight: 500,
+            color: "#9CA3AF",
+            margin: "0 0 8px",
+          }}
+        >
           {config.hints.join(" · ")}
         </p>
       )}
