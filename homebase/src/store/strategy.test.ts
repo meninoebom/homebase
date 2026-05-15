@@ -53,6 +53,50 @@ describe("StrategyStore", () => {
     expect(row.dirty).toBe(false);
   });
 
+  it("prefetchRow loads file content without expanding the row", async () => {
+    const store = createStrategyStore(createFakeStrategyFs({ "values.md": "v1" }));
+    await store.getState().prefetchRow("life-values");
+    const row = store.getState().rows["life-values"];
+    expect(row.content).toBe("v1");
+    expect(row.loaded).toBe(true);
+    expect(row.expanded).toBe(false);
+    expect(row.dirty).toBe(false);
+  });
+
+  it("prefetchRow on time-bound horizon resolves carry-over so collapsed row can surface it", async () => {
+    const store = createStrategyStore(createFakeStrategyFs({ "month-2020-01.md": "ancient" }));
+    await store.getState().prefetchRow("month");
+    const row = store.getState().rows.month;
+    expect(row.content).toBe("ancient");
+    expect(row.carryOver).toEqual({ content: "ancient", sourcePeriod: "2020-01" });
+    expect(row.loaded).toBe(true);
+    expect(row.expanded).toBe(false);
+    // Matches expandRow semantic: a carried buffer is dirty and will commit
+    // once the user lands on the editor (autosave fires there, not on home).
+    expect(row.dirty).toBe(true);
+  });
+
+  it("prefetchRow on time-bound horizon with no history leaves the row unloaded", async () => {
+    const store = createStrategyStore(createFakeStrategyFs());
+    await store.getState().prefetchRow("year");
+    const row = store.getState().rows.year;
+    expect(row.content).toBe("");
+    expect(row.carryOver).toBeNull();
+    expect(row.loaded).toBe(false);
+  });
+
+  it("expandRow after prefetchRow does not re-fetch (loaded short-circuit)", async () => {
+    const fs = createFakeStrategyFs({ "month-2020-01.md": "ancient" });
+    const store = createStrategyStore(fs);
+    await store.getState().prefetchRow("month");
+    // Mutate the underlying file; if expandRow re-reads, content would change.
+    await fs.write("month-2020-01.md", "newer");
+    await store.getState().expandRow("month");
+    const row = store.getState().rows.month;
+    expect(row.content).toBe("ancient"); // still the prefetched value
+    expect(row.expanded).toBe(true);
+  });
+
   it("expandRow re-expand without changes does not re-fetch (loaded short-circuit)", async () => {
     const fs = createFakeStrategyFs({ "values.md": "v1" });
     const store = createStrategyStore(fs);

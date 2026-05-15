@@ -130,19 +130,48 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
       }));
     },
 
-    // Read the file *without* expanding the row, so collapsed rows can
-    // surface a faint preview line. Strictly a file read — never runs the
-    // carry-over resolver, since that's an engagement moment that should
-    // only fire on an explicit expand.
+    // Read the row's state *without* expanding it, so collapsed rows can
+    // surface a faint preview line and the header's "Carried · …" label.
+    // Mirrors expandRow's load path: own file first, then carry-over resolver
+    // for time-bound horizons. Safe to run eagerly on accordion mount — the
+    // autosave hook only mounts on the editor route, so prefetched carry-over
+    // never auto-writes from the homepage alone; materialization still
+    // requires the user navigating into /horizon/:id and either editing or
+    // blurring the editor.
     prefetchRow: async (horizon) => {
       if (get().rows[horizon].loaded) return;
       const file = filenameFor(horizon);
       const existing = await fs.read(file);
-      if (existing === null) return;
+
+      let content = "";
+      let carryOver: CarryOver | null = null;
+      if (existing !== null) {
+        content = existing;
+      } else if (horizon === "year" || horizon === "month" || horizon === "week") {
+        const targetPeriod = PeriodKey.current(horizon);
+        if (targetPeriod) {
+          const co = await CarryOverResolver.resolve(fs, horizon, targetPeriod);
+          if (co) {
+            content = co.content;
+            carryOver = co;
+          }
+        }
+      }
+      if (content === "" && carryOver === null) return;
+
       set((s) => ({
         rows: {
           ...s.rows,
-          [horizon]: { ...s.rows[horizon], content: existing, loaded: true },
+          [horizon]: {
+            ...s.rows[horizon],
+            content,
+            carryOver,
+            loaded: true,
+            // Match expandRow: a carried buffer is a pending write that
+            // commits when the user lands on the editor (autosave fires
+            // on blur / debounce there).
+            dirty: carryOver !== null,
+          },
         },
       }));
     },
