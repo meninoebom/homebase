@@ -56,6 +56,19 @@ function metaFor(horizon: Horizon | "day"): string {
   return PeriodKey.format(horizon, key);
 }
 
+/**
+ * Short label for the period (no year), used in the "Carried · ___" form.
+ * Year keeps its 4-digit form; month becomes "May"; week becomes "Week 20".
+ */
+function shortMetaFor(horizon: Exclude<Horizon, "life-values" | "life-goals">): string {
+  const key = PeriodKey.current(horizon);
+  if (!key) return "";
+  const full = PeriodKey.format(horizon, key);
+  if (horizon === "year") return full;
+  if (horizon === "month") return full.split(" ")[0]; // "May 2026" → "May"
+  return full.split(",")[0]; // "Week 20, 2026" → "Week 20"
+}
+
 interface HorizonRowProps {
   horizon: Horizon | "day";
   onDayClick?: () => void;
@@ -222,7 +235,15 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
             letterSpacing: "0.2em",
           }}
         >
-          {metaFor(horizon)}
+          {row.carryOver && horizon !== "life-values" && horizon !== "life-goals" ? (
+            <>
+              <span style={{ color: "var(--terracotta, #B8472D)" }}>Carried</span>
+              <span aria-hidden="true"> · </span>
+              {shortMetaFor(horizon)}
+            </>
+          ) : (
+            metaFor(horizon)
+          )}
         </span>
         <span
           aria-hidden="true"
@@ -265,13 +286,14 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
           className="pl-[68px] pr-5 pb-8 pt-1"
           style={{ borderBottom: "1px solid var(--paper-edge)" }}
         >
-          {row.carryOver ? (
+          {row.carryOver && (
             <CarryOverBanner
               horizon={horizon}
               sourcePeriod={row.carryOver.sourcePeriod}
               onClear={() => clearCarryOver(horizon)}
             />
-          ) : row.loaded && row.content === "" ? (
+          )}
+          {row.loaded && row.content === "" ? (
             <>
               <HorizonInvitation horizon={horizon} />
               <button
