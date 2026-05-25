@@ -44,6 +44,7 @@ beforeEach(() => {
     config: null,
     configError: null,
     draftsError: false,
+    accessError: false,
     loaded: false,
     saving: false,
     lastSavedAt: null,
@@ -183,7 +184,70 @@ describe("loadToday — error handling", () => {
   });
 });
 
+describe("loadToday — folder access errors", () => {
+  it("surfaces a config-read access failure as accessError instead of hanging", async () => {
+    // readConfig rejects (revoked permission / folder gone) — NOT a missing
+    // file (that's readConfig → { kind: "missing" }). Must not reject out of
+    // loadToday, where day.tsx's `void loadToday()` would drop it.
+    mockReadConfig = () => Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    const state = useRitualStore.getState();
+    expect(state.accessError).toBe(true);
+    expect(state.loaded).toBe(true); // page renders recovery, doesn't hang
+    expect(state.configError).toBeNull();
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+
+  it("surfaces a first-run config write failure as accessError", async () => {
+    mockReadConfig = () => Promise.resolve({ kind: "missing" });
+    mockListFiles = () => Promise.resolve([]);
+    mockWriteConfig = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    expect(useRitualStore.getState().accessError).toBe(true);
+    expect(useRitualStore.getState().loaded).toBe(true);
+    spy.mockRestore();
+  });
+
+  it("clears accessError once a later load succeeds", async () => {
+    let shouldFail = true;
+    mockReadConfig = () =>
+      shouldFail
+        ? Promise.reject(new DOMException("denied", "NotAllowedError"))
+        : Promise.resolve({ kind: "ok", config: defaultConfig() });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await useRitualStore.getState().loadToday();
+    expect(useRitualStore.getState().accessError).toBe(true);
+
+    shouldFail = false;
+    await useRitualStore.getState().loadToday();
+    spy.mockRestore();
+
+    expect(useRitualStore.getState().accessError).toBe(false);
+    expect(useRitualStore.getState().config).toEqual(defaultConfig());
+  });
+});
+
 describe("resetToDefaults", () => {
+  it("surfaces accessError when the write fails instead of silently no-op'ing", async () => {
+    useRitualStore.setState({ configError: { kind: "parse-error", message: "x" }, loaded: true });
+    mockWriteConfig = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Must not reject — day.tsx calls `() => void resetToDefaults()`.
+    await expect(useRitualStore.getState().resetToDefaults()).resolves.toBeUndefined();
+
+    expect(useRitualStore.getState().accessError).toBe(true);
+    spy.mockRestore();
+  });
+
   it("writes defaultConfig() and clears configError", async () => {
     useRitualStore.setState({
       configError: { kind: "parse-error", message: "broken" },

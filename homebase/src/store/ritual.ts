@@ -37,6 +37,13 @@ interface RitualState {
   // user could write into a blank-looking day and overwrite content that's
   // merely unreadable right now (#83, sibling of #80).
   draftsError: boolean;
+  // True when the workspace folder itself can't be reached — a real fs error
+  // (revoked permission, folder moved/deleted) on the config read or any
+  // config write. Distinct from configError (the file's *contents* are bad,
+  // recover by Reset) because the recovery here is to *reconnect the folder*,
+  // not rewrite the config. Keeps loadToday from rejecting into day.tsx's
+  // `void loadToday()` and hanging the page (#85).
+  accessError: boolean;
   loaded: boolean;
   saving: boolean;
   lastSavedAt: number | null;
@@ -75,45 +82,69 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
   config: null,
   configError: null,
   draftsError: false,
+  accessError: false,
   loaded: false,
   saving: false,
   lastSavedAt: null,
 
   loadToday: async () => {
-    // Read config first. Three paths:
-    //   - missing → seed a default and use it
-    //   - parse-error / schema-error → surface as configError; skip drafts
-    //     load (the morning page renders the recovery screen instead)
-    //   - ok → use it
-    let config: HomebaseConfig;
-    const result = await readConfig();
-    if (result.kind === "missing") {
-      config = await pickFirstRunConfig();
-      await writeConfig(config);
-    } else if (result.kind === "parse-error" || result.kind === "schema-error") {
-      set({ configError: result, draftsError: false, loaded: true });
-      return;
-    } else {
-      const migration = migrateLoadedConfig(result.config);
-      config = migration.config;
-      if (migration.migrated) {
-        await writeConfig(config);
-      }
-    }
-
-    // A real day-file read error (not a missing file — readDaySections maps
-    // that to {}) must not pass for an empty day. Surface it as draftsError so
-    // the page renders a recovery screen instead of editable, overwriteable
-    // fields; loaded stays true so the page doesn't hang, and a retry re-reads.
-    let sections: Record<SlotId, string>;
     try {
-      sections = await readDaySections(todayISO());
+      // Read config first. Three paths:
+      //   - missing → seed a default and use it
+      //   - parse-error / schema-error → surface as configError; skip drafts
+      //     load (the morning page renders the recovery screen instead)
+      //   - ok → use it
+      let config: HomebaseConfig;
+      const result = await readConfig();
+      if (result.kind === "missing") {
+        config = await pickFirstRunConfig();
+        await writeConfig(config);
+      } else if (result.kind === "parse-error" || result.kind === "schema-error") {
+        set({ configError: result, draftsError: false, accessError: false, loaded: true });
+        return;
+      } else {
+        const migration = migrateLoadedConfig(result.config);
+        config = migration.config;
+        if (migration.migrated) {
+          await writeConfig(config);
+        }
+      }
+
+      // A real day-file read error (not a missing file — readDaySections maps
+      // that to {}) must not pass for an empty day. Surface it as draftsError so
+      // the page renders a recovery screen instead of editable, overwriteable
+      // fields; loaded stays true so the page doesn't hang, and a retry re-reads.
+      let sections: Record<SlotId, string>;
+      try {
+        sections = await readDaySections(todayISO());
+      } catch (err) {
+        console.error("ritual: failed to read today's day file", err);
+        set({
+          config,
+          configError: null,
+          draftsError: true,
+          accessError: false,
+          drafts: {},
+          loaded: true,
+        });
+        return;
+      }
+      set({
+        config,
+        configError: null,
+        draftsError: false,
+        accessError: false,
+        drafts: sections,
+        loaded: true,
+      });
     } catch (err) {
-      console.error("ritual: failed to read today's day file", err);
-      set({ config, configError: null, draftsError: true, drafts: {}, loaded: true });
-      return;
+      // A real fs failure on the config read / first-run seed write / migration
+      // write path (revoked permission, folder moved or deleted). Without this
+      // the rejection escapes into day.tsx's `void loadToday()` and the page
+      // hangs unloaded with no recovery. Surface it as accessError instead (#85).
+      console.error("ritual: failed to load homebase config", err);
+      set({ accessError: true, configError: null, draftsError: false, loaded: true });
     }
-    set({ config, configError: null, draftsError: false, drafts: sections, loaded: true });
   },
 
   setDraft: (slotId, body) => {
@@ -152,7 +183,15 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
     // neutral default. Day-file content is left alone. After write,
     // re-run loadToday so the page picks up the new config.
     const fresh = defaultConfig();
-    await writeConfig(fresh);
+    try {
+      await writeConfig(fresh);
+    } catch (err) {
+      // The folder became unreachable — don't let the recovery button silently
+      // no-op (it's invoked via `void resetToDefaults()`). Surface accessError.
+      console.error("ritual: failed to write config on reset", err);
+      set({ accessError: true, configError: null, loaded: true });
+      return;
+    }
     set({ configError: null });
     await get().loadToday();
   },
