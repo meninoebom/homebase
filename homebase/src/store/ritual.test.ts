@@ -43,6 +43,7 @@ beforeEach(() => {
     drafts: {},
     config: null,
     configError: null,
+    draftsError: false,
     loaded: false,
     saving: false,
     lastSavedAt: null,
@@ -138,6 +139,47 @@ describe("loadToday — error handling", () => {
     if (state.configError?.kind === "schema-error") {
       expect(state.configError.issues).toContain("slots must contain at least one entry");
     }
+  });
+
+  it("surfaces a day-file read failure as draftsError without hanging or losing content", async () => {
+    // Config loads fine; the DAY file read fails with a real error (revoked
+    // permission / I/O — not a missing file, which readDaySections maps to {}).
+    mockReadConfig = () => Promise.resolve({ kind: "ok", config: defaultConfig() });
+    mockReadDaySections = () =>
+      Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    // Must NOT reject — day.tsx calls `void loadToday()`; an internal reject
+    // would be an unhandled rejection and the page would hang unloaded.
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    const state = useRitualStore.getState();
+    expect(state.draftsError).toBe(true);
+    expect(state.loaded).toBe(true); // page renders the recovery, doesn't hang
+    expect(state.drafts).toEqual({}); // no phantom drafts to overwrite the file with
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+
+  it("clears draftsError once the day file reads successfully on retry", async () => {
+    mockReadConfig = () => Promise.resolve({ kind: "ok", config: defaultConfig() });
+    let shouldFail = true;
+    mockReadDaySections = () =>
+      shouldFail
+        ? Promise.reject(new DOMException("permission revoked", "NotAllowedError"))
+        : Promise.resolve({ intro: "today's words" });
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await useRitualStore.getState().loadToday();
+    expect(useRitualStore.getState().draftsError).toBe(true);
+
+    shouldFail = false;
+    await useRitualStore.getState().loadToday();
+    spy.mockRestore();
+
+    const state = useRitualStore.getState();
+    expect(state.draftsError).toBe(false);
+    expect(state.drafts).toEqual({ intro: "today's words" });
   });
 });
 

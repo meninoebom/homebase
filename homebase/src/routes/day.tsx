@@ -14,6 +14,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { DayLoadError } from "../components/DayLoadError";
 import { PromptSlot } from "../components/PromptSlot";
 import { WorkspaceSlot } from "../components/WorkspaceSlot";
 import { useRitualStore } from "../store/ritual";
@@ -41,23 +42,34 @@ function DayPage() {
   const loaded = useRitualStore((s) => s.loaded);
   const config = useRitualStore((s) => s.config);
   const configError = useRitualStore((s) => s.configError);
+  const draftsError = useRitualStore((s) => s.draftsError);
 
   useEffect(() => {
+    // loadToday surfaces the day-file read error (draftsError) and config
+    // parse/schema errors (configError) internally, so those don't reject.
+    // NOTE: the config read + first-run write path inside loadToday is still
+    // unguarded — a permission/IO failure there rejects and is dropped by
+    // `void`, hanging the page with no recovery screen. Tracked in #85.
     void loadToday();
   }, [loadToday]);
 
-  // Auto-save 800ms after any draft change. Gated on `loaded` so we
-  // don't race-write an empty file before the disk read settles.
+  // Auto-save 800ms after any draft change. Gated on `loaded` so we don't
+  // race-write an empty file before the disk read settles, and on
+  // `!draftsError` so we never write over a day file that failed to load.
   useEffect(() => {
-    if (!loaded || !config) return;
+    if (!loaded || !config || draftsError) return;
     const timer = setTimeout(() => {
       void saveNow();
     }, 800);
     return () => clearTimeout(timer);
-  }, [drafts, saveNow, loaded, config]);
+  }, [drafts, saveNow, loaded, config, draftsError]);
 
   if (configError) {
     return <ConfigRecoveryScreen error={configError} onReset={() => void resetToDefaults()} />;
+  }
+
+  if (draftsError) {
+    return <DayLoadError onRetry={() => void loadToday()} />;
   }
 
   const today = new Date();
