@@ -173,9 +173,10 @@ function AboutPage() {
                 Homebase uses the File System Access API; Firefox and Safari don't support it yet.
               </li>
               <li>
-                <strong>Folder:</strong>{" "}
-                <code className="font-mono text-[15px]">~/Documents/homebase-log</code> works well.
-                You only pick it once.
+                <strong>Folder:</strong> <code className="font-mono text-[15px]">~/Homebase</code>{" "}
+                works well — keeping it out of{" "}
+                <code className="font-mono text-[15px]">Documents</code> avoids iCloud sync-conflict
+                copies. You only pick it once.
               </li>
               <li>
                 <strong>Offline:</strong> install Homebase as a desktop app via the install button
