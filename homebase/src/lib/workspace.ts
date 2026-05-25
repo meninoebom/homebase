@@ -33,6 +33,9 @@ const HANDLE_KEY = "rootDir";
 export const STRATEGY_SUBDIR = "strategy";
 export const LOG_SUBDIR = "log";
 
+/** The only subdirectories Homebase manages under the root. */
+type Subdir = typeof STRATEGY_SUBDIR | typeof LOG_SUBDIR;
+
 let cachedRoot: FileSystemDirectoryHandle | null = null;
 
 /**
@@ -103,7 +106,7 @@ export async function requestRootPermission(): Promise<FileSystemDirectoryHandle
  * Throws if the root isn't resolved yet — the setup gate should have blocked
  * app render before any caller reaches here.
  */
-export async function getSubdir(name: string): Promise<FileSystemDirectoryHandle> {
+export async function getSubdir(name: Subdir): Promise<FileSystemDirectoryHandle> {
   const root = cachedRoot ?? (await getSavedRoot());
   if (!root) {
     throw new Error(

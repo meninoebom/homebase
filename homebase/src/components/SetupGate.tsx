@@ -84,10 +84,16 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={async () => {
-                const handle = await requestRootPermission();
-                if (!handle) return;
-                await ensureWorkspaceSubdirs();
-                setState({ kind: "ready" });
+                try {
+                  const handle = await requestRootPermission();
+                  // Denial leaves the user on this screen — both buttons and
+                  // the explanation are still here, so it's not a dead end.
+                  if (!handle) return;
+                  await ensureWorkspaceSubdirs();
+                  setState({ kind: "ready" });
+                } catch (err) {
+                  setState({ kind: "error", message: String(err) });
+                }
               }}
               className="rounded border border-[#E5E7EB] px-4 py-2 font-sans text-[13px] text-[#6B7280] hover:bg-[#F3F4F6]"
             >

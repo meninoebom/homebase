@@ -92,6 +92,18 @@ describe("FolderSettingsView", () => {
     expect(screen.getByRole("button", { name: /opening/i })).toBeDisabled();
   });
 
+  it("shows a transient checking state", () => {
+    render(
+      <FolderSettingsView
+        state={{ kind: "checking" }}
+        busy={false}
+        onChoose={noop}
+        onReconnect={noop}
+      />,
+    );
+    expect(screen.getByText(/Checking/i)).toBeInTheDocument();
+  });
+
   it("shows a Chromium message when unsupported", () => {
     render(
       <FolderSettingsView

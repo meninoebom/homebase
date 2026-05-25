@@ -220,13 +220,21 @@ export function FolderSettings() {
   const onChoose = useCallback(async () => {
     setBusy(true);
     try {
-      const root = await pickRoot();
+      await pickRoot();
       await ensureWorkspaceSubdirs();
-      setState({ kind: "connected", rootName: root.name });
+      // Full reload rather than setState. The strategy and ritual stores are
+      // module-scoped Zustand singletons that cache row content with
+      // loaded:true and never re-read on remount; pointing the fs layer at a
+      // new folder would otherwise let an edit flush the OLD folder's cached
+      // content into the NEW folder. Reload is the simplest correct reset for
+      // an action this rare. (Alternative — per-store reset actions — is more
+      // code for no user-visible gain here.)
+      window.location.reload();
     } catch (err) {
       // User dismissing the OS picker throws AbortError — that's a no-op, not
-      // a failure. Re-sync state for anything else.
+      // a failure. Log and re-sync state for anything else.
       if (!(err instanceof Error && err.name === "AbortError")) {
+        console.error(err);
         await refresh();
       }
     } finally {
@@ -238,13 +246,21 @@ export function FolderSettings() {
     setBusy(true);
     try {
       const root = await requestRootPermission();
-      if (!root) return;
+      if (!root) {
+        // Permission denied (or no saved handle) — re-sync so the panel
+        // reflects reality instead of silently doing nothing.
+        await refresh();
+        return;
+      }
       await ensureWorkspaceSubdirs();
       setState({ kind: "connected", rootName: root.name });
+    } catch (err) {
+      console.error(err);
+      await refresh();
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [refresh]);
 
   return (
     <FolderSettingsView state={state} busy={busy} onChoose={onChoose} onReconnect={onReconnect} />
