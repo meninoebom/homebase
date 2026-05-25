@@ -1,6 +1,6 @@
 // Zustand store for the strategic accordion.
 //
-// State shape per row: { expanded, content, carryOver, saveStatus, dirty, loaded }.
+// State shape per row: { expanded, content, carryOver, saveStatus, dirty, loaded, loadError }.
 // Six horizons are seeded at idle defaults on initialization; the row's
 // content + carryOver are populated lazily on first expand via expandRow.
 //
@@ -22,6 +22,12 @@ export interface RowState {
   saveStatus: SaveStatus;
   dirty: boolean;
   loaded: boolean;
+  // True when the last load attempt threw a real error (not a missing file).
+  // The fs layer maps a missing file to null/""; anything else (revoked
+  // permission, I/O failure) re-throws and lands here. The UI must show an
+  // error instead of the empty-horizon invitation, or the user could type
+  // over content that's merely unreadable and overwrite it (#80).
+  loadError: boolean;
 }
 
 export interface StrategyState {
@@ -45,6 +51,7 @@ function defaultRow(): RowState {
     saveStatus: "idle",
     dirty: false,
     loaded: false,
+    loadError: false,
   };
 }
 
@@ -93,41 +100,56 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
       // First-time expand: read the file. If it exists, that's the content.
       // If it doesn't exist and the horizon is time-bound, run the resolver
       // to find a carry-over candidate.
-      const file = filenameFor(horizon);
-      const existing = await fs.read(file);
+      try {
+        const file = filenameFor(horizon);
+        const existing = await fs.read(file);
 
-      let content = "";
-      let carryOver: CarryOver | null = null;
-      if (existing !== null) {
-        content = existing;
-      } else if (horizon === "year" || horizon === "month" || horizon === "week") {
-        const targetPeriod = PeriodKey.current(horizon);
-        if (targetPeriod) {
-          const co = await CarryOverResolver.resolve(fs, horizon, targetPeriod);
-          if (co) {
-            content = co.content;
-            carryOver = co;
+        let content = "";
+        let carryOver: CarryOver | null = null;
+        if (existing !== null) {
+          content = existing;
+        } else if (horizon === "year" || horizon === "month" || horizon === "week") {
+          const targetPeriod = PeriodKey.current(horizon);
+          if (targetPeriod) {
+            const co = await CarryOverResolver.resolve(fs, horizon, targetPeriod);
+            if (co) {
+              content = co.content;
+              carryOver = co;
+            }
           }
         }
-      }
 
-      set((s) => ({
-        rows: {
-          ...s.rows,
-          [horizon]: {
-            ...s.rows[horizon],
-            expanded: true,
-            content,
-            carryOver,
-            loaded: true,
-            // Carrying content into a never-saved buffer counts as dirty:
-            // user has unsaved content (the prior period's body) sitting in
-            // a file that doesn't exist yet. First flush writes it and the
-            // banner dismisses naturally on first edit.
-            dirty: carryOver !== null,
+        set((s) => ({
+          rows: {
+            ...s.rows,
+            [horizon]: {
+              ...s.rows[horizon],
+              expanded: true,
+              content,
+              carryOver,
+              loaded: true,
+              loadError: false,
+              // Carrying content into a never-saved buffer counts as dirty:
+              // user has unsaved content (the prior period's body) sitting in
+              // a file that doesn't exist yet. First flush writes it and the
+              // banner dismisses naturally on first edit.
+              dirty: carryOver !== null,
+            },
           },
-        },
-      }));
+        }));
+      } catch (err) {
+        // A real read failure (not a missing file — the fs layer maps that to
+        // null). Expand so the error shows in place, but leave loaded=false so
+        // the UI renders an error instead of an empty horizon, and a retry
+        // re-reads rather than short-circuiting. See #80.
+        console.error(`strategy: failed to load ${horizon}`, err);
+        set((s) => ({
+          rows: {
+            ...s.rows,
+            [horizon]: { ...s.rows[horizon], expanded: true, loaded: false, loadError: true },
+          },
+        }));
+      }
     },
 
     // Read the row's state *without* expanding it, so collapsed rows can
@@ -140,40 +162,52 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
     // blurring the editor.
     prefetchRow: async (horizon) => {
       if (get().rows[horizon].loaded) return;
-      const file = filenameFor(horizon);
-      const existing = await fs.read(file);
+      try {
+        const file = filenameFor(horizon);
+        const existing = await fs.read(file);
 
-      let content = "";
-      let carryOver: CarryOver | null = null;
-      if (existing !== null) {
-        content = existing;
-      } else if (horizon === "year" || horizon === "month" || horizon === "week") {
-        const targetPeriod = PeriodKey.current(horizon);
-        if (targetPeriod) {
-          const co = await CarryOverResolver.resolve(fs, horizon, targetPeriod);
-          if (co) {
-            content = co.content;
-            carryOver = co;
+        let content = "";
+        let carryOver: CarryOver | null = null;
+        if (existing !== null) {
+          content = existing;
+        } else if (horizon === "year" || horizon === "month" || horizon === "week") {
+          const targetPeriod = PeriodKey.current(horizon);
+          if (targetPeriod) {
+            const co = await CarryOverResolver.resolve(fs, horizon, targetPeriod);
+            if (co) {
+              content = co.content;
+              carryOver = co;
+            }
           }
         }
-      }
-      if (content === "" && carryOver === null) return;
+        if (content === "" && carryOver === null) return;
 
-      set((s) => ({
-        rows: {
-          ...s.rows,
-          [horizon]: {
-            ...s.rows[horizon],
-            content,
-            carryOver,
-            loaded: true,
-            // Match expandRow: a carried buffer is a pending write that
-            // commits when the user lands on the editor (autosave fires
-            // on blur / debounce there).
-            dirty: carryOver !== null,
+        set((s) => ({
+          rows: {
+            ...s.rows,
+            [horizon]: {
+              ...s.rows[horizon],
+              content,
+              carryOver,
+              loaded: true,
+              loadError: false,
+              // Match expandRow: a carried buffer is a pending write that
+              // commits when the user lands on the editor (autosave fires
+              // on blur / debounce there).
+              dirty: carryOver !== null,
+            },
           },
-        },
-      }));
+        }));
+      } catch (err) {
+        // Same #80 hazard as expandRow: a real read failure must not pass for
+        // an empty row. Flag it (without expanding — this is the collapsed
+        // prefetch) so a later expand surfaces the error instead of an
+        // overwriteable blank.
+        console.error(`strategy: failed to prefetch ${horizon}`, err);
+        set((s) => ({
+          rows: { ...s.rows, [horizon]: { ...s.rows[horizon], loadError: true } },
+        }));
+      }
     },
 
     collapseRow: (horizon) => {
@@ -212,6 +246,7 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
             carryOver: null,
             dirty: false,
             loaded: false,
+            loadError: false,
           },
         },
       }));
