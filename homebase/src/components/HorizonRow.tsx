@@ -24,6 +24,7 @@ import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CarryOverBanner } from "./CarryOverBanner";
 import { HorizonInvitation } from "./HorizonInvitation";
+import { HorizonLoadError } from "./HorizonLoadError";
 import { SectionPreview } from "./SectionPreview";
 import { extractCollapsedPreview } from "../lib/markdown-preview";
 import { PeriodKey, type Horizon } from "../lib/period-key";
@@ -174,15 +175,17 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
 
   // Pull saved content into state on mount so collapsed rows can show a
   // faint preview line. Skips the carry-over resolver — see prefetchRow.
+  // prefetchRow handles read errors internally (sets row.loadError); the
+  // catch is a defensive backstop for anything unexpected.
   useEffect(() => {
-    prefetchRow(horizon).catch(() => {});
+    prefetchRow(horizon).catch((err) => console.error(err));
   }, [horizon, prefetchRow]);
 
   const onToggle = () => {
     if (row.expanded) {
       collapseRow(horizon);
     } else {
-      expandRow(horizon).catch(() => {});
+      expandRow(horizon).catch((err) => console.error(err));
     }
   };
 
@@ -303,7 +306,11 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
               onClear={() => clearCarryOver(horizon)}
             />
           )}
-          {row.loaded && row.content === "" ? (
+          {row.loadError ? (
+            <HorizonLoadError
+              onRetry={() => expandRow(horizon).catch((err) => console.error(err))}
+            />
+          ) : row.loaded && row.content === "" ? (
             <>
               <HorizonInvitation horizon={horizon} />
               <button

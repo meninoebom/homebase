@@ -2,7 +2,7 @@
 // fake StrategyFs. We never hit the production singleton in tests because
 // it's bound to FSAccess which doesn't exist in jsdom.
 
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { createFakeStrategyFs } from "../lib/strategy-fs";
 import { createStrategyStore } from "./strategy";
 
@@ -18,6 +18,7 @@ describe("StrategyStore", () => {
         saveStatus: "idle",
         dirty: false,
         loaded: false,
+        loadError: false,
       });
     }
   });
@@ -106,6 +107,71 @@ describe("StrategyStore", () => {
     store.getState().collapseRow("life-values");
     await store.getState().expandRow("life-values");
     expect(store.getState().rows["life-values"].content).toBe("v1");
+  });
+
+  it("expandRow surfaces a non-missing read failure as loadError without marking the row loaded", async () => {
+    // A NotFoundError means "file doesn't exist" and the fs layer maps it to
+    // null; any OTHER error (revoked permission, real I/O failure) must NOT be
+    // mistaken for an empty horizon — that's the #80 overwrite hazard.
+    const failingFs = createFakeStrategyFs();
+    failingFs.read = async () => {
+      throw new DOMException("permission revoked", "NotAllowedError");
+    };
+    const store = createStrategyStore(failingFs);
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await store.getState().expandRow("life-values");
+
+    const row = store.getState().rows["life-values"];
+    expect(row.loadError).toBe(true);
+    expect(row.loaded).toBe(false); // not "loaded empty" — there may be content on disk
+    expect(row.expanded).toBe(true); // opened so the error shows in place
+    expect(row.content).toBe(""); // no phantom content the user could overwrite
+    expect(spy).toHaveBeenCalledOnce(); // assert before restore — it resets call history
+    spy.mockRestore();
+  });
+
+  it("prefetchRow surfaces a non-missing read failure as loadError without expanding", async () => {
+    const failingFs = createFakeStrategyFs();
+    failingFs.read = async () => {
+      throw new DOMException("permission revoked", "NotAllowedError");
+    };
+    const store = createStrategyStore(failingFs);
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await store.getState().prefetchRow("year");
+    spy.mockRestore();
+
+    const row = store.getState().rows.year;
+    expect(row.loadError).toBe(true);
+    expect(row.loaded).toBe(false);
+    expect(row.expanded).toBe(false); // prefetch never expands
+  });
+
+  it("expandRow retry clears loadError once the read succeeds", async () => {
+    const fs = createFakeStrategyFs({ "values.md": "courage" });
+    let shouldFail = true;
+    const realRead = fs.read.bind(fs);
+    fs.read = async (name) => {
+      if (shouldFail) throw new DOMException("permission revoked", "NotAllowedError");
+      return realRead(name);
+    };
+    const store = createStrategyStore(fs);
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await store.getState().expandRow("life-values");
+    expect(store.getState().rows["life-values"].loadError).toBe(true);
+
+    // User grants permission / retries: the error path left loaded=false, so a
+    // re-expand re-reads rather than short-circuiting.
+    shouldFail = false;
+    await store.getState().expandRow("life-values");
+    spy.mockRestore();
+
+    const row = store.getState().rows["life-values"];
+    expect(row.loadError).toBe(false);
+    expect(row.loaded).toBe(true);
+    expect(row.content).toBe("courage");
   });
 
   it("setContent updates content, marks dirty, dismisses carry-over banner", async () => {

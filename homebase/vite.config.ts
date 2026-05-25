@@ -36,6 +36,9 @@ export default defineConfig({
       autoCodeSplitting: true,
       routesDirectory: "./src/routes",
       generatedRouteTree: "./src/routeTree.gen.ts",
+      // Colocated *.test.tsx files next to route modules aren't routes; without
+      // this the plugin warns "does not export a Route" on every build/check.
+      routeFileIgnorePattern: "\\.test\\.",
     }),
     react(),
     tailwindcss(),
