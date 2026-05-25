@@ -31,6 +31,12 @@ interface RitualState {
   drafts: Record<SlotId, string>;
   config: HomebaseConfig | null;
   configError: ConfigError | null;
+  // True when today's day file failed to READ with a real error (not a
+  // missing file, which readDaySections maps to {}). Like configError, the
+  // day page renders a recovery screen instead of editors — otherwise the
+  // user could write into a blank-looking day and overwrite content that's
+  // merely unreadable right now (#83, sibling of #80).
+  draftsError: boolean;
   loaded: boolean;
   saving: boolean;
   lastSavedAt: number | null;
@@ -68,6 +74,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
   drafts: {},
   config: null,
   configError: null,
+  draftsError: false,
   loaded: false,
   saving: false,
   lastSavedAt: null,
@@ -84,7 +91,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       config = await pickFirstRunConfig();
       await writeConfig(config);
     } else if (result.kind === "parse-error" || result.kind === "schema-error") {
-      set({ configError: result, loaded: true });
+      set({ configError: result, draftsError: false, loaded: true });
       return;
     } else {
       const migration = migrateLoadedConfig(result.config);
@@ -94,8 +101,19 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       }
     }
 
-    const sections = await readDaySections(todayISO());
-    set({ config, configError: null, drafts: sections, loaded: true });
+    // A real day-file read error (not a missing file — readDaySections maps
+    // that to {}) must not pass for an empty day. Surface it as draftsError so
+    // the page renders a recovery screen instead of editable, overwriteable
+    // fields; loaded stays true so the page doesn't hang, and a retry re-reads.
+    let sections: Record<SlotId, string>;
+    try {
+      sections = await readDaySections(todayISO());
+    } catch (err) {
+      console.error("ritual: failed to read today's day file", err);
+      set({ config, configError: null, draftsError: true, drafts: {}, loaded: true });
+      return;
+    }
+    set({ config, configError: null, draftsError: false, drafts: sections, loaded: true });
   },
 
   setDraft: (slotId, body) => {
