@@ -85,9 +85,12 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
             folder.
           </p>
           <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
-            Choose any folder you like &mdash;{" "}
-            <code className="font-mono text-[13px]">Documents/homebase</code> works well. You only
-            need to do this once.
+            Choose any folder you like &mdash; a{" "}
+            <code className="font-mono text-[13px]">Homebase</code> folder in your home directory (
+            <code className="font-mono text-[13px]">~/Homebase</code>) works well. Keeping it out of{" "}
+            <code className="font-mono text-[13px]">Documents</code> and{" "}
+            <code className="font-mono text-[13px]">Desktop</code> avoids iCloud making
+            sync-conflict copies of files you edit often. You only need to do this once.
           </p>
           <button
             type="button"

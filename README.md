@@ -15,7 +15,7 @@ Everything you write is plain markdown saved to a folder you choose on your own 
 
 Open **[homebase.you](https://homebase.you)** in a Chromium browser (Chrome, Edge, Brave, Arc). Homebase uses the browser's File System Access API to read and write your markdown files; Firefox and Safari don't support that yet.
 
-On first launch you pick a folder. `~/Documents/homebase` works well, but anywhere is fine. You only pick it once. Both your home-page horizons and your daily entries live in that one folder.
+On first launch you pick a folder. `~/Homebase` works well, but anywhere is fine — keeping it out of `~/Documents` and `~/Desktop` avoids iCloud making sync-conflict copies of files you edit constantly. You only pick it once. Both your home-page horizons and your daily entries live in that one folder. You can change the folder later from the **Customize** page.
 
 To install as a desktop app, click the install button in the address bar (or the 3-dot menu → "Install Homebase"). The app shell works offline after first load.
 

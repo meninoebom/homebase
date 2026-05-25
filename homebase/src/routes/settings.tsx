@@ -28,6 +28,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { FolderSection } from "../components/FolderSection";
 import { useRitualStore } from "../store/ritual";
 import type {
   BriefingConfig,
@@ -132,6 +133,8 @@ function SettingsPage() {
           briefing={config.briefing}
           onChange={(next) => void updateConfig((c) => ({ ...c, briefing: next }))}
         />
+
+        <FolderSection />
 
         <ResetSection onReset={() => void resetToDefaults()} />
       </div>
