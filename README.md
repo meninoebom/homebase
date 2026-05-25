@@ -18,11 +18,18 @@ Updates roll out automatically the next time you open the app after a new versio
 
 ## Your data stays on your disk
 
-On first launch, Homebase asks you to pick a folder. The recommended location is `~/Documents/homebase-strategy/` (you can choose anywhere). Your strategic plans live as plain markdown files in that folder, on your machine. Nothing is sent to a server. Nothing is stored in a database.
+On first launch, Homebase asks you to pick **one** folder. The recommended choice is a `Homebase` folder in your home directory — `~/Homebase/` (you can choose anywhere). Inside it, Homebase creates two subfolders automatically:
 
-If you ever want a real backup, the simplest move is `git init` inside your strategy folder and push it to a private repo. Strategic plans are exactly the kind of thing whose history is interesting — diffs over months show how your thinking evolved.
+- `~/Homebase/strategy/` — your life values, life goals, and yearly / monthly / weekly plans
+- `~/Homebase/log/` — your daily morning-ritual log
 
-The morning writing ritual writes to a separate folder (`~/Documents/homebase-log/`) for the same reason: durable plain text, your disk, no service to depend on. **The log file IS the memory; grep is the memory layer.**
+Everything lives as plain markdown on your machine. Nothing is sent to a server. Nothing is stored in a database. The two stay separate subfolders so you can put `strategy/` under version control without dragging the day log in.
+
+A top-level `~/Homebase/` is recommended over `~/Documents/` deliberately: on macOS, Documents (and Desktop) are auto-synced by iCloud Drive when that's turned on, which can produce sync-conflict copies of files Homebase rewrites constantly. A folder outside Documents sidesteps that.
+
+You can see and change the folder any time from the **Folders** link at the bottom of the home screen. (The browser only ever tells the app the folder's *name*, never its full path — a privacy guarantee of the File System Access API — so to locate it on disk, search Finder for the folder name.)
+
+If you ever want a real backup, copy the whole `~/Homebase/` folder somewhere safe, or run `git init` inside `~/Homebase/strategy/` and push it to a private repo. Strategic plans are exactly the kind of thing whose history is interesting — diffs over months show how your thinking evolved. **The log file IS the memory; grep is the memory layer.**
 
 ## What's in the app
 

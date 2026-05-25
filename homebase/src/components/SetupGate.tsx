@@ -1,15 +1,20 @@
-// First-run gate. If the user has not yet picked the log directory (or
-// re-opened the app and the permission hasn't been re-confirmed), we block
-// the whole app and show a single button that triggers showDirectoryPicker.
-// Must be a user click — File System Access API refuses to prompt otherwise.
+// First-run gate for the whole app. Blocks render until the single Homebase
+// workspace root is connected (picked once, permission granted), then ensures
+// the strategy/ and log/ subfolders exist so every route can read/write
+// immediately. Wraps the entire router (see main.tsx), so it replaces the old
+// pair of per-folder gates — there is now one folder to connect, not two.
+//
+// The folder pick must happen on a user click: the File System Access API
+// refuses to prompt otherwise.
 
 import { useEffect, useState } from "react";
-import { fsaSupported, getSavedLogDir, pickLogDir, requestLogDirPermission } from "../lib/fs";
+import { fsaSupported, getSavedRoot, pickRoot, requestRootPermission } from "../lib/workspace";
+import { ensureWorkspaceSubdirs } from "../lib/workspace-init";
 
 type GateState =
   | { kind: "checking" }
   | { kind: "unsupported" }
-  | { kind: "needs-pick"; hasSaved: boolean }
+  | { kind: "needs-pick" }
   | { kind: "ready" }
   | { kind: "error"; message: string };
 
@@ -21,13 +26,16 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
       setState({ kind: "unsupported" });
       return;
     }
-    getSavedLogDir().then((saved) => {
-      if (saved) {
+    getSavedRoot()
+      .then(async (saved) => {
+        if (!saved) {
+          setState({ kind: "needs-pick" });
+          return;
+        }
+        await ensureWorkspaceSubdirs();
         setState({ kind: "ready" });
-      } else {
-        setState({ kind: "needs-pick", hasSaved: false });
-      }
-    });
+      })
+      .catch((err) => setState({ kind: "error", message: String(err) }));
   }, []);
 
   if (state.kind === "ready") return <>{children}</>;
@@ -39,8 +47,8 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
         <>
           <h1 className="font-serif text-2xl text-[#374151]">Homebase needs a Chromium browser.</h1>
           <p className="font-serif text-[15px] italic text-[#6B7280]">
-            The File System Access API is how Homebase reads and writes your morning log as real
-            markdown files. Open this page in Chrome, Edge, Arc, or Brave.
+            The File System Access API is how Homebase reads and writes your plans and your morning
+            log as real markdown files. Open this page in Chrome, Edge, Arc, or Brave.
           </p>
         </>
       )}
@@ -49,16 +57,20 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
         <>
           <h1 className="font-serif text-2xl text-[#374151]">Homebase</h1>
           <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
-            Pick the folder where your morning log lives. Typically{" "}
-            <code className="font-mono text-[13px]">~/Documents/homebase-log</code>. Your choice is
-            remembered for next time.
+            Pick the folder where Homebase keeps your files. We recommend making a{" "}
+            <code className="font-mono text-[13px]">Homebase</code> folder in your home directory
+            (e.g. <code className="font-mono text-[13px]">~/Homebase</code>). Homebase creates{" "}
+            <code className="font-mono text-[13px]">strategy/</code> and{" "}
+            <code className="font-mono text-[13px]">log/</code> inside it. Your choice is remembered
+            for next time.
           </p>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={async () => {
                 try {
-                  await pickLogDir();
+                  await pickRoot();
+                  await ensureWorkspaceSubdirs();
                   setState({ kind: "ready" });
                 } catch (err) {
                   if (err instanceof Error && err.name === "AbortError") return;
@@ -72,8 +84,10 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={async () => {
-                const handle = await requestLogDirPermission();
-                if (handle) setState({ kind: "ready" });
+                const handle = await requestRootPermission();
+                if (!handle) return;
+                await ensureWorkspaceSubdirs();
+                setState({ kind: "ready" });
               }}
               className="rounded border border-[#E5E7EB] px-4 py-2 font-sans text-[13px] text-[#6B7280] hover:bg-[#F3F4F6]"
             >
@@ -89,7 +103,7 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
           <p className="font-mono text-[13px] text-[#6B7280]">{state.message}</p>
           <button
             type="button"
-            onClick={() => setState({ kind: "needs-pick", hasSaved: false })}
+            onClick={() => setState({ kind: "needs-pick" })}
             className="rounded bg-[#374151] px-4 py-2 font-sans text-[13px] text-white hover:bg-[#1F2937]"
           >
             Try again

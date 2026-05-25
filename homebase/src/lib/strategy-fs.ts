@@ -1,26 +1,27 @@
-// File System Access API wrapper for the strategy directory.
+// File operations for the strategy directory.
 //
-// Mirrors the log-directory pattern in ./fs but for ~/Documents/homebase-strategy/.
-// Two directories deliberately stay separate so strategy can be put under
-// version control without dragging the day log in (see active-plan.md §4.5).
+// The strategy directory is the `strategy/` subfolder of the single Homebase
+// workspace root (see workspace.ts). It stays a distinct subdir from the day
+// log so it can be put under version control without dragging the log in (the
+// original two-folder rationale from active-plan.md §4.5, now two subdirs of
+// one root).
 //
 // This module exports two implementations of the same shape:
 //
-//   - StrategyFs           — production singleton, real FSAccess + IDB
+//   - StrategyFs           — production singleton, resolves <root>/strategy/
 //   - createFakeStrategyFs — in-memory factory, used by this module's tests
 //                            and by downstream tests (CarryOverResolver,
 //                            StrategyStore) that need a writable fake fs
 
-import { idbGet, idbSet } from "./idb";
-
-const HANDLE_KEY = "strategyDir";
+import { getSubdir, STRATEGY_SUBDIR } from "./workspace";
 
 export interface StrategyFsApi {
   /**
-   * Bootstrap the singleton with the saved directory handle, if permission
-   * is still granted. Returns silently if so. Throws if no handle is saved
-   * or permission was revoked — callers (the permission gate) should handle
-   * by re-prompting via pickStrategyDir().
+   * Resolve (and cache) the `<root>/strategy/` directory from the current
+   * workspace root, creating it if needed. Always re-resolves so a folder
+   * change made in settings repoints subsequent reads/writes. Throws if the
+   * workspace root isn't resolved yet — the setup gate should have blocked
+   * app render before any caller reaches here.
    */
   init(): Promise<void>;
   /** Read a single file. Returns null when missing; throws on real errors. */
@@ -39,55 +40,6 @@ export interface StrategyFsApi {
 // -- Directory handle resolution ----------------------------------------
 
 let cachedDir: FileSystemDirectoryHandle | null = null;
-
-/** True if FSAccess is supported. Same check as fs.fsaSupported. */
-export function fsaSupported(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof (window as unknown as { showDirectoryPicker?: unknown }).showDirectoryPicker ===
-      "function"
-  );
-}
-
-/**
- * Return the saved strategy directory handle if permission is still granted,
- * else null. Never prompts.
- */
-export async function getSavedStrategyDir(): Promise<FileSystemDirectoryHandle | null> {
-  if (cachedDir) {
-    const ok = await verifyPermission(cachedDir);
-    return ok ? cachedDir : null;
-  }
-  const saved = await idbGet<FileSystemDirectoryHandle>(HANDLE_KEY);
-  if (!saved) return null;
-  const ok = await verifyPermission(saved);
-  if (!ok) return null;
-  cachedDir = saved;
-  return saved;
-}
-
-/** Prompt user to pick the strategy directory. Must be from a user gesture. */
-export async function pickStrategyDir(): Promise<FileSystemDirectoryHandle> {
-  const handle = await window.showDirectoryPicker({ mode: "readwrite" });
-  await idbSet(HANDLE_KEY, handle);
-  cachedDir = handle;
-  return handle;
-}
-
-/** Re-request permission on the stored handle. Must be from a user gesture. */
-export async function requestStrategyDirPermission(): Promise<FileSystemDirectoryHandle | null> {
-  const saved = await idbGet<FileSystemDirectoryHandle>(HANDLE_KEY);
-  if (!saved) return null;
-  const perm = await saved.requestPermission({ mode: "readwrite" });
-  if (perm !== "granted") return null;
-  cachedDir = saved;
-  return saved;
-}
-
-async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
-  const status = await handle.queryPermission({ mode: "readwrite" });
-  return status === "granted";
-}
 
 function dirOrThrow(): FileSystemDirectoryHandle {
   if (!cachedDir) {
@@ -151,12 +103,7 @@ function isNotFound(err: unknown): boolean {
 
 export const StrategyFs: StrategyFsApi = {
   async init() {
-    if (cachedDir) return;
-    const saved = await getSavedStrategyDir();
-    if (!saved) {
-      throw new Error("strategy directory handle missing or permission revoked");
-    }
-    cachedDir = saved;
+    cachedDir = await getSubdir(STRATEGY_SUBDIR);
   },
   async read(filename) {
     return readFromDir(dirOrThrow(), filename);

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as NotesRouteImport } from './routes/notes'
 import { Route as MorningRouteImport } from './routes/morning'
 import { Route as IndexRouteImport } from './routes/index'
@@ -16,6 +17,11 @@ import { Route as WorkspaceNameRouteImport } from './routes/workspace.$name'
 import { Route as SlotNameRouteImport } from './routes/slot.$name'
 import { Route as HorizonIdRouteImport } from './routes/horizon.$id'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotesRoute = NotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/horizon/$id': typeof HorizonIdRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/horizon/$id': typeof HorizonIdRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/morning': typeof MorningRoute
   '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/horizon/$id': typeof HorizonIdRoute
   '/slot/$name': typeof SlotNameRoute
   '/workspace/$name': typeof WorkspaceNameRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/morning'
     | '/notes'
+    | '/settings'
     | '/horizon/$id'
     | '/slot/$name'
     | '/workspace/$name'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/morning'
     | '/notes'
+    | '/settings'
     | '/horizon/$id'
     | '/slot/$name'
     | '/workspace/$name'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/morning'
     | '/notes'
+    | '/settings'
     | '/horizon/$id'
     | '/slot/$name'
     | '/workspace/$name'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MorningRoute: typeof MorningRoute
   NotesRoute: typeof NotesRoute
+  SettingsRoute: typeof SettingsRoute
   HorizonIdRoute: typeof HorizonIdRoute
   SlotNameRoute: typeof SlotNameRoute
   WorkspaceNameRoute: typeof WorkspaceNameRoute
@@ -110,6 +123,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notes': {
       id: '/notes'
       path: '/notes'
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MorningRoute: MorningRoute,
   NotesRoute: NotesRoute,
+  SettingsRoute: SettingsRoute,
   HorizonIdRoute: HorizonIdRoute,
   SlotNameRoute: SlotNameRoute,
   WorkspaceNameRoute: WorkspaceNameRoute,
