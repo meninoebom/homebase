@@ -189,7 +189,8 @@ describe("loadToday — folder access errors", () => {
     // readConfig rejects (revoked permission / folder gone) — NOT a missing
     // file (that's readConfig → { kind: "missing" }). Must not reject out of
     // loadToday, where day.tsx's `void loadToday()` would drop it.
-    mockReadConfig = () => Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+    mockReadConfig = () =>
+      Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
