@@ -45,8 +45,11 @@ function DayPage() {
   const draftsError = useRitualStore((s) => s.draftsError);
 
   useEffect(() => {
-    // loadToday handles read errors internally (configError / draftsError);
-    // it never rejects, so `void` is safe here.
+    // loadToday surfaces the day-file read error (draftsError) and config
+    // parse/schema errors (configError) internally, so those don't reject.
+    // NOTE: the config read + first-run write path inside loadToday is still
+    // unguarded — a permission/IO failure there rejects and is dropped by
+    // `void`, hanging the page with no recovery screen. Tracked in #85.
     void loadToday();
   }, [loadToday]);
 
