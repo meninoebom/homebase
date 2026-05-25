@@ -22,10 +22,12 @@ interface FolderSectionViewProps {
   /** The connected folder's leaf name, or null if somehow unresolved. */
   folderName: string | null;
   busy: boolean;
+  /** Visible error from a failed folder switch, or null. */
+  error: string | null;
   onChange: () => void;
 }
 
-export function FolderSectionView({ folderName, busy, onChange }: FolderSectionViewProps) {
+export function FolderSectionView({ folderName, busy, error, onChange }: FolderSectionViewProps) {
   const name = folderName ?? "your homebase folder";
   return (
     <section className="mt-12">
@@ -51,6 +53,11 @@ export function FolderSectionView({ folderName, busy, onChange }: FolderSectionV
       >
         {busy ? "Opening…" : "Change folder…"}
       </button>
+      {error && (
+        <p className="mt-2 font-serif text-[14px] leading-relaxed text-[#B91C1C]" role="alert">
+          {error}
+        </p>
+      )}
       <p className="mt-2 font-serif text-[14px] italic leading-relaxed text-[#9CA3AF]">
         Changing the folder points Homebase at a new location and reloads. Existing files
         aren&rsquo;t moved &mdash; copy them over first if you want to keep them.
@@ -61,12 +68,14 @@ export function FolderSectionView({ folderName, busy, onChange }: FolderSectionV
 
 export function FolderSection() {
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // getCachedHomebaseRoot is sync and non-null here: SetupGate resolves the
   // handle before rendering any non-public route, and /settings isn't public.
   const folderName = getCachedHomebaseRoot()?.name ?? null;
 
   const onChange = async () => {
     setBusy(true);
+    setError(null);
     try {
       await pickHomebaseFolder();
       // Full reload. The ritual and strategy stores are module-scoped Zustand
@@ -76,13 +85,24 @@ export function FolderSection() {
       window.location.reload();
     } catch (err) {
       // Dismissing the OS picker throws AbortError — a no-op, not a failure.
+      // Anything else is a real failure: the switch didn't take (the fs layer
+      // still points at the existing folder), so surface it instead of letting
+      // the button silently snap back as if nothing happened.
       if (!(err instanceof Error && err.name === "AbortError")) {
         console.error(err);
+        setError("Couldn’t switch folders — your current folder is unchanged. Please try again.");
       }
     } finally {
       setBusy(false);
     }
   };
 
-  return <FolderSectionView folderName={folderName} busy={busy} onChange={() => void onChange()} />;
+  return (
+    <FolderSectionView
+      folderName={folderName}
+      busy={busy}
+      error={error}
+      onChange={() => void onChange()}
+    />
+  );
 }
