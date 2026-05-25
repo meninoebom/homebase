@@ -25,6 +25,7 @@ afterEach(() => {
       saveStatus: "idle",
       dirty: false,
       loaded: false,
+      loadError: false,
     });
   }
 });
@@ -90,6 +91,15 @@ describe("HorizonRow", () => {
     expect(screen.getByText(/^Week \d{1,2}$/)).toBeInTheDocument();
     // The full "Week N, YYYY" form does NOT appear when carried.
     expect(screen.queryByText(/^Week \d{1,2}, \d{4}$/)).toBeNull();
+  });
+
+  it("expanded row with loadError shows the error notice instead of the invitation", () => {
+    setRowState("life-values", { expanded: true, loaded: false, loadError: true, content: "" });
+    render(<HorizonRow horizon="life-values" />);
+    // The overwrite-warning alert is shown...
+    expect(screen.getByRole("alert")).toHaveTextContent(/couldn.t be opened/i);
+    // ...and the empty-horizon "Begin" affordance is NOT (that's the hazard).
+    expect(screen.queryByText("Begin")).toBeNull();
   });
 
   it("expanded week row with carry-over renders the banner AND the preview body", () => {

@@ -15,6 +15,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useEffect } from "react";
 import { CarryOverBanner } from "../components/CarryOverBanner";
 import { HorizonInvitation } from "../components/HorizonInvitation";
+import { HorizonLoadError } from "../components/HorizonLoadError";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { SaveIndicator } from "../components/SaveIndicator";
 import { useAutosave } from "../hooks/useAutosave";
@@ -97,7 +98,9 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
   // when loaded.
   useEffect(() => {
     if (!row.loaded) {
-      expandRow(horizon).catch(() => {});
+      // expandRow handles read errors internally (sets row.loadError); the
+      // catch is a defensive backstop for anything unexpected.
+      expandRow(horizon).catch((err) => console.error(err));
     }
   }, [horizon, row.loaded, expandRow]);
 
@@ -141,35 +144,44 @@ function EditorBody({ horizon }: { horizon: Horizon }) {
         />
       </header>
 
-      {row.carryOver ? (
-        <CarryOverBanner
-          horizon={horizon}
-          sourcePeriod={row.carryOver.sourcePeriod}
-          onClear={() => clearCarryOver(horizon)}
-        />
+      {row.loadError ? (
+        // Read failed — render the warning, NOT the editor. Mounting the
+        // editor here would invite the user to type into an empty buffer and
+        // overwrite content that's merely unreadable right now (#80).
+        <HorizonLoadError onRetry={() => expandRow(horizon).catch((err) => console.error(err))} />
       ) : (
-        showInvitation && <HorizonInvitation horizon={horizon} />
-      )}
+        <>
+          {row.carryOver ? (
+            <CarryOverBanner
+              horizon={horizon}
+              sourcePeriod={row.carryOver.sourcePeriod}
+              onClear={() => clearCarryOver(horizon)}
+            />
+          ) : (
+            showInvitation && <HorizonInvitation horizon={horizon} />
+          )}
 
-      {/* No editor placeholder: HorizonInvitation owns the empty state above
-          the editor, and CarryOverBanner provides context post-load. The
-          previous attempt to suppress the placeholder via a `showInvitation`
-          ternary failed because MarkdownEditor's CodeMirror state captures
-          the placeholder on first mount (useEffect with empty deps) — by
-          the time `row.loaded` flipped to true, the placeholder was already
-          baked in and could not be retracted. Dropping it entirely is the
-          cleanest fix. */}
-      <div className="relative max-w-[62ch]">
-        <MarkdownEditor
-          value={row.content}
-          onChange={(v) => setContent(horizon, v)}
-          onSave={flushNow}
-          autoFocus
-        />
-        <span className="absolute -right-2 bottom-0">
-          <SaveIndicator status={row.saveStatus} />
-        </span>
-      </div>
+          {/* No editor placeholder: HorizonInvitation owns the empty state above
+              the editor, and CarryOverBanner provides context post-load. The
+              previous attempt to suppress the placeholder via a `showInvitation`
+              ternary failed because MarkdownEditor's CodeMirror state captures
+              the placeholder on first mount (useEffect with empty deps) — by
+              the time `row.loaded` flipped to true, the placeholder was already
+              baked in and could not be retracted. Dropping it entirely is the
+              cleanest fix. */}
+          <div className="relative max-w-[62ch]">
+            <MarkdownEditor
+              value={row.content}
+              onChange={(v) => setContent(horizon, v)}
+              onSave={flushNow}
+              autoFocus
+            />
+            <span className="absolute -right-2 bottom-0">
+              <SaveIndicator status={row.saveStatus} />
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
