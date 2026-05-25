@@ -146,7 +146,16 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
         set((s) => ({
           rows: {
             ...s.rows,
-            [horizon]: { ...s.rows[horizon], expanded: true, loaded: false, loadError: true },
+            // carryOver:null keeps the error state self-consistent — a load
+            // failure must not leave a stale "Carried" banner rendering next
+            // to the error notice.
+            [horizon]: {
+              ...s.rows[horizon],
+              expanded: true,
+              loaded: false,
+              loadError: true,
+              carryOver: null,
+            },
           },
         }));
       }
@@ -205,7 +214,7 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
         // overwriteable blank.
         console.error(`strategy: failed to prefetch ${horizon}`, err);
         set((s) => ({
-          rows: { ...s.rows, [horizon]: { ...s.rows[horizon], loadError: true } },
+          rows: { ...s.rows, [horizon]: { ...s.rows[horizon], loadError: true, carryOver: null } },
         }));
       }
     },

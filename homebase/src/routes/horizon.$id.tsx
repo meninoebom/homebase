@@ -85,7 +85,10 @@ function HorizonEditorPage() {
   );
 }
 
-function EditorBody({ horizon }: { horizon: Horizon }) {
+// Exported for testing: lets a test inject row state via useStrategyStore and
+// assert the loadError branch renders the notice instead of the editor,
+// without standing up the router (HorizonEditorPage owns useParams).
+export function EditorBody({ horizon }: { horizon: Horizon }) {
   const row = useStrategyStore((s) => s.rows[horizon]);
   const expandRow = useStrategyStore((s) => s.expandRow);
   const setContent = useStrategyStore((s) => s.setContent);
