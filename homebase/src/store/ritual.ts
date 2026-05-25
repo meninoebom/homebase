@@ -65,6 +65,19 @@ interface RitualState {
 const DAY_FILE_PATTERN = /^\d{4}-\d{2}-\d{2}\.md$/;
 
 /**
+ * True for a "folder unreachable" error (revoked permission), as opposed to a
+ * missing file or a content problem. Such an error means the user must
+ * reconnect the folder, so it routes to accessError no matter which read/write
+ * surfaced it — including a day-file read that fails after the config read
+ * already succeeded.
+ */
+function isAccessError(err: unknown): boolean {
+  return (
+    err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "SecurityError")
+  );
+}
+
+/**
  * Decide which default config to seed when the user has no
  * homebase.config.json yet. If the log dir already has day files, the
  * user is mid-flow on a pre-config build (Brandon, anyone migrating)
@@ -118,6 +131,17 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       try {
         sections = await readDaySections(todayISO());
       } catch (err) {
+        // A revoked-permission / folder-gone error here means the whole folder
+        // is unreachable (it just happened to surface on the day read after the
+        // config read succeeded) — route it to accessError so the user gets the
+        // "reconnect your folder" screen, not "today's writing" (#85 review).
+        // Any other read failure (e.g. the day file itself is unreadable) stays
+        // draftsError.
+        if (isAccessError(err)) {
+          console.error("ritual: folder unreachable while reading today's day file", err);
+          set({ configError: null, draftsError: false, accessError: true, loaded: true });
+          return;
+        }
         console.error("ritual: failed to read today's day file", err);
         set({
           config,
