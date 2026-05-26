@@ -46,6 +46,11 @@ interface RitualState {
   accessError: boolean;
   loaded: boolean;
   saving: boolean;
+  // True when the last autosave write failed. Surfaced inline in the day
+  // footer (not the full-page recovery screen — a transient save failure
+  // shouldn't yank the user out of their editor). Mirrors the strategy
+  // page's saveStatus:"error" → SaveIndicator (#87).
+  saveError: boolean;
   lastSavedAt: number | null;
 
   loadToday: () => Promise<void>;
@@ -98,6 +103,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
   accessError: false,
   loaded: false,
   saving: false,
+  saveError: false,
   lastSavedAt: null,
 
   loadToday: async () => {
@@ -186,10 +192,16 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
     set({ saving: true });
     try {
       await saveDay(todayISO(), sections);
-      set({ saving: false, lastSavedAt: Date.now() });
+      set({ saving: false, saveError: false, lastSavedAt: Date.now() });
     } catch (err) {
-      set({ saving: false });
-      throw err;
+      // Autosave runs via `void saveNow()` (day.tsx), so a thrown error here is
+      // an unhandled rejection the user never sees, with the footer still
+      // showing a stale "saved …". Surface it as saveError instead and keep the
+      // drafts intact so the next edit retries. Inline severity on purpose — a
+      // transient save failure shouldn't escalate to the full-page recovery
+      // screen and pull the user out of their editor (#87).
+      console.error("ritual: autosave failed", err);
+      set({ saving: false, saveError: true });
     }
   },
 

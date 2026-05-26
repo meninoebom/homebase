@@ -31,6 +31,16 @@ export const Route = createFileRoute("/day")({
   component: DayPage,
 });
 
+/**
+ * Footer status text. A failed autosave must not keep showing the stale
+ * "saved …" label — surface the failure instead. Pure + exported for testing.
+ */
+export function saveFooterText(saving: boolean, saveError: boolean, savedLabel: string): string {
+  if (saving) return "saving…";
+  if (saveError) return "couldn’t save — check your folder";
+  return savedLabel;
+}
+
 function DayPage() {
   const navigate = useNavigate();
   const loadToday = useRitualStore((s) => s.loadToday);
@@ -38,6 +48,7 @@ function DayPage() {
   const saveNow = useRitualStore((s) => s.saveNow);
   const resetToDefaults = useRitualStore((s) => s.resetToDefaults);
   const saving = useRitualStore((s) => s.saving);
+  const saveError = useRitualStore((s) => s.saveError);
   const lastSavedAt = useRitualStore((s) => s.lastSavedAt);
   const drafts = useRitualStore((s) => s.drafts);
   const loaded = useRitualStore((s) => s.loaded);
@@ -166,8 +177,14 @@ function DayPage() {
         >
           Customize
         </button>
-        <span style={{ fontSize: "13px", fontWeight: 500, color: "#9CA3AF" }}>
-          {saving ? "saving…" : savedLabel}
+        <span
+          style={{
+            fontSize: "13px",
+            fontWeight: 500,
+            color: !saving && saveError ? "#B91C1C" : "#9CA3AF",
+          }}
+        >
+          {saveFooterText(saving, saveError, savedLabel)}
         </span>
       </footer>
     </main>
