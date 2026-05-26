@@ -106,7 +106,9 @@ describe("WorkspaceSlot", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/couldn.t load state/i)).toBeInTheDocument();
+      // Assert the actual error detail is surfaced, not just the static label —
+      // catches a regression that dropped the {loadError} interpolation.
+      expect(screen.getByText(/couldn.t load state/i)).toHaveTextContent(/permission revoked/);
     });
     // No editable surface rendered on a load failure.
     expect(container.querySelector("textarea")).toBeNull();
