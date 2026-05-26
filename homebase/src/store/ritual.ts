@@ -226,6 +226,9 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       // saved while disk never changed. Keep the in-memory edit (discarding the
       // user's input would be worse) but flag it so the settings page shows it
       // didn't persist; the next successful edit clears the flag (#89).
+      // Surfaced inline (configWriteError → banner) rather than the full-page
+      // accessError even for a folder-access failure: on the settings page the
+      // user is already where they'd reconnect (the Your folder section).
       console.error("ritual: failed to write config", err);
       set({ configWriteError: true });
     }
@@ -245,7 +248,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       set({ accessError: true, configError: null, loaded: true });
       return;
     }
-    set({ configError: null });
+    set({ configError: null, configWriteError: false });
     await get().loadToday();
   },
 }));

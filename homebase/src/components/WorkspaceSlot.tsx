@@ -37,6 +37,7 @@ export function WorkspaceSlot({ config, initialDraft, onDraft }: WorkspaceSlotPr
         setLoaded(true);
       })
       .catch((err: unknown) => {
+        console.error("workspace slot: failed to load state", err);
         setLoadError(err instanceof Error ? err.message : String(err));
         setLoaded(true);
       });
