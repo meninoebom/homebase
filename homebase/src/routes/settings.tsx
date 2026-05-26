@@ -28,6 +28,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { ConfigWriteErrorBanner } from "../components/ConfigWriteErrorBanner";
 import { FolderSection } from "../components/FolderSection";
 import { useRitualStore } from "../store/ritual";
 import type {
@@ -51,6 +52,7 @@ function SettingsPage() {
   const loadToday = useRitualStore((s) => s.loadToday);
   const updateConfig = useRitualStore((s) => s.updateConfig);
   const resetToDefaults = useRitualStore((s) => s.resetToDefaults);
+  const configWriteError = useRitualStore((s) => s.configWriteError);
 
   useEffect(() => {
     if (!loaded) void loadToday();
@@ -112,6 +114,8 @@ function SettingsPage() {
         <p className="mb-8 font-serif text-[14px] leading-relaxed text-[#6B7280]">
           Reorder, edit, or remove slots. Changes save automatically next to your day files.
         </p>
+
+        {configWriteError && <ConfigWriteErrorBanner />}
 
         <h2 className="mb-3 font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-[#9CA3AF]">
           Your daily page

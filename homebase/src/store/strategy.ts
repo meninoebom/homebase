@@ -279,7 +279,9 @@ export function createStrategyStore(fs: StrategyFsApi): UseBoundStore<StoreApi<S
         // Surface the failure via saveStatus="error" — the SaveIndicator
         // will render an error pip until the next successful save (or until
         // the user retries by editing again, which moves us to "saving").
-        // dirty stays true so the next edit/blur retries.
+        // dirty stays true so the next edit/blur retries. Log too, so a save
+        // failure leaves a console trace (callers swallow the rethrow).
+        console.error(`strategy: failed to save ${horizon}`, err);
         set((s) => ({
           rows: { ...s.rows, [horizon]: { ...s.rows[horizon], saveStatus: "error" } },
         }));

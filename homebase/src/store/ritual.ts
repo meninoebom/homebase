@@ -51,6 +51,11 @@ interface RitualState {
   // shouldn't yank the user out of their editor). Mirrors the strategy
   // page's saveStatus:"error" → SaveIndicator (#87).
   saveError: boolean;
+  // True when the last settings config write (updateConfig) failed. The edit
+  // is kept in memory (losing the user's input would be worse) but flagged so
+  // the settings page can show it didn't reach disk; cleared on the next
+  // successful write (#89).
+  configWriteError: boolean;
   lastSavedAt: number | null;
 
   loadToday: () => Promise<void>;
@@ -104,6 +109,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
   loaded: false,
   saving: false,
   saveError: false,
+  configWriteError: false,
   lastSavedAt: null,
 
   loadToday: async () => {
@@ -210,8 +216,22 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
     if (!current) return;
     const next = updater(current);
     if (next === current) return;
-    set({ config: next });
-    await writeConfig(next);
+    set({ config: next }); // optimistic — keep the settings UI responsive
+    try {
+      await writeConfig(next);
+      set({ configWriteError: false });
+    } catch (err) {
+      // Settings calls this via `await updateConfig(...)` / `void updateConfig(...)`
+      // with no catch, so a thrown rejection is unhandled and the change looks
+      // saved while disk never changed. Keep the in-memory edit (discarding the
+      // user's input would be worse) but flag it so the settings page shows it
+      // didn't persist; the next successful edit clears the flag (#89).
+      // Surfaced inline (configWriteError → banner) rather than the full-page
+      // accessError even for a folder-access failure: on the settings page the
+      // user is already where they'd reconnect (the Your folder section).
+      console.error("ritual: failed to write config", err);
+      set({ configWriteError: true });
+    }
   },
 
   resetToDefaults: async () => {
@@ -228,7 +248,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       set({ accessError: true, configError: null, loaded: true });
       return;
     }
-    set({ configError: null });
+    set({ configError: null, configWriteError: false });
     await get().loadToday();
   },
 }));
