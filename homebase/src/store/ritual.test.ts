@@ -44,6 +44,7 @@ beforeEach(() => {
     config: null,
     configError: null,
     draftsError: false,
+    accessError: false,
     loaded: false,
     saving: false,
     lastSavedAt: null,
@@ -142,11 +143,12 @@ describe("loadToday — error handling", () => {
   });
 
   it("surfaces a day-file read failure as draftsError without hanging or losing content", async () => {
-    // Config loads fine; the DAY file read fails with a real error (revoked
-    // permission / I/O — not a missing file, which readDaySections maps to {}).
+    // Config loads fine; the DAY file itself is unreadable (e.g. an I/O error,
+    // NOT a missing file → {} and NOT a permission error → accessError). This
+    // is the "this specific file is broken" case that draftsError owns.
     mockReadConfig = () => Promise.resolve({ kind: "ok", config: defaultConfig() });
     mockReadDaySections = () =>
-      Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+      Promise.reject(new DOMException("disk read failed", "NotReadableError"));
 
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     // Must NOT reject — day.tsx calls `void loadToday()`; an internal reject
@@ -166,7 +168,7 @@ describe("loadToday — error handling", () => {
     let shouldFail = true;
     mockReadDaySections = () =>
       shouldFail
-        ? Promise.reject(new DOMException("permission revoked", "NotAllowedError"))
+        ? Promise.reject(new DOMException("disk read failed", "NotReadableError"))
         : Promise.resolve({ intro: "today's words" });
 
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -181,9 +183,109 @@ describe("loadToday — error handling", () => {
     expect(state.draftsError).toBe(false);
     expect(state.drafts).toEqual({ intro: "today's words" });
   });
+
+  it("routes a permission failure during the day read to accessError, not draftsError", async () => {
+    // Permission revoked after the config read succeeded but before the day
+    // read — the folder is unreachable, so the user needs the reconnect screen,
+    // not "today's writing couldn't be opened".
+    mockReadConfig = () => Promise.resolve({ kind: "ok", config: defaultConfig() });
+    mockReadDaySections = () =>
+      Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await useRitualStore.getState().loadToday();
+    spy.mockRestore();
+
+    const state = useRitualStore.getState();
+    expect(state.accessError).toBe(true);
+    expect(state.draftsError).toBe(false);
+    expect(state.loaded).toBe(true);
+  });
+});
+
+describe("loadToday — folder access errors", () => {
+  it("surfaces a config-read access failure as accessError instead of hanging", async () => {
+    // readConfig rejects (revoked permission / folder gone) — NOT a missing
+    // file (that's readConfig → { kind: "missing" }). Must not reject out of
+    // loadToday, where day.tsx's `void loadToday()` would drop it.
+    mockReadConfig = () =>
+      Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    const state = useRitualStore.getState();
+    expect(state.accessError).toBe(true);
+    expect(state.loaded).toBe(true); // page renders recovery, doesn't hang
+    expect(state.configError).toBeNull();
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+
+  it("surfaces a first-run config write failure as accessError", async () => {
+    mockReadConfig = () => Promise.resolve({ kind: "missing" });
+    mockListFiles = () => Promise.resolve([]);
+    mockWriteConfig = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    expect(useRitualStore.getState().accessError).toBe(true);
+    expect(useRitualStore.getState().loaded).toBe(true);
+    spy.mockRestore();
+  });
+
+  it("surfaces a migration write failure as accessError", async () => {
+    // Existing config that needs migrating (empty quotes triggers migrated:true),
+    // so loadToday takes the migration-write branch — which can also hit a dead
+    // folder.
+    mockReadConfig = () =>
+      Promise.resolve({
+        kind: "ok",
+        config: { ...defaultConfig(), briefing: { enabled: true, quotes: [] } },
+      });
+    mockWriteConfig = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    expect(useRitualStore.getState().accessError).toBe(true);
+    spy.mockRestore();
+  });
+
+  it("clears accessError once a later load succeeds", async () => {
+    let shouldFail = true;
+    mockReadConfig = () =>
+      shouldFail
+        ? Promise.reject(new DOMException("denied", "NotAllowedError"))
+        : Promise.resolve({ kind: "ok", config: defaultConfig() });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await useRitualStore.getState().loadToday();
+    expect(useRitualStore.getState().accessError).toBe(true);
+
+    shouldFail = false;
+    await useRitualStore.getState().loadToday();
+    spy.mockRestore();
+
+    expect(useRitualStore.getState().accessError).toBe(false);
+    expect(useRitualStore.getState().config).toEqual(defaultConfig());
+  });
 });
 
 describe("resetToDefaults", () => {
+  it("surfaces accessError when the write fails instead of silently no-op'ing", async () => {
+    useRitualStore.setState({ configError: { kind: "parse-error", message: "x" }, loaded: true });
+    mockWriteConfig = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Must not reject — day.tsx calls `() => void resetToDefaults()`.
+    await expect(useRitualStore.getState().resetToDefaults()).resolves.toBeUndefined();
+
+    expect(useRitualStore.getState().accessError).toBe(true);
+    spy.mockRestore();
+  });
+
   it("writes defaultConfig() and clears configError", async () => {
     useRitualStore.setState({
       configError: { kind: "parse-error", message: "broken" },
