@@ -145,8 +145,8 @@ function AboutPage() {
 
           <Section id="customize" title="Customize it">
             <p>
-              Click <strong>Customize</strong> in the home-page header (or in the daily-page footer)
-              to open settings. From there you can:
+              Click <strong>Customize</strong> in either page's footer (home or daily) to open
+              settings. From there you can:
             </p>
             <ul className="ml-5 list-disc space-y-1">
               <li>Reorder slots by dragging the handle</li>

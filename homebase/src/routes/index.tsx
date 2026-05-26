@@ -34,33 +34,49 @@ function StrategyAccordion() {
           <HorizonRow horizon="week" />
           <HorizonRow horizon="day" onDayClick={() => navigate({ to: "/day" })} />
         </div>
-        <footer
-          className="mt-14 flex flex-wrap items-center justify-between gap-4 pt-5"
-          style={{ borderTop: "1px solid var(--paper-edge)" }}
-        >
-          <div
-            style={{
-              fontFamily: "var(--font-sans-ui)",
-              fontSize: "12px",
-              fontWeight: 600,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              color: "var(--ink-3)",
-            }}
-          >
-            Volume one · No. 121
+        <footer className="mt-14 pt-5" style={{ borderTop: "1px solid var(--paper-edge)" }}>
+          <div className="mb-5 text-center">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/settings" })}
+              className="cursor-pointer border-0 bg-transparent p-0 transition-colors hover:text-[var(--ink-1)]"
+              style={{
+                fontFamily: "var(--font-sans-ui)",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "var(--ink-3)",
+              }}
+            >
+              Customize
+            </button>
           </div>
-          <div
-            style={{
-              fontFamily: "var(--font-sans-ui)",
-              fontSize: "12px",
-              fontWeight: 600,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              color: "var(--ink-3)",
-            }}
-          >
-            Homebase 2026
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div
+              style={{
+                fontFamily: "var(--font-sans-ui)",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "var(--ink-3)",
+              }}
+            >
+              Volume one · No. 121
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-sans-ui)",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "var(--ink-3)",
+              }}
+            >
+              Homebase 2026
+            </div>
           </div>
         </footer>
       </div>
