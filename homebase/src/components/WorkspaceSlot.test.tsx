@@ -1,19 +1,18 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vite-plus/test";
 import type { WorkspaceSlotConfig } from "../lib/config";
 
 // Mock the log module so WorkspaceSlot's useEffect doesn't try to touch
-// real FSAccess during tests. Each test seeds the in-memory store before
-// rendering. We need to declare the mock before importing the component
-// (Vitest hoists vi.mock).
+// real FSAccess during tests. readState/writeState are overridable per test
+// (default to the in-memory store) so the error-path tests can reject. We
+// declare the mock before importing the component (Vitest hoists vi.mock).
 const stateStore = new Map<string, string>();
+let mockReadState: (slot: string) => Promise<string>;
+let mockWriteState: (slot: string, text: string) => Promise<void>;
 
 vi.mock("../lib/log", () => ({
-  readState: (slot: string) => Promise.resolve(stateStore.get(slot) ?? ""),
-  writeState: (slot: string, text: string) => {
-    stateStore.set(slot, text);
-    return Promise.resolve();
-  },
+  readState: (slot: string) => mockReadState(slot),
+  writeState: (slot: string, text: string) => mockWriteState(slot, text),
 }));
 
 // Import AFTER the mock so the component picks up the mocked module.
@@ -27,6 +26,11 @@ const baseConfig: WorkspaceSlotConfig = {
 
 beforeEach(() => {
   stateStore.clear();
+  mockReadState = (slot) => Promise.resolve(stateStore.get(slot) ?? "");
+  mockWriteState = (slot, text) => {
+    stateStore.set(slot, text);
+    return Promise.resolve();
+  };
 });
 
 describe("WorkspaceSlot", () => {
@@ -91,5 +95,49 @@ describe("WorkspaceSlot", () => {
       <WorkspaceSlot config={baseConfig} initialDraft="" onDraft={() => {}} />,
     );
     expect(container.querySelector("textarea")).toBeNull();
+  });
+
+  it("shows an inline error (and logs) when persistent state fails to load", async () => {
+    mockReadState = () => Promise.reject(new DOMException("permission revoked", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { container } = render(
+      <WorkspaceSlot config={baseConfig} initialDraft="" onDraft={() => {}} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/couldn.t load state/i)).toBeInTheDocument();
+    });
+    // No editable surface rendered on a load failure.
+    expect(container.querySelector("textarea")).toBeNull();
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+
+  it("shows 'save failed' (and logs) when a blur-save fails, keeping the text for retry", async () => {
+    mockWriteState = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { container } = render(
+      <WorkspaceSlot config={baseConfig} initialDraft="" onDraft={() => {}} />,
+    );
+
+    const textarea = await waitFor(() => {
+      const el = container.querySelector("textarea");
+      if (!el) throw new Error("textarea not loaded yet");
+      return el;
+    });
+
+    // Edit (marks dirty) then blur to trigger the save.
+    fireEvent.change(textarea, { target: { value: "new goals" } });
+    fireEvent.blur(textarea);
+
+    await waitFor(() => {
+      expect(screen.getByText(/save failed:/i)).toBeInTheDocument();
+    });
+    // The user's text isn't discarded — they can retry.
+    expect((container.querySelector("textarea") as HTMLTextAreaElement).value).toBe("new goals");
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
   });
 });
