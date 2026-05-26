@@ -53,6 +53,7 @@ export function WorkspaceSlot({ config, initialDraft, onDraft }: WorkspaceSlotPr
       setPersistentDirty(false);
       setSaveError(null);
     } catch (err) {
+      console.error("workspace slot: failed to save state", err);
       setSaveError(err instanceof Error ? err.message : String(err));
     }
   }

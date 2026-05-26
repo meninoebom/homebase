@@ -50,6 +50,7 @@ beforeEach(() => {
     loaded: false,
     saving: false,
     saveError: false,
+    configWriteError: false,
     lastSavedAt: null,
   });
 });
@@ -353,5 +354,34 @@ describe("saveNow — autosave failures", () => {
     const state = useRitualStore.getState();
     expect(state.saveError).toBe(false);
     expect(state.lastSavedAt).not.toBeNull();
+  });
+});
+
+describe("updateConfig — write failures", () => {
+  it("surfaces a write failure as configWriteError, keeps the edit, doesn't throw", async () => {
+    useRitualStore.setState({ config: defaultConfig() });
+    mockWriteConfig = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    const edited = { ...defaultConfig(), briefing: { enabled: false, quotes: [] } };
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // settings.tsx calls `await updateConfig(...)` / `void updateConfig(...)`
+    // with no catch — it must not reject.
+    await expect(useRitualStore.getState().updateConfig(() => edited)).resolves.toBeUndefined();
+
+    const state = useRitualStore.getState();
+    expect(state.configWriteError).toBe(true);
+    expect(state.config).toEqual(edited); // optimistic edit kept (don't lose user input)
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+
+  it("clears configWriteError on the next successful write", async () => {
+    useRitualStore.setState({ config: defaultConfig(), configWriteError: true });
+    mockWriteConfig = () => Promise.resolve();
+    const edited = { ...defaultConfig(), briefing: { enabled: false, quotes: [] } };
+
+    await useRitualStore.getState().updateConfig(() => edited);
+
+    expect(useRitualStore.getState().configWriteError).toBe(false);
   });
 });

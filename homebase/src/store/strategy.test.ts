@@ -238,11 +238,14 @@ describe("StrategyStore", () => {
     const store = createStrategyStore(failingFs);
     await store.getState().expandRow("life-values");
     store.getState().setContent("life-values", "courage");
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(store.getState().flush("life-values")).rejects.toThrow("disk full");
 
     const row = store.getState().rows["life-values"];
     expect(row.saveStatus).toBe("error");
     expect(row.dirty).toBe(true); // content not lost; next edit/blur will retry
+    expect(spy).toHaveBeenCalledOnce(); // failure is logged, not just surfaced
+    spy.mockRestore();
   });
 
   it("resetSaveStatus brings saveStatus back to idle (consumer-driven settle)", async () => {
