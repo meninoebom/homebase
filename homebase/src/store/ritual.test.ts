@@ -9,6 +9,7 @@ let mockReadConfig: () => Promise<ReadConfigResult>;
 let mockWriteConfig: (config: HomebaseConfig) => Promise<void>;
 let mockListFiles: () => Promise<string[]>;
 let mockReadDaySections: () => Promise<Record<string, string>>;
+let mockSaveDay: () => Promise<void>;
 
 vi.mock("../lib/config", async () => {
   const actual = await vi.importActual<typeof import("../lib/config")>("../lib/config");
@@ -25,7 +26,7 @@ vi.mock("../lib/fs", () => ({
 
 vi.mock("../lib/log", () => ({
   readDaySections: () => mockReadDaySections(),
-  saveDay: () => Promise.resolve(),
+  saveDay: () => mockSaveDay(),
   todayISO: () => "2026-05-08",
 }));
 
@@ -38,6 +39,7 @@ beforeEach(() => {
   mockWriteConfig = () => Promise.resolve();
   mockListFiles = () => Promise.resolve([]);
   mockReadDaySections = () => Promise.resolve({});
+  mockSaveDay = () => Promise.resolve();
   // Reset singleton state between tests.
   useRitualStore.setState({
     drafts: {},
@@ -47,6 +49,7 @@ beforeEach(() => {
     accessError: false,
     loaded: false,
     saving: false,
+    saveError: false,
     lastSavedAt: null,
   });
 });
@@ -314,5 +317,41 @@ describe("resetToDefaults", () => {
     expect(writes.length).toBeGreaterThanOrEqual(1);
     expect(writes[0]).toEqual(defaultConfig());
     expect(useRitualStore.getState().configError).toBeNull();
+  });
+});
+
+describe("saveNow — autosave failures", () => {
+  it("surfaces a write failure as saveError without throwing or dropping the draft", async () => {
+    mockSaveDay = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    useRitualStore.getState().setDraft("intro", "morning words");
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // day.tsx fires `void saveNow()` — it must not reject.
+    await expect(useRitualStore.getState().saveNow()).resolves.toBeUndefined();
+
+    const state = useRitualStore.getState();
+    expect(state.saveError).toBe(true);
+    expect(state.saving).toBe(false);
+    expect(state.drafts.intro).toBe("morning words"); // draft kept for retry
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockRestore();
+  });
+
+  it("clears saveError on the next successful save", async () => {
+    let shouldFail = true;
+    mockSaveDay = () => (shouldFail ? Promise.reject(new Error("io")) : Promise.resolve());
+    useRitualStore.getState().setDraft("intro", "words");
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await useRitualStore.getState().saveNow();
+    expect(useRitualStore.getState().saveError).toBe(true);
+
+    shouldFail = false;
+    await useRitualStore.getState().saveNow();
+    spy.mockRestore();
+
+    const state = useRitualStore.getState();
+    expect(state.saveError).toBe(false);
+    expect(state.lastSavedAt).not.toBeNull();
   });
 });
