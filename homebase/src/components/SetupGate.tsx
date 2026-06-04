@@ -15,6 +15,7 @@ import {
   pickHomebaseFolder,
   requestHomebaseFolderPermission,
 } from "../lib/fs";
+import { markWelcomePending } from "../lib/welcome";
 
 type GateState =
   | { kind: "checking" }
@@ -97,6 +98,9 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
             onClick={async () => {
               try {
                 await pickHomebaseFolder();
+                // Genuine first-time grant (not a reconnect) → show the
+                // one-time welcome panel on the accordion.
+                markWelcomePending();
                 setState({ kind: "ready" });
               } catch (err) {
                 if (err instanceof Error && err.name === "AbortError") return;

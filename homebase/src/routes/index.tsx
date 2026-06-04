@@ -17,6 +17,8 @@ import { useRef, useState } from "react";
 import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal";
 import { HorizonRow } from "../components/HorizonRow";
 import { Masthead } from "../components/Masthead";
+import { WelcomePanel } from "../components/WelcomePanel";
+import { dismissWelcome, isWelcomePending } from "../lib/welcome";
 
 export const Route = createFileRoute("/")({
   component: StrategyAccordion,
@@ -25,11 +27,20 @@ export const Route = createFileRoute("/")({
 function StrategyAccordion() {
   const navigate = useNavigate();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(isWelcomePending);
   const feedbackTriggerRef = useRef<HTMLButtonElement | null>(null);
   return (
     <div className="strategy-scope min-h-screen">
       <div className="mx-auto max-w-[1040px] px-10 pt-14 pb-16 md:px-20">
         <Masthead />
+        {showWelcome && (
+          <WelcomePanel
+            onDismiss={() => {
+              dismissWelcome();
+              setShowWelcome(false);
+            }}
+          />
+        )}
         <div className="toc flex flex-col">
           <HorizonRow horizon="life-values" />
           <HorizonRow horizon="life-goals" />
