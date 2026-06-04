@@ -73,6 +73,14 @@ export function WorkspaceSlot({ config, initialDraft, onDraft }: WorkspaceSlotPr
 
   return (
     <div className="space-y-5">
+      <p
+        data-testid="workspace-gloss"
+        className="font-sans text-[12px] text-[#9CA3AF]"
+        style={{ lineHeight: 1.5 }}
+      >
+        A workspace is a persistent notes area that stays with you day to day — use it for running
+        context, goals, or anything you want to keep in view.
+      </p>
       <div>
         <div className="mb-1 flex items-baseline justify-between">
           <p className="font-sans text-[10px] uppercase tracking-[0.06em] text-[#D1D5DB]">

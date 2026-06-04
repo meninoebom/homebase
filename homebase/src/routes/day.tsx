@@ -206,7 +206,7 @@ function DayPage() {
   );
 }
 
-function EmptyState({ onCustomize }: { onCustomize: () => void }) {
+export function EmptyState({ onCustomize }: { onCustomize: () => void }) {
   return (
     <div
       className="mt-12 flex flex-col items-center gap-4 rounded border border-dashed border-[#E5E7EB] px-6 py-12 text-center"
@@ -214,6 +214,13 @@ function EmptyState({ onCustomize }: { onCustomize: () => void }) {
     >
       <p style={{ fontSize: "18px", fontWeight: 500, color: "#6B7280" }}>
         Your homebase has no slots yet.
+      </p>
+      <p
+        data-testid="slot-gloss"
+        style={{ fontSize: "14px", color: "#9CA3AF", maxWidth: "38ch", lineHeight: 1.5 }}
+      >
+        A slot is a named section of your day — a prompt, a running workspace, or anything you want
+        to keep in view.
       </p>
       <button
         type="button"
