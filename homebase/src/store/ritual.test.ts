@@ -8,6 +8,8 @@ import type { HomebaseConfig, ReadConfigResult } from "../lib/config";
 let mockReadConfig: () => Promise<ReadConfigResult>;
 let mockWriteConfig: (config: HomebaseConfig) => Promise<void>;
 let mockListFiles: () => Promise<string[]>;
+let mockReadFile: (name: string) => Promise<string>;
+let mockWriteFile: (name: string, text: string) => Promise<void>;
 let mockReadDaySections: () => Promise<Record<string, string>>;
 let mockSaveDay: () => Promise<void>;
 
@@ -22,6 +24,8 @@ vi.mock("../lib/config", async () => {
 
 vi.mock("../lib/fs", () => ({
   listTopLevelFiles: () => mockListFiles(),
+  readFile: (name: string) => mockReadFile(name),
+  writeFile: (name: string, text: string) => mockWriteFile(name, text),
 }));
 
 vi.mock("../lib/log", () => ({
@@ -38,6 +42,8 @@ beforeEach(() => {
   mockReadConfig = () => Promise.resolve({ kind: "missing" });
   mockWriteConfig = () => Promise.resolve();
   mockListFiles = () => Promise.resolve([]);
+  mockReadFile = () => Promise.resolve(""); // "" means file absent
+  mockWriteFile = () => Promise.resolve();
   mockReadDaySections = () => Promise.resolve({});
   mockSaveDay = () => Promise.resolve();
   // Reset singleton state between tests.

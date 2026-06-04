@@ -116,6 +116,14 @@ describe("WorkspaceSlot", () => {
     spy.mockRestore();
   });
 
+  it("renders a one-sentence workspace gloss on first load", async () => {
+    render(<WorkspaceSlot config={baseConfig} initialDraft="" onDraft={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByTestId("workspace-gloss")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("workspace-gloss").textContent).toMatch(/workspace/i);
+  });
+
   it("shows 'save failed' (and logs) when a blur-save fails, keeping the text for retry", async () => {
     mockWriteState = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});

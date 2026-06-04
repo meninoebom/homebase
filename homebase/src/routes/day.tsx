@@ -12,9 +12,10 @@
 // index.css for the broader two-rooms rationale.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DayLoadError } from "../components/DayLoadError";
+import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal";
 import { FolderAccessError } from "../components/FolderAccessError";
 import { PromptSlot } from "../components/PromptSlot";
 import { WorkspaceSlot } from "../components/WorkspaceSlot";
@@ -43,6 +44,8 @@ export function saveFooterText(saving: boolean, saveError: boolean, savedLabel: 
 
 function DayPage() {
   const navigate = useNavigate();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const feedbackTriggerRef = useRef<HTMLButtonElement | null>(null);
   const loadToday = useRitualStore((s) => s.loadToday);
   const setDraft = useRitualStore((s) => s.setDraft);
   const saveNow = useRitualStore((s) => s.saveNow);
@@ -169,14 +172,21 @@ function DayPage() {
         className="sticky bottom-0 flex items-center justify-between border-t border-[#EBEBEB] bg-white px-6 py-2"
         style={{ fontFamily: DAY_SANS }}
       >
-        <button
-          type="button"
-          onClick={() => navigate({ to: "/settings" })}
-          className="cursor-pointer border-0 bg-transparent p-0 transition-colors hover:text-[#111]"
-          style={{ fontSize: "13px", fontWeight: 600, color: "#6B7280" }}
-        >
-          Customize
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/settings" })}
+            className="cursor-pointer border-0 bg-transparent p-0 transition-colors hover:text-[#111]"
+            style={{ fontSize: "13px", fontWeight: 600, color: "#6B7280" }}
+          >
+            Customize
+          </button>
+          <FeedbackLink
+            variant="day"
+            onOpen={() => setFeedbackOpen(true)}
+            triggerRef={feedbackTriggerRef}
+          />
+        </div>
         <span
           style={{
             fontSize: "13px",
@@ -187,11 +197,16 @@ function DayPage() {
           {saveFooterText(saving, saveError, savedLabel)}
         </span>
       </footer>
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        triggerRef={feedbackTriggerRef}
+      />
     </main>
   );
 }
 
-function EmptyState({ onCustomize }: { onCustomize: () => void }) {
+export function EmptyState({ onCustomize }: { onCustomize: () => void }) {
   return (
     <div
       className="mt-12 flex flex-col items-center gap-4 rounded border border-dashed border-[#E5E7EB] px-6 py-12 text-center"
@@ -199,6 +214,13 @@ function EmptyState({ onCustomize }: { onCustomize: () => void }) {
     >
       <p style={{ fontSize: "18px", fontWeight: 500, color: "#6B7280" }}>
         Your homebase has no slots yet.
+      </p>
+      <p
+        data-testid="slot-gloss"
+        style={{ fontSize: "14px", color: "#9CA3AF", maxWidth: "38ch", lineHeight: 1.5 }}
+      >
+        A slot is a named section of your day — a prompt, a running workspace, or anything you want
+        to keep in view.
       </p>
       <button
         type="button"
