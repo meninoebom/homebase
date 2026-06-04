@@ -18,7 +18,7 @@ import {
   writeConfig,
   type HomebaseConfig,
 } from "../lib/config";
-import { listTopLevelFiles } from "../lib/fs";
+import { listTopLevelFiles, readFile, writeFile } from "../lib/fs";
 import { readDaySections, saveDay, todayISO } from "../lib/log";
 
 export type SlotId = string;
@@ -93,11 +93,54 @@ function isAccessError(err: unknown): boolean {
  * user is mid-flow on a pre-config build (Brandon, anyone migrating)
  * — give them the legacy slot set so nothing visibly changes. Otherwise
  * they're a fresh install — give them the neutral default.
+ *
+ * Returns `isFresh: true` for a genuinely new folder with no day files,
+ * so the caller can decide whether to seed helper files (example.md).
  */
-async function pickFirstRunConfig(): Promise<HomebaseConfig> {
+async function pickFirstRunConfig(): Promise<{ config: HomebaseConfig; isFresh: boolean }> {
   const files = await listTopLevelFiles();
   const hasExistingDays = files.some((name) => DAY_FILE_PATTERN.test(name));
-  return hasExistingDays ? legacyDefaultConfig() : defaultConfig();
+  return {
+    config: hasExistingDays ? legacyDefaultConfig() : defaultConfig(),
+    isFresh: !hasExistingDays,
+  };
+}
+
+const EXAMPLE_FILENAME = "example.md";
+
+// The starter file written into a genuinely fresh folder on first run.
+// Opens with an edit-or-delete line so newcomers know it's safe to touch,
+// then models what a day entry feels like — in Homebase's editorial voice.
+const EXAMPLE_CONTENT = `<!-- Edit or delete this file — it's here to show you the shape of a day entry. -->
+
+# A morning to begin
+
+Something shifted this week. Not in one clean moment — more like a door
+that had been ajar finally opened all the way.
+
+---
+
+**What matters today:** one clear thing, written plainly.
+
+**What I'm sitting with:** a question I don't have to answer yet.
+
+**One line for tonight:** what I want to remember about this morning.
+`;
+
+/**
+ * On a genuinely fresh first run (no day files, no pre-existing example.md),
+ * write a starter example.md so a newcomer has a real entry to imitate.
+ * Non-fatal: a write failure is logged but does not block app load.
+ */
+async function maybeSeedExampleFile(): Promise<void> {
+  try {
+    const existing = await readFile(EXAMPLE_FILENAME);
+    if (existing !== "") return; // already present — don't overwrite
+    await writeFile(EXAMPLE_FILENAME, EXAMPLE_CONTENT);
+  } catch (err) {
+    console.error("ritual: failed to write example.md seed file", err);
+    // Intentionally non-fatal — the app continues normally.
+  }
 }
 
 export const useRitualStore = create<RitualState>()((set, get) => ({
@@ -122,8 +165,14 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       let config: HomebaseConfig;
       const result = await readConfig();
       if (result.kind === "missing") {
-        config = await pickFirstRunConfig();
+        const { config: firstRunConfig, isFresh } = await pickFirstRunConfig();
+        config = firstRunConfig;
         await writeConfig(config);
+        // Fresh users (no existing day files) get a starter example.md so
+        // they have something to imitate, not a blank surface. Non-fatal.
+        if (isFresh) {
+          await maybeSeedExampleFile();
+        }
       } else if (result.kind === "parse-error" || result.kind === "schema-error") {
         set({ configError: result, draftsError: false, accessError: false, loaded: true });
         return;
