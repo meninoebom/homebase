@@ -8,6 +8,8 @@ import type { HomebaseConfig, ReadConfigResult } from "../lib/config";
 let mockReadConfig: () => Promise<ReadConfigResult>;
 let mockWriteConfig: (config: HomebaseConfig) => Promise<void>;
 let mockListFiles: () => Promise<string[]>;
+let mockReadFile: (name: string) => Promise<string>;
+let mockWriteFile: (name: string, text: string) => Promise<void>;
 let mockReadDaySections: () => Promise<Record<string, string>>;
 let mockSaveDay: () => Promise<void>;
 
@@ -22,6 +24,8 @@ vi.mock("../lib/config", async () => {
 
 vi.mock("../lib/fs", () => ({
   listTopLevelFiles: () => mockListFiles(),
+  readFile: (name: string) => mockReadFile(name),
+  writeFile: (name: string, text: string) => mockWriteFile(name, text),
 }));
 
 vi.mock("../lib/log", () => ({
@@ -38,6 +42,8 @@ beforeEach(() => {
   mockReadConfig = () => Promise.resolve({ kind: "missing" });
   mockWriteConfig = () => Promise.resolve();
   mockListFiles = () => Promise.resolve([]);
+  mockReadFile = () => Promise.resolve(""); // "" means file absent
+  mockWriteFile = () => Promise.resolve();
   mockReadDaySections = () => Promise.resolve({});
   mockSaveDay = () => Promise.resolve();
   // Reset singleton state between tests.
@@ -112,6 +118,99 @@ describe("loadToday — config seeding", () => {
 
     expect(wrote).toBe(false);
     expect(useRitualStore.getState().config).toEqual(existing);
+  });
+});
+
+describe("loadToday — example.md seeding", () => {
+  it("writes example.md on fresh first-run (no day files, no config)", async () => {
+    const written: Record<string, string> = {};
+    mockWriteFile = (name, text) => {
+      written[name] = text;
+      return Promise.resolve();
+    };
+    mockListFiles = () => Promise.resolve([]);
+    mockReadFile = () => Promise.resolve(""); // example.md absent
+
+    await useRitualStore.getState().loadToday();
+
+    expect(written["example.md"]).toBeDefined();
+    // Must open with an edit-or-delete line.
+    expect(written["example.md"]).toMatch(/edit|delete/i);
+  });
+
+  it("does not write example.md when day files already exist (migrating user)", async () => {
+    const written: Record<string, string> = {};
+    mockWriteFile = (name, text) => {
+      written[name] = text;
+      return Promise.resolve();
+    };
+    mockListFiles = () => Promise.resolve(["2026-05-07.md", "2026-05-08.md"]);
+    mockReadFile = () => Promise.resolve("");
+
+    await useRitualStore.getState().loadToday();
+
+    expect(written["example.md"]).toBeUndefined();
+  });
+
+  it("does not re-write example.md when it already exists (idempotent)", async () => {
+    let writeCount = 0;
+    mockWriteFile = () => {
+      writeCount++;
+      return Promise.resolve();
+    };
+    mockListFiles = () => Promise.resolve([]);
+    // example.md already present — non-empty string means it exists.
+    mockReadFile = (name) =>
+      name === "example.md"
+        ? Promise.resolve("# This is an example\nEdit or delete it.")
+        : Promise.resolve("");
+
+    await useRitualStore.getState().loadToday();
+
+    expect(writeCount).toBe(0);
+  });
+
+  it("does not re-write example.md on second load / permission reconnect", async () => {
+    // First load: fresh, example.md absent → writes it.
+    let exampleContent = "";
+    mockWriteFile = (name, text) => {
+      if (name === "example.md") exampleContent = text;
+      return Promise.resolve();
+    };
+    mockListFiles = () => Promise.resolve([]);
+    mockReadFile = () => Promise.resolve(""); // absent on first load
+
+    await useRitualStore.getState().loadToday();
+    expect(exampleContent).not.toBe("");
+
+    // Second load: example.md now present → must not write again.
+    let secondWriteCount = 0;
+    mockWriteFile = () => {
+      secondWriteCount++;
+      return Promise.resolve();
+    };
+    mockReadFile = (name) =>
+      name === "example.md" ? Promise.resolve(exampleContent) : Promise.resolve("");
+    mockReadConfig = () => Promise.resolve({ kind: "ok", config: defaultConfig() });
+    useRitualStore.setState({ loaded: false });
+
+    await useRitualStore.getState().loadToday();
+
+    expect(secondWriteCount).toBe(0);
+  });
+
+  it("does not throw when the seed write fails — app still loads", async () => {
+    mockWriteFile = () => Promise.reject(new Error("disk full"));
+    mockListFiles = () => Promise.resolve([]);
+    mockReadFile = () => Promise.resolve("");
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(useRitualStore.getState().loadToday()).resolves.toBeUndefined();
+
+    const state = useRitualStore.getState();
+    expect(state.loaded).toBe(true);
+    expect(state.accessError).toBe(false);
+    spy.mockRestore();
   });
 });
 
