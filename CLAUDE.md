@@ -77,6 +77,12 @@ There is a one-time IDB migration: `loadPersistedHandle()` in `lib/fs.ts` falls 
 
 If you ever need a *second* directory for genuinely-separate data (e.g. exports), give it its own picker reachable from settings — don't reintroduce a second first-run gate.
 
+### Parallel agents in separate worktrees still collide on a shared file
+
+When fanning out multiple build agents in parallel (each in its own git worktree), worktree isolation protects you from *most* conflicts — but NOT when two agents edit the **same file**. PRs #102 (jargon gloss) and #104 (feedback modal) were built concurrently and both touched `homebase/src/routes/day.tsx`; the gloss branch's commit swept in the feedback branch's footer edit, leaving an `import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal"` against a component that didn't exist on that branch. Local `pnpm test` had already run before the contamination landed, so only CI typecheck caught the dangling import. The repair was to strip the foreign edit from `day.tsx` and re-push.
+
+The lesson for the next parallel run: **partition the fan-out by file ownership, not just by issue.** Before launching, list the files each issue will touch; if two issues touch the same file, build them sequentially (or have the second rebase on the first) rather than concurrently. Trust CI, not the local test run, as the contamination backstop — and after any parallel build, diff each PR for changes outside its declared scope before merging.
+
 ## After Completing Work
 
 Before wrapping up a non-trivial PR, self-assess:
