@@ -40,11 +40,11 @@ PR #38 fixed a bug where this caused "How do you want to live? Begin anywhere." 
 
 If you ever need a reactive placeholder, the CodeMirror-idiomatic fix is a `Compartment` and a second `useEffect([placeholder])` that calls `view.dispatch({ effects: compartment.reconfigure(...) })`. Or remount the editor via React `key`.
 
-### `/about` is whitelisted past `SetupGate`
+### About is a header disclosure, not a route (the `/about` page is gone)
 
-`SetupGate` (`homebase/src/components/SetupGate.tsx`) wraps the entire `RouterProvider` in `main.tsx`, which means *every* other route is gated behind the homebase-folder picker. `/about` opts out via a path check (`isPublicRoute()`) so a first-time visitor can read what Homebase is before granting filesystem access.
+The standalone `/about` route was removed in the sotol-fishhook cover redesign (2026-06). "About" is now an expand/collapse panel inside the `Masthead` rust band on `/`: a slim functional bar by default that opens to reveal the concentric `HorizonEmblem` plus a succinct "what Homebase is" + how-to-start. First load auto-opens it once via a localStorage flag (`homebase.seenIntro` in `Masthead.tsx`); the user reopens it any time with the About toggle.
 
-The check reads `window.location.pathname` once. SetupGate is rendered outside `RouterProvider`, so client-side nav does *not* re-evaluate it. User-visible bug surface: someone landing on `/about` and then navigating to `/morning` would bypass SetupGate; `/morning` would fail at runtime when it tries to read the folder. If you add another colophon-style public route (privacy, FAQ), extend `isPublicRoute()` — and ideally only allow it as the entry route, not as a navigation target from inside the gated app.
+Because About is no longer a public, pre-gate route, `SetupGate.isPublicRoute()` was deleted with it — *every* route now sits behind the folder picker. That's intentional: the SetupGate first-run screen itself explains Homebase before the grant, so a brand-new visitor still gets the pitch. If you ever reintroduce a public colophon route (privacy, FAQ), you'll need to re-add a public-route escape in `SetupGate` — and beware the client-nav bypass the old `isPublicRoute()` had (it read `window.location.pathname` once, outside `RouterProvider`, so in-app nav never re-evaluated it).
 
 ### A rotated `+` reads as `×`, not "collapse"
 
@@ -62,12 +62,19 @@ The fix when you catch it: branch off the latest `origin/main`, cherry-pick the 
 
 ### Two rooms, two registers — and now both speak Inter Tight
 
-The strategic accordion at `/` and the day page at `/day` (renamed from `/morning` on 2026-05-15) deliberately have different backgrounds — warm bone for the accordion, white for the writing surface. Both share Inter Tight as the type system but apply it at different scales. If you're adding a new screen, ask which "room" it belongs to:
+The strategic cover at `/` and the day page at `/day` (renamed from `/morning` on 2026-05-15) deliberately have different backgrounds — warm bone for the cover, white for the writing surface. Both share Inter Tight as the type system but apply it at different scales. If you're adding a new screen, ask which "room" it belongs to:
 
-- **Strategic / cover surface** (`/`, `/horizon/$id`): warm bone (`--paper-1: #ECE6DA`), marigold accent (`--accent-2: #C18A2A`), Inter Tight at confident scales (50–124px display), lining figures for numerals.
+- **Strategic / cover surface** (`/`, `/horizon/$id`): warm bone (`--paper-1: #ECE6DA`), marigold accent (`--accent-2: #C18A2A`), Inter Tight at confident scales. Since the sotol-fishhook redesign (2026-06) the `/` cover *leads* with a full-bleed **rust** (`--accent-1: #7a2618`) hero band (`Masthead`) above the bone accordion — see the cream-on-rust gotcha below.
 - **Writing surface** (`/day`, anywhere with a CodeMirror editor): white, Inter Tight at 18px body, no italics in the chrome. Italic is reserved for markdown semantics that the user typed.
 
 Don't try to unify them — they're intentionally different rooms in the same magazine.
+
+### Cream-on-rust hero + the perspective-taper accordion
+
+The `/` cover redesign (sotol-fishhook, 2026-06, after Everlaw's landing page) layers two ideas on top of the bone accordion:
+
+- **Cream-on-rust hero band** (`Masthead.tsx`, `HorizonEmblem.tsx`). The `strategy-scope` tokens are tuned for *dark ink on bone*; inside the saturated rust band you must flip to bone text on rust. Those inversions are hardcoded as `HERO_*` constants at the top of `Masthead.tsx` (e.g. `HERO_TEXT = var(--paper-1)`) rather than tokens — don't reach for `--ink-*` inside the band, it'll vanish.
+- **Perspective taper** (`HorizonRow.tsx`, the `DEPTH` map). The six rows are *horizons*: the far ones (Life values) render small and pale at the top, growing and darkening down to **Today** — largest, rust-solid, the base. Row title size + color come from `DEPTH[horizon]`, not a single shared size. The old `01–06` numerals and the right-hand "Open today's page" label were dropped; labels are deictic ("This year / This month / This week / Today"), and the meta column (2026, June 2026, …) is marigold. If you add a horizon, add a `DEPTH` entry or it won't size.
 
 ### One folder, one gate
 

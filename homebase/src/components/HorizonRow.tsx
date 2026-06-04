@@ -30,26 +30,28 @@ import { extractCollapsedPreview } from "../lib/markdown-preview";
 import { PeriodKey, type Horizon } from "../lib/period-key";
 import { useStrategyStore } from "../store/strategy";
 
-// Lining figures replace the prior roman numerals (i. / ii. / …) per
-// the May 2026 redesign — the brief explicitly moved away from
-// "classical / serif main characters." Rendered in marigold via
-// .row-num below.
-const NUM: Record<Horizon | "day", string> = {
-  "life-values": "01",
-  "life-goals": "02",
-  year: "03",
-  month: "04",
-  week: "05",
-  day: "06",
-};
-
 const TITLE: Record<Horizon | "day", string> = {
   "life-values": "Life values",
   "life-goals": "Life goals",
-  year: "Year",
-  month: "Month",
-  week: "Week",
-  day: "Day",
+  year: "This year",
+  month: "This month",
+  week: "This week",
+  day: "Today",
+};
+
+// Perspective gradient — the rows are *horizons*. The far ones (life values)
+// sit high, small, and pale, like a distant horizon line you steer by; Today
+// is the ground under your feet — largest, boldest, rust-solid at the base.
+// Size and ink recede as the scale lengthens, so the eye tapers downward and
+// lands on the day you can actually act in. Sizes multiply by --display-scale
+// so the settings customization still scales the whole stack together.
+const DEPTH: Record<Horizon | "day", { size: number; color: string }> = {
+  "life-values": { size: 32, color: "var(--ink-3)" },
+  "life-goals": { size: 37, color: "var(--ink-3)" },
+  year: { size: 43, color: "var(--ink-2)" },
+  month: { size: 49, color: "var(--ink-2)" },
+  week: { size: 56, color: "var(--ink-1)" },
+  day: { size: 64, color: "var(--accent-1)" },
 };
 
 /** Metadata text shown in the header's right column. */
@@ -102,49 +104,26 @@ function DayRow({ onDayClick }: { onDayClick?: () => void }) {
         onClick={onDayClick}
         className="day-row-button group grid w-full cursor-pointer items-center px-4 text-left transition-colors hover:bg-[var(--paper-3)]"
         style={{
-          gridTemplateColumns: "64px 1fr auto 36px",
+          gridTemplateColumns: "1fr auto 36px",
           gap: "24px",
           paddingTop: "var(--row-pad-y)",
           paddingBottom: "var(--row-pad-y)",
         }}
       >
-        <span
-          style={{
-            fontFamily: "var(--font-numeral)",
-            fontFeatureSettings: "'lnum' 1, 'tnum' 1",
-            fontWeight: 600,
-            fontSize: "30px",
-            lineHeight: 1,
-            letterSpacing: "-0.02em",
-            color: "var(--accent-2)",
-          }}
-        >
-          {NUM.day}
-        </span>
         <h2
           className="row-day-title transition-colors"
           style={{
             fontFamily: "var(--font-serif-display)",
             fontWeight: 600,
-            fontSize: "calc(50px * var(--display-scale, 1))",
+            fontSize: `calc(${DEPTH.day.size}px * var(--display-scale, 1))`,
             lineHeight: 1,
             letterSpacing: "-0.035em",
-            color: "var(--ink-1)",
+            color: DEPTH.day.color,
           }}
         >
           {TITLE.day}
         </h2>
-        <span
-          className="whitespace-nowrap self-center"
-          style={{
-            fontFamily: "var(--font-sans-ui)",
-            fontSize: "16px",
-            fontWeight: 700,
-            color: "var(--accent-1)",
-          }}
-        >
-          {metaFor("day")}
-        </span>
+        <span aria-hidden="true" />
         <span
           aria-hidden="true"
           className="row-day-arrow text-right transition-transform duration-200 group-hover:translate-x-[4px]"
@@ -209,33 +188,20 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
         onClick={onToggle}
         className="grid w-full cursor-pointer items-center px-4 text-left transition-colors hover:bg-[var(--paper-3)]"
         style={{
-          gridTemplateColumns: "64px 1fr auto 36px",
+          gridTemplateColumns: "1fr auto 36px",
           gap: "24px",
           paddingTop: "var(--row-pad-y)",
           paddingBottom: "var(--row-pad-y)",
         }}
       >
-        <span
-          style={{
-            fontFamily: "var(--font-numeral)",
-            fontFeatureSettings: "'lnum' 1, 'tnum' 1",
-            fontWeight: 600,
-            fontSize: "30px",
-            lineHeight: 1,
-            letterSpacing: "-0.02em",
-            color: "var(--accent-2)",
-          }}
-        >
-          {NUM[horizon]}
-        </span>
         <h2
           style={{
             fontFamily: "var(--font-serif-display)",
             fontWeight: 600,
-            fontSize: "calc(50px * var(--display-scale, 1))",
+            fontSize: `calc(${DEPTH[horizon].size}px * var(--display-scale, 1))`,
             lineHeight: 1,
             letterSpacing: "-0.035em",
-            color: "var(--ink-1)",
+            color: DEPTH[horizon].color,
           }}
         >
           {TITLE[horizon]}
@@ -246,7 +212,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
             fontFamily: "var(--font-sans-ui)",
             fontSize: "16px",
             fontWeight: 600,
-            color: "var(--ink-2)",
+            color: "var(--accent-2)",
           }}
         >
           {row.carryOver && horizon !== "life-values" && horizon !== "life-goals" ? (
@@ -275,7 +241,7 @@ function StrategyRow({ horizon }: { horizon: Exclude<Horizon | "day", "day"> }) 
         {collapsedPreview && (
           <span
             style={{
-              gridColumn: 2,
+              gridColumn: 1,
               gridRow: 2,
               marginTop: "8px",
               minWidth: 0,

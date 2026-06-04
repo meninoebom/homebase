@@ -15,7 +15,6 @@ import {
   pickHomebaseFolder,
   requestHomebaseFolderPermission,
 } from "../lib/fs";
-import { markWelcomePending } from "../lib/welcome";
 
 type GateState =
   | { kind: "checking" }
@@ -27,18 +26,6 @@ type GateState =
   | { kind: "reconnect" }
   | { kind: "ready" }
   | { kind: "error"; message: string };
-
-// Routes that should render before the gate prompts. /about is a colophon
-// that explains what Homebase is; a first-time visitor should be able to
-// read it before deciding whether to grant filesystem access.
-//
-// SetupGate is mounted outside RouterProvider, so this check only runs on
-// the initial render; client-side nav within a session won't re-evaluate
-// it. That's acceptable — the protected routes (/horizon/$id, /, /day)
-// have their own per-feature gates or runtime fail-closed checks.
-function isPublicRoute(pathname: string): boolean {
-  return /\/about\/?$/.test(pathname);
-}
 
 export function SetupGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<GateState>({ kind: "checking" });
@@ -59,9 +46,6 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  if (typeof window !== "undefined" && isPublicRoute(window.location.pathname)) {
-    return <>{children}</>;
-  }
   if (state.kind === "ready") return <>{children}</>;
   if (state.kind === "checking") return null;
 
@@ -98,9 +82,6 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
             onClick={async () => {
               try {
                 await pickHomebaseFolder();
-                // Genuine first-time grant (not a reconnect) → show the
-                // one-time welcome panel on the accordion.
-                markWelcomePending();
                 setState({ kind: "ready" });
               } catch (err) {
                 if (err instanceof Error && err.name === "AbortError") return;

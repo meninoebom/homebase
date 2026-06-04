@@ -20,7 +20,6 @@ import {
 } from "../lib/config";
 import { listTopLevelFiles } from "../lib/fs";
 import { readDaySections, saveDay, todayISO } from "../lib/log";
-import { dismissWelcome } from "../lib/welcome";
 
 export type SlotId = string;
 
@@ -199,8 +198,6 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
     set({ saving: true });
     try {
       await saveDay(todayISO(), sections);
-      // First real save → the first-run welcome panel has served its purpose.
-      dismissWelcome();
       set({ saving: false, saveError: false, lastSavedAt: Date.now() });
     } catch (err) {
       // Autosave runs via `void saveNow()` (day.tsx), so a thrown error here is
