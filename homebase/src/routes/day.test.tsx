@@ -1,8 +1,10 @@
 // Footer status-text logic for the day page. The route component itself isn't
 // rendered (router convention); saveFooterText is the pure, exported seam.
+// EmptyState is also exported so we can assert the slot gloss copy.
 
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vite-plus/test";
-import { saveFooterText } from "./day";
+import { EmptyState, saveFooterText } from "./day";
 
 describe("saveFooterText", () => {
   it("shows 'saving…' while a save is in flight", () => {
@@ -19,5 +21,20 @@ describe("saveFooterText", () => {
 
   it("'saving…' takes precedence over a prior error during a retry", () => {
     expect(saveFooterText(true, true, "")).toBe("saving…");
+  });
+});
+
+describe("EmptyState", () => {
+  it("carries a one-sentence gloss explaining what a slot is", () => {
+    render(<EmptyState onCustomize={() => {}} />);
+    // The gloss must explain "slot" in plain words — not just restate the headline.
+    expect(screen.getByTestId("slot-gloss")).toBeInTheDocument();
+    expect(screen.getByTestId("slot-gloss").textContent).toMatch(/slot/i);
+  });
+
+  it("renders the headline and customize button alongside the gloss", () => {
+    render(<EmptyState onCustomize={() => {}} />);
+    expect(screen.getByText(/no slots yet/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /customize/i })).toBeInTheDocument();
   });
 });

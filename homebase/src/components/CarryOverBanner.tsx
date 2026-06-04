@@ -31,6 +31,7 @@ export function CarryOverBanner({ horizon, sourcePeriod, onClear }: Props) {
   return (
     <div
       className="carry-over-banner relative mb-3 max-w-[62ch] pb-3"
+      title="Carry over: content brought forward from a past period so you can pick up where you left off."
       style={{ borderBottom: "1px dotted var(--hairline-2, #D9D2C0)" }}
     >
       <span

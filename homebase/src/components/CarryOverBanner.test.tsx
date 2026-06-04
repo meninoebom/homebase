@@ -33,4 +33,12 @@ describe("CarryOverBanner", () => {
     );
     expect(container.textContent).toContain("※");
   });
+
+  it("carries a title gloss explaining what 'carried' means", () => {
+    const { container } = render(
+      <CarryOverBanner horizon="month" sourcePeriod="2026-03" onClear={() => {}} />,
+    );
+    const banner = container.querySelector(".carry-over-banner");
+    expect(banner?.getAttribute("title")).toMatch(/carry.?over/i);
+  });
 });
