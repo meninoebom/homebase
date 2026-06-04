@@ -13,6 +13,8 @@
 // trip; persistent reload state is out of scope for v1.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal";
 import { HorizonRow } from "../components/HorizonRow";
 import { Masthead } from "../components/Masthead";
 
@@ -22,6 +24,8 @@ export const Route = createFileRoute("/")({
 
 function StrategyAccordion() {
   const navigate = useNavigate();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const feedbackTriggerRef = useRef<HTMLButtonElement | null>(null);
   return (
     <div className="strategy-scope min-h-screen">
       <div className="mx-auto max-w-[1040px] px-10 pt-14 pb-16 md:px-20">
@@ -35,7 +39,7 @@ function StrategyAccordion() {
           <HorizonRow horizon="day" onDayClick={() => navigate({ to: "/day" })} />
         </div>
         <footer className="mt-14 pt-5" style={{ borderTop: "1px solid var(--paper-edge)" }}>
-          <div className="mb-5 text-center">
+          <div className="mb-5 flex items-center justify-center gap-6">
             <button
               type="button"
               onClick={() => navigate({ to: "/settings" })}
@@ -51,7 +55,17 @@ function StrategyAccordion() {
             >
               Customize
             </button>
+            <FeedbackLink
+              variant="strategic"
+              onOpen={() => setFeedbackOpen(true)}
+              triggerRef={feedbackTriggerRef}
+            />
           </div>
+          <FeedbackModal
+            isOpen={feedbackOpen}
+            onClose={() => setFeedbackOpen(false)}
+            triggerRef={feedbackTriggerRef}
+          />
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div
               style={{
