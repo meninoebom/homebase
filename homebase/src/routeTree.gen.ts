@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as NotesRouteImport } from './routes/notes'
 import { Route as DayRouteImport } from './routes/day'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspaceNameRouteImport } from './routes/workspace.$name'
 import { Route as SlotNameRouteImport } from './routes/slot.$name'
@@ -31,11 +30,6 @@ const NotesRoute = NotesRouteImport.update({
 const DayRoute = DayRouteImport.update({
   id: '/day',
   path: '/day',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,7 +55,6 @@ const HorizonIdRoute = HorizonIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/day': typeof DayRoute
   '/notes': typeof NotesRoute
   '/settings': typeof SettingsRoute
@@ -71,7 +64,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/day': typeof DayRoute
   '/notes': typeof NotesRoute
   '/settings': typeof SettingsRoute
@@ -82,7 +74,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/day': typeof DayRoute
   '/notes': typeof NotesRoute
   '/settings': typeof SettingsRoute
@@ -94,7 +85,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/day'
     | '/notes'
     | '/settings'
@@ -104,7 +94,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/day'
     | '/notes'
     | '/settings'
@@ -114,7 +103,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/about'
     | '/day'
     | '/notes'
     | '/settings'
@@ -125,7 +113,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   DayRoute: typeof DayRoute
   NotesRoute: typeof NotesRoute
   SettingsRoute: typeof SettingsRoute
@@ -155,13 +142,6 @@ declare module '@tanstack/react-router' {
       path: '/day'
       fullPath: '/day'
       preLoaderRoute: typeof DayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,7 +177,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   DayRoute: DayRoute,
   NotesRoute: NotesRoute,
   SettingsRoute: SettingsRoute,

@@ -24,8 +24,8 @@ function StrategyAccordion() {
   const navigate = useNavigate();
   return (
     <div className="strategy-scope min-h-screen">
-      <div className="mx-auto max-w-[1040px] px-10 pt-14 pb-16 md:px-20">
-        <Masthead />
+      <Masthead onDayClick={() => navigate({ to: "/day" })} />
+      <div className="mx-auto max-w-[1040px] px-10 pt-16 pb-16 md:px-20">
         <div className="toc flex flex-col">
           <HorizonRow horizon="life-values" />
           <HorizonRow horizon="life-goals" />
@@ -35,11 +35,14 @@ function StrategyAccordion() {
           <HorizonRow horizon="day" onDayClick={() => navigate({ to: "/day" })} />
         </div>
         <footer className="mt-14 pt-5" style={{ borderTop: "1px solid var(--paper-edge)" }}>
-          <div className="mb-5 text-center">
+          {/* Left-aligned to the same edge as the row contents (px-4). Action
+              on top, the plain reassurance line beneath. Not centered — a
+              footer reads as a quiet baseline, not a banner. */}
+          <div className="flex flex-col gap-2 px-4">
             <button
               type="button"
               onClick={() => navigate({ to: "/settings" })}
-              className="cursor-pointer border-0 bg-transparent p-0 transition-colors hover:text-[var(--ink-1)]"
+              className="cursor-pointer self-start border-0 bg-transparent p-0 transition-colors hover:text-[var(--ink-1)]"
               style={{
                 fontFamily: "var(--font-sans-ui)",
                 fontSize: "12px",
@@ -51,32 +54,17 @@ function StrategyAccordion() {
             >
               Customize
             </button>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div
+            <p
               style={{
                 fontFamily: "var(--font-sans-ui)",
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
+                fontSize: "13px",
+                fontWeight: 500,
+                letterSpacing: "-0.01em",
                 color: "var(--ink-3)",
               }}
             >
-              Volume one · No. 121
-            </div>
-            <div
-              style={{
-                fontFamily: "var(--font-sans-ui)",
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: "var(--ink-3)",
-              }}
-            >
-              Homebase 2026
-            </div>
+              Everything you write is saved as plain text files in your own folder.
+            </p>
           </div>
         </footer>
       </div>

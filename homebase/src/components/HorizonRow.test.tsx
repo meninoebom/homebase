@@ -31,11 +31,12 @@ afterEach(() => {
 });
 
 describe("HorizonRow", () => {
-  it("Day row shows 'Open today's page' and a → arrow", () => {
+  it("Day row shows 'Today' and a → arrow (no redundant label)", () => {
     render(<HorizonRow horizon="day" />);
-    expect(screen.getByText("Day")).toBeInTheDocument();
-    expect(screen.getByText("Open today's page")).toBeInTheDocument();
+    expect(screen.getByText("Today")).toBeInTheDocument();
     expect(screen.getByText("→")).toBeInTheDocument();
+    // The "Open today's page" label was dropped — the title carries it now.
+    expect(screen.queryByText("Open today's page")).toBeNull();
   });
 
   it("Day row click triggers onDayClick", () => {
@@ -60,7 +61,7 @@ describe("HorizonRow", () => {
 
   it("year row shows the current ISO year as metadata", () => {
     render(<HorizonRow horizon="year" />);
-    expect(screen.getByText("Year")).toBeInTheDocument();
+    expect(screen.getByText("This year")).toBeInTheDocument();
     // Don't lock to a specific year — test runs forever.
     const meta = screen.getAllByText(/^\d{4}$/);
     expect(meta.length).toBeGreaterThan(0);
@@ -68,14 +69,14 @@ describe("HorizonRow", () => {
 
   it("month row shows 'Month YYYY' as metadata", () => {
     render(<HorizonRow horizon="month" />);
-    expect(screen.getByText("Month")).toBeInTheDocument();
+    expect(screen.getByText("This month")).toBeInTheDocument();
     // Match e.g. "April 2026"
     expect(screen.getByText(/^[A-Z][a-z]+ \d{4}$/)).toBeInTheDocument();
   });
 
   it("week row shows 'Week N, YYYY' as metadata", () => {
     render(<HorizonRow horizon="week" />);
-    expect(screen.getByText("Week")).toBeInTheDocument();
+    expect(screen.getByText("This week")).toBeInTheDocument();
     expect(screen.getByText(/^Week \d{1,2}, \d{4}$/)).toBeInTheDocument();
   });
 

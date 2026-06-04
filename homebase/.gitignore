@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# UX-loop scratch (playwright-cli output, .llm AI scratch)
+.playwright-cli/
+.llm/
