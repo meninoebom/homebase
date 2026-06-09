@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Homebase</title>
+<meta name="description" content="Six levels of reflection, from your values to today." />
+<meta property="og:title" content="Homebase" />
+<meta property="og:description" content="Six levels of reflection, from your values to today." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F3EADB;
+    --paper-deep: #ECE0CD;
+    --ink: #261E16;
+    --ink-soft: #6B5E4F;
+    --ink-faint: #A89A85;
+    --ghost: rgba(38,30,22,0.085);
+    --line: rgba(38,30,22,0.13);
+    --line-soft: rgba(38,30,22,0.08);
+    --accent: #8B2E1A;
+    --ochre: #9A7838;
+    --on-accent: #F6EEE0;
+    --maxw: 1120px;
+    --pad: 40px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-size: 18px;
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+  }
+  ::selection { background: color-mix(in oklab, var(--accent) 22%, transparent); }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── type ── */
+  .display {
+    font-weight: 700;
+    letter-spacing: -0.028em;
+    line-height: 1.02;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lead {
+    color: var(--ink-soft);
+    font-size: 21px;
+    line-height: 1.5;
+    letter-spacing: -0.008em;
+    text-wrap: pretty;
+  }
+  .sect-kicker {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ochre);
+  }
+  .sect-title {
+    font-weight: 700;
+    letter-spacing: -0.022em;
+    line-height: 1.05;
+    margin: 0;
+    font-size: clamp(30px, 4vw, 46px);
+    text-wrap: balance;
+  }
+  .body {
+    color: var(--ink-soft);
+    font-size: 18.5px;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  /* ── buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    font: inherit;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    padding: 13px 22px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+    text-decoration: none;
+  }
+  .btn .arw { transition: transform .2s ease; }
+  .btn:hover .arw { transform: translateX(4px); }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: color-mix(in oklab, var(--accent) 88%, #000); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--ink); }
+  .btn-light { background: var(--on-accent); color: var(--accent); }
+  .btn-light:hover { background: #fff; }
+
+  /* ── app window ── */
+  .appwin {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 18px 50px -28px rgba(38,30,22,0.45);
+    overflow: hidden;
+  }
+  .appwin .topbar {
+    background: var(--accent);
+    color: var(--on-accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+  }
+  .appwin .topbar .wm { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; white-space: nowrap; }
+  .appwin .topbar .meta { font-size: 12px; font-weight: 500; opacity: .82; letter-spacing: 0.01em; white-space: nowrap; }
+  .appwin .body-pad { padding: 8px 20px 14px; }
+
+  .row { padding: 16px 0 15px; border-bottom: 1px solid var(--line-soft); }
+  .row:last-child { border-bottom: 0; }
+  .row .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .row .lbl { font-weight: 600; letter-spacing: -0.018em; line-height: 1; white-space: nowrap; }
+  .row .tag { font-size: 12.5px; font-weight: 600; letter-spacing: 0.005em; white-space: nowrap; }
+  .tag-persist { color: var(--ochre); }
+  .tag-year { color: var(--ochre); }
+  .tag-carried { color: var(--accent); }
+  .tag-carried b { color: var(--accent); font-weight: 700; }
+  .tag-carried .wk { color: var(--ochre); font-weight: 600; }
+  .row .prompt { color: var(--ink-faint); font-size: 13.5px; margin-top: 9px; letter-spacing: -0.003em; }
+
+  .ghostbar { height: 8px; border-radius: 3px; background: var(--ghost); margin-top: 9px; }
+  .progress { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 11.5px; color: var(--ink-faint); font-style: italic; }
+  .progress .track { flex: 1; height: 2px; background: var(--line); position: relative; }
+  .progress .track > i { position: absolute; left: 0; top: 0; bottom: 0; width: 44%; background: var(--accent); }
+
+  .row-today .lbl { color: var(--accent); font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+  .row-today .arrow { color: var(--accent); }
+  .row-persist .lbl { color: color-mix(in oklab, var(--ink) 62%, var(--paper)); }
+  .row-strong .lbl { color: var(--ink); }
+
+  .hr { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+  /* ── layout ── */
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad); }
+
+  /* header */
+  .ed-header {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .ed-header .bar {
+    max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad);
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .ed-header .wm { font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+  .ed-header .enter { font-weight: 600; font-size: 15px; color: var(--on-accent); }
+  .ed-header .enter:hover { opacity: 0.8; }
+
+  /* hero */
+  .hero { padding: clamp(64px, 11vh, 128px) 0 clamp(56px, 8vh, 96px); }
+  .hero .display { font-size: clamp(42px, 5.8vw, 76px); max-width: 15ch; }
+  .hero .lead { max-width: 50ch; margin-top: 28px; }
+  .hero .cta { display: flex; gap: 14px; margin-top: 40px; flex-wrap: wrap; }
+
+  /* horizons section */
+  .section { padding: 84px 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .col-text .sect-kicker { margin-bottom: 18px; display: block; }
+  .col-text .sect-title { margin-bottom: 20px; }
+  .col-text .body + .body { margin-top: 16px; }
+
+  /* carry-forward callout */
+  .callout {
+    margin-top: 44px;
+    background: color-mix(in oklab, var(--ink) 4%, var(--paper));
+    border-radius: 12px;
+    padding: 26px 30px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .callout .clabel {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); white-space: nowrap; padding-top: 3px;
+  }
+  .callout .ctext {
+    color: var(--ink-soft); font-size: 17.5px; line-height: 1.55; text-wrap: pretty; margin: 0;
+  }
+  .callout .ctext b { color: var(--ink); font-weight: 600; }
+
+  /* final cta band */
+  .band { background: var(--accent); color: var(--on-accent); }
+  .band-inner { max-width: var(--maxw); margin: 0 auto; padding: 84px var(--pad); text-align: center; }
+  .band .sect-title { color: var(--on-accent); font-size: clamp(32px, 4.6vw, 56px); margin: 0 auto 30px; max-width: 18ch; }
+  .band .browsernote { color: color-mix(in oklab, var(--on-accent) 66%, transparent); font-size: 13.5px; margin-top: 16px; }
+
+  /* footer */
+  .foot { border-top: 1px solid var(--line); }
+  .foot .wrap { padding: 36px var(--pad) 56px; display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: baseline; }
+  .foot .fl { font-size: 14px; color: var(--ink-faint); }
+  .foot .fnav { display: flex; gap: 24px; }
+  .foot .fnav a { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ochre); }
+  .foot .fnav a:hover { color: var(--accent); }
+
+  .browsernote { font-size: 13.5px; color: var(--ink-faint); margin-top: 16px; }
+
+  @media (max-width: 880px) {
+    .grid-2 { grid-template-columns: 1fr; gap: 40px; }
+    .callout { grid-template-columns: 1fr; gap: 12px; }
+  }
+  @media (max-width: 560px) {
+    :root { --pad: 22px; }
+    body { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+/* ── Ghost bars (no real writing shown) ───────────────── */
+function Ghost({ w = '100%' }) {
+  return <div className="ghostbar" style={{ width: w }} />;
+}
+
+/* ── App preview: six-horizon telescope ───────────────── */
+function Telescope() {
+  return (
+    <div className="appwin" aria-hidden="true">
+      <div className="topbar">
+        <span className="wm">Homebase</span>
+        <span className="meta">Tuesday, June 9 · Week 24</span>
+      </div>
+      <div className="body-pad">
+        <div className="row row-persist">
+          <div className="head">
+            <span className="lbl">Life values</span>
+            <span className="tag tag-persist">Persistent</span>
+          </div>
+          <div className="prompt">What you'll always stand for</div>
+        </div>
+
+        <div className="row row-persist">
+          <div className="head">
+            <span className="lbl">Life goals</span>
+            <span className="tag tag-persist">Persistent</span>
+          </div>
+          <div className="prompt">What you want to be really good at</div>
+        </div>
+
+        <div className="row row-strong">
+          <div className="head">
+            <span className="lbl" style={{ fontSize: '21px' }}>This year</span>
+            <span className="tag tag-year">2026</span>
+          </div>
+          <Ghost w="92%" />
+          <Ghost w="74%" />
+          <div className="progress">
+            <span>160</span>
+            <span className="track"><i /></span>
+            <span>of 365</span>
+          </div>
+        </div>
+
+        <div className="row row-strong">
+          <div className="head">
+            <span className="lbl" style={{ fontSize: '21px' }}>This month</span>
+            <span className="tag tag-year">June 2026</span>
+          </div>
+          <Ghost w="80%" />
+        </div>
+
+        <div className="row row-strong">
+          <div className="head">
+            <span className="lbl" style={{ fontSize: '21px' }}>This week</span>
+            <span className="tag tag-carried"><b>Carried</b> · <span className="wk">Week 24</span></span>
+          </div>
+          <Ghost w="64%" />
+        </div>
+
+        <div className="row row-today">
+          <div className="head">
+            <span className="lbl">Today</span>
+            <span className="arrow">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Page ─────────────────────────────────────────────── */
+function App() {
+  return (
+    <div>
+
+      {/* Header */}
+      <header className="ed-header">
+        <div className="bar">
+          <span className="wm">Homebase</span>
+          <a className="enter" href="https://homebase.you">Open Homebase →</a>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="hero">
+        <div className="wrap">
+          <h1 className="display">You never start from a blank page.</h1>
+          <p className="lead">
+            A journal structured by time, from your values and goals down to this morning.
+            Each entry builds on the one above it, so the day always has a context to sit inside.
+          </p>
+          <div className="cta">
+            <a className="btn btn-primary" href="https://homebase.you">
+              Open Homebase <span className="arw">→</span>
+            </a>
+            <a className="btn btn-ghost" href="#horizons">See how it works</a>
+          </div>
+          <div className="browsernote">Works in Chrome, Edge, Brave, and Arc.</div>
+        </div>
+      </section>
+
+      <hr className="hr" />
+
+      {/* Horizons section */}
+      <section className="section" id="horizons">
+        <div className="wrap">
+          <div className="grid-2">
+
+            <div className="col-text">
+              <span className="sect-kicker">How it works</span>
+              <h2 className="sect-title">Write at every level.</h2>
+              <p className="body">
+                Most journaling tools are flat. Everything lands in one pile,
+                and every session starts from nothing.
+              </p>
+              <p className="body">
+                Homebase is structured by time: life values, life goals, the year,
+                the month, the week, today. Each level has its own page, written at
+                its own natural cadence. Your values give shape to your year. Your year
+                shapes your month. Your month, your week. Your week, today.
+              </p>
+
+              <div className="callout">
+                <span className="clabel">Carries forward</span>
+                <p className="ctext">
+                  A fresh week opens with <b>last week's entry, not a blank page.</b>{' '}
+                  You refine it, update it, or replace it. But you never start from nothing.
+                </p>
+              </div>
+            </div>
+
+            <div className="col-app">
+              <Telescope />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <div className="band">
+        <div className="band-inner">
+          <h2 className="sect-title">Pick a folder.<br/>Start writing.</h2>
+          <a className="btn btn-light" href="https://homebase.you">
+            Open Homebase <span className="arw">→</span>
+          </a>
+          <div className="browsernote">Works in Chrome, Edge, Brave, and Arc. Plain markdown. Your folder. No server.</div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="foot">
+        <div className="wrap">
+          <div className="fl">Your journal, in plain markdown, in a folder you own.</div>
+          <div className="fnav">
+            <a href="https://github.com/meninoebom/homebase">GitHub</a>
+            <a href="https://github.com/meninoebom/homebase/issues">Issues</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
