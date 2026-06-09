@@ -13,9 +13,7 @@
 //   - role="dialog" + aria-modal="true" on the dialog panel.
 //   - Esc closes via keydown listener on document.
 //   - Backdrop click closes; click on the panel itself does not.
-//   - Focus is moved to the close button on open and restored to the trigger
-//     on close via a ref passed from the caller (optional — graceful
-//     degradation if not supplied).
+//   - Focus moves to the close button on open.
 
 import { useEffect, useRef } from "react";
 
@@ -29,15 +27,12 @@ interface FeedbackLinkProps {
   onOpen: () => void;
   /** "strategic" = warm bone / marigold register (/); "day" = white register (/day). */
   variant?: "strategic" | "day";
-  /** Ref forwarded from the caller so focus can be restored on close. */
-  triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-export function FeedbackLink({ onOpen, variant = "day", triggerRef }: FeedbackLinkProps) {
+export function FeedbackLink({ onOpen, variant = "day" }: FeedbackLinkProps) {
   const isStrategic = variant === "strategic";
   return (
     <button
-      ref={triggerRef}
       type="button"
       onClick={onOpen}
       className="cursor-pointer border-0 bg-transparent p-0 transition-colors"
@@ -68,22 +63,14 @@ export function FeedbackLink({ onOpen, variant = "day", triggerRef }: FeedbackLi
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Optional ref to the trigger button — focus is restored on close. */
-  triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-export function FeedbackModal({ isOpen, onClose, triggerRef }: FeedbackModalProps) {
+export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Move focus to the close button when the modal opens.
   useEffect(() => {
-    if (isOpen) {
-      closeButtonRef.current?.focus();
-    } else {
-      // Restore focus to the trigger when the modal closes.
-      triggerRef?.current?.focus();
-    }
-  }, [isOpen, triggerRef]);
+    if (isOpen) closeButtonRef.current?.focus();
+  }, [isOpen]);
 
   // Close on Escape.
   useEffect(() => {
