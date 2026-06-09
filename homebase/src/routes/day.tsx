@@ -12,7 +12,7 @@
 // index.css for the broader two-rooms rationale.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DayLoadError } from "../components/DayLoadError";
 import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal";
@@ -45,7 +45,6 @@ export function saveFooterText(saving: boolean, saveError: boolean, savedLabel: 
 function DayPage() {
   const navigate = useNavigate();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const feedbackTriggerRef = useRef<HTMLButtonElement | null>(null);
   const loadToday = useRitualStore((s) => s.loadToday);
   const setDraft = useRitualStore((s) => s.setDraft);
   const saveNow = useRitualStore((s) => s.saveNow);
@@ -181,11 +180,7 @@ function DayPage() {
           >
             Customize
           </button>
-          <FeedbackLink
-            variant="day"
-            onOpen={() => setFeedbackOpen(true)}
-            triggerRef={feedbackTriggerRef}
-          />
+          <FeedbackLink variant="day" onOpen={() => setFeedbackOpen(true)} />
         </div>
         <span
           style={{
@@ -197,11 +192,7 @@ function DayPage() {
           {saveFooterText(saving, saveError, savedLabel)}
         </span>
       </footer>
-      <FeedbackModal
-        isOpen={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-        triggerRef={feedbackTriggerRef}
-      />
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </main>
   );
 }

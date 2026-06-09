@@ -13,7 +13,7 @@
 // trip; persistent reload state is out of scope for v1.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal";
 import { HorizonRow } from "../components/HorizonRow";
 import { Masthead } from "../components/Masthead";
@@ -25,7 +25,6 @@ export const Route = createFileRoute("/")({
 function StrategyAccordion() {
   const navigate = useNavigate();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const feedbackTriggerRef = useRef<HTMLButtonElement | null>(null);
   return (
     <div className="strategy-scope min-h-screen">
       <Masthead onDayClick={() => navigate({ to: "/day" })} />
@@ -59,11 +58,7 @@ function StrategyAccordion() {
               >
                 Customize
               </button>
-              <FeedbackLink
-                variant="strategic"
-                onOpen={() => setFeedbackOpen(true)}
-                triggerRef={feedbackTriggerRef}
-              />
+              <FeedbackLink variant="strategic" onOpen={() => setFeedbackOpen(true)} />
             </div>
             <p
               style={{
@@ -77,11 +72,7 @@ function StrategyAccordion() {
               Everything you write is saved as plain text files in your own folder.
             </p>
           </div>
-          <FeedbackModal
-            isOpen={feedbackOpen}
-            onClose={() => setFeedbackOpen(false)}
-            triggerRef={feedbackTriggerRef}
-          />
+          <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
         </footer>
       </div>
     </div>
