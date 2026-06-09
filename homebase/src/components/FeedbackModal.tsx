@@ -74,13 +74,15 @@ interface FeedbackModalProps {
 
 export function FeedbackModal({ isOpen, onClose, triggerRef }: FeedbackModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const hasBeenOpenRef = useRef(false);
 
-  // Move focus to the close button when the modal opens.
+  // Move focus to the close button when the modal opens; restore on close.
+  // hasBeenOpenRef guards against the else branch running on initial mount.
   useEffect(() => {
     if (isOpen) {
+      hasBeenOpenRef.current = true;
       closeButtonRef.current?.focus();
-    } else {
-      // Restore focus to the trigger when the modal closes.
+    } else if (hasBeenOpenRef.current) {
       triggerRef?.current?.focus();
     }
   }, [isOpen, triggerRef]);
