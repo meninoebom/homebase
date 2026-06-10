@@ -12,6 +12,7 @@ If you want to help with anything here, comment on the linked issue (or open one
 
 ## Next
 
+- **Reflect with AI.** Your entries are plain markdown, which makes them easy to hand to an assistant for reflection. Shipping in stages: (1) the `/integrations` page and a portable reflection skill that teaches any local agent your folder layout, so you can point Claude Desktop or Claude Code at your folder today; (2) an opt-in in-app "Reflect" chat where you plug in your own bot — a local model (no key, nothing leaves your machine) or your own API key. The source of truth stays your folder; there is no Homebase-hosted model or backend.
 - Richer markdown editing inside slots — bold, headers, lists — without giving up the plain-text source of truth on disk. Tracked in [#75](https://github.com/meninoebom/homebase/issues/75).
 - Better first-run experience for users who haven't seen a File System Access permission prompt before.
 - A clearer story for "where do I back this up?" — likely a Customize-page hint pointing at `git init`.
