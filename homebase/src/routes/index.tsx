@@ -58,6 +58,21 @@ function StrategyAccordion() {
               >
                 Customize
               </button>
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/integrations" })}
+                className="cursor-pointer border-0 bg-transparent p-0 transition-colors hover:text-[var(--ink-1)]"
+                style={{
+                  fontFamily: "var(--font-sans-ui)",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--ink-3)",
+                }}
+              >
+                Use with AI
+              </button>
               <FeedbackLink variant="strategic" onOpen={() => setFeedbackOpen(true)} />
             </div>
             <p
