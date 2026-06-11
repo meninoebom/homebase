@@ -187,6 +187,20 @@ export function Masthead({ onDayClick }: { onDayClick?: () => void }) {
                 the daily page. Everything saves as plain markdown in a folder you choose. No
                 server, no account, no sync.
               </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-sans-ui)",
+                  fontSize: "16px",
+                  fontWeight: 400,
+                  lineHeight: 1.55,
+                  letterSpacing: "-0.01em",
+                  color: HERO_MUTED,
+                }}
+              >
+                And because the words are yours, it's built to talk back. Point an AI you trust at
+                your folder and ask it about yourself: what you keep circling back to, what's
+                shifted since spring. That part is still growing.
+              </p>
               <div
                 className="flex flex-col gap-1.5"
                 style={{
