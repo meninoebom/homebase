@@ -1,4 +1,4 @@
-// "From your own pages" — resurface a past daily entry so the journal quietly
+// "From your own pages": resurface a past daily entry so the journal quietly
 // talks back with the user's own words. This is the cheapest, fully-offline,
 // zero-AI way to make "a journal that talks back" true today: no model, no
 // network, just the entries already on disk (the same idea as Day One's
@@ -12,7 +12,7 @@
 import { listTopLevelFiles, readFile } from "../fs";
 import { localDateISO } from "../log";
 
-// `YYYY-MM-DD.md` — the dated daily-entry log files (same shape as digest.ts).
+// `YYYY-MM-DD.md`: the dated daily-entry log files (same shape as digest.ts).
 const DAY_LOG_RE = /^(\d{4})-(\d{2})-(\d{2})\.md$/;
 
 // How long an excerpt can run before we trim it. Long enough for a full
@@ -67,7 +67,7 @@ function parseISO(iso: string): Date | null {
 /**
  * Pull the first meaningful paragraph out of a day file's markdown and trim it
  * to a readable length. Skips the `# Date` title, `## slot` section headers,
- * and blank lines — the first prose line the user actually wrote is what we
+ * and blank lines. The first prose line the user actually wrote is what we
  * want. Returns "" when there's nothing but scaffolding.
  */
 export function excerptOf(text: string): string {
@@ -109,7 +109,7 @@ function stableHash(s: string): number {
 }
 
 /**
- * Choose a past entry to resurface. Pure: no filesystem, no clock — pass
+ * Choose a past entry to resurface. Pure: no filesystem, no clock. Pass
  * `today` and the available entries in.
  *
  * Selection priority:

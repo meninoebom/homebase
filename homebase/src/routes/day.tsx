@@ -21,6 +21,9 @@ import { PromptSlot } from "../components/PromptSlot";
 import { WorkspaceSlot } from "../components/WorkspaceSlot";
 import { useRitualStore } from "../store/ritual";
 import type { HomebaseConfig, SlotConfig } from "../lib/config";
+import { PeriodKey } from "../lib/period-key";
+import { StrategyFs } from "../lib/strategy-fs";
+import { gatherResurfacing, type Resurfaced } from "../lib/reflect/resurface";
 
 // Inter Tight chain — kept inline rather than in @theme so the existing
 // --font-sans / --font-serif tokens remain untouched for code that
@@ -134,7 +137,11 @@ function DayPage() {
           </p>
         </div>
 
+        <WeekCompass onOpenWeek={() => navigate({ to: "/horizon/$id", params: { id: "week" } })} />
+
         {loaded && config && <BriefingPanel config={config} />}
+
+        <ResurfacePanel />
 
         {loaded && config && config.slots.length === 0 && (
           <EmptyState onCustomize={() => navigate({ to: "/settings" })} />
@@ -268,6 +275,120 @@ function BriefingPanel({ config }: { config: HomebaseConfig }) {
         style={{ fontSize: "16px", fontWeight: 400, lineHeight: 1.5, color: "#4B5563", margin: 0 }}
       >
         “{quote}”
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Week compass strip. Newport's multi-scale planning works because each scale
+ * is written while looking at the scale above it, but the day page never
+ * showed the week intention after Monday. This surfaces the week horizon's
+ * first line as a single quiet strip near the dateline, clickable through to
+ * the week horizon. Context, not a second headline: it renders nothing when
+ * the week file is empty or missing.
+ *
+ * Exported so day.test.tsx can render it against StrategyFs directly without
+ * standing up the router.
+ */
+export function WeekCompass({ onOpenWeek }: { onOpenWeek: () => void }) {
+  const [line, setLine] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const key = PeriodKey.current("week");
+        if (!key) return;
+        await StrategyFs.init();
+        const content = await StrategyFs.read(`week-${key}.md`);
+        const first = firstMeaningfulLine(content ?? "");
+        if (!cancelled && first) setLine(first);
+      } catch {
+        // A read failure here is not worth interrupting the writing surface;
+        // the strip is optional context. Fall through to rendering nothing.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!line) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpenWeek}
+      className="mb-6 block w-full cursor-pointer truncate border-0 bg-transparent p-0 text-left transition-colors hover:text-[#374151]"
+      style={{ fontFamily: DAY_SANS, fontSize: "14px", fontWeight: 500, color: "#6B7280" }}
+      title="Open this week"
+    >
+      This week: {line}
+    </button>
+  );
+}
+
+/** First non-empty line of a strategy file, skipping markdown headings. */
+export function firstMeaningfulLine(content: string): string {
+  for (const raw of content.split("\n")) {
+    const trimmed = raw.trim();
+    if (trimmed.length === 0) continue;
+    if (trimmed.startsWith("#")) continue;
+    return trimmed;
+  }
+  return "";
+}
+
+/**
+ * "From your own pages": resurfaces a past daily entry in the muted register
+ * near the briefing. This is the offline, zero-AI face of the "journal that
+ * talks back" positioning: the user's own words, returned. Degrades silently
+ * to nothing when there's no usable history (brand-new users).
+ */
+export function ResurfacePanel() {
+  const [past, setPast] = useState<Resurfaced | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const result = await gatherResurfacing();
+        if (!cancelled) setPast(result);
+      } catch {
+        // Optional reflection: a read failure should never block the day page.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!past) return null;
+
+  return (
+    <div className="mb-6 rounded bg-[#F8F8F8] px-4 py-3" style={{ fontFamily: DAY_SANS }}>
+      <div className="flex items-baseline justify-between">
+        <h2 style={{ fontSize: "15px", fontWeight: 600, color: "#6B7280", margin: 0 }}>
+          From your own pages
+        </h2>
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "#D1D5DB",
+          }}
+        >
+          {past.label}
+        </span>
+      </div>
+      <p
+        className="mt-2"
+        style={{ fontSize: "16px", fontWeight: 400, lineHeight: 1.5, color: "#4B5563", margin: 0 }}
+      >
+        {past.excerpt}
       </p>
     </div>
   );
