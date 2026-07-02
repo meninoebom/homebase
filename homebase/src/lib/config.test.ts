@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
 import {
+  configFromPreset,
+  DEFAULT_PRESET_ID,
   defaultConfig,
+  findLayoutPreset,
+  layoutPresets,
   legacyDefaultConfig,
   migrateLoadedConfig,
   parseConfig,
@@ -239,6 +243,73 @@ describe("migrateLoadedConfig", () => {
     const { config } = migrateLoadedConfig(before);
     expect(config.briefing.enabled).toBe(false);
     expect(config.slots).toEqual(before.slots);
+  });
+});
+
+describe("layout presets", () => {
+  it("offers the four named starter practices", () => {
+    const ids = layoutPresets().map((p) => p.id);
+    expect(ids).toEqual(["morning-ritual", "evening-shutdown", "five-minutes", "plain-page"]);
+  });
+
+  it("defaults to Morning ritual so clicking through keeps today's behavior", () => {
+    expect(DEFAULT_PRESET_ID).toBe("morning-ritual");
+    const preset = findLayoutPreset(DEFAULT_PRESET_ID);
+    expect(preset).toBeDefined();
+    // Morning ritual installs exactly today's default section layout.
+    expect(preset?.slots).toEqual(defaultConfig().slots);
+  });
+
+  it("every preset produces a config that passes validateConfig", () => {
+    for (const preset of layoutPresets()) {
+      const result = validateConfig(configFromPreset(preset));
+      expect(result.kind, `preset "${preset.id}" should validate`).toBe("ok");
+    }
+  });
+
+  it("every preset has unique section ids within itself", () => {
+    for (const preset of layoutPresets()) {
+      const ids = preset.slots.map((s) => s.id);
+      expect(new Set(ids).size, `preset "${preset.id}" has a duplicate section id`).toBe(
+        ids.length,
+      );
+    }
+  });
+
+  it("every preset has a title and a non-empty description", () => {
+    for (const preset of layoutPresets()) {
+      expect(preset.title.length).toBeGreaterThan(0);
+      expect(preset.description.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("configFromPreset ships the curated briefing rotation", () => {
+    const preset = findLayoutPreset("plain-page");
+    expect(preset).toBeDefined();
+    if (!preset) return;
+    const config = configFromPreset(preset);
+    expect(config.briefing.enabled).toBe(true);
+    expect(config.briefing.quotes.length).toBeGreaterThan(1);
+  });
+
+  it("configFromPreset copies section data so the preset can't be mutated", () => {
+    const preset = findLayoutPreset("five-minutes");
+    expect(preset).toBeDefined();
+    if (!preset) return;
+    const config = configFromPreset(preset);
+    config.slots[0].id = "mutated";
+    // The shared preset data must be untouched.
+    expect(findLayoutPreset("five-minutes")?.slots[0].id).not.toBe("mutated");
+  });
+
+  it("findLayoutPreset returns undefined for an unknown id", () => {
+    expect(findLayoutPreset("does-not-exist")).toBeUndefined();
+  });
+
+  it("Plain page reuses the stable 'today' section id from the default layout", () => {
+    // "today" is written into day-file headers; the plain-page preset must
+    // keep it so a user's history stays consistent across practices.
+    expect(findLayoutPreset("plain-page")?.slots[0].id).toBe("today");
   });
 });
 

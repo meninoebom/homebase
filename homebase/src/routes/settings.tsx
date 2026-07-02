@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import { ConfigWriteErrorBanner } from "../components/ConfigWriteErrorBanner";
 import { FolderSection } from "../components/FolderSection";
 import { useRitualStore } from "../store/ritual";
+import { layoutPresets, type LayoutPreset } from "../lib/config";
 import type {
   BriefingConfig,
   HomebaseConfig,
@@ -97,6 +98,16 @@ function SettingsPage() {
     }));
   };
 
+  // Apply a starter practice: replace the whole section list with the
+  // preset's layout. The briefing (quotes + enabled) is left alone so the
+  // user's quote rotation survives a practice switch.
+  const applyPreset = async (preset: LayoutPreset) => {
+    await updateConfig((c) => ({
+      ...c,
+      slots: preset.slots.map((slot) => ({ ...slot })),
+    }));
+  };
+
   return (
     <main className="min-h-screen bg-white">
       <div className="mx-auto max-w-[640px] px-8 pb-24 pt-10">
@@ -112,10 +123,12 @@ function SettingsPage() {
 
         <h1 className="mb-2 font-serif text-[28px] italic text-[#111]">Customize your homebase</h1>
         <p className="mb-8 font-serif text-[14px] leading-relaxed text-[#6B7280]">
-          Reorder, edit, or remove slots. Changes save automatically next to your day files.
+          Reorder, edit, or remove sections. Changes save automatically next to your day files.
         </p>
 
         {configWriteError && <ConfigWriteErrorBanner />}
+
+        <PresetSection onApply={(preset) => void applyPreset(preset)} />
 
         <h2 className="mb-3 font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-[#9CA3AF]">
           Your daily page
@@ -153,7 +166,7 @@ function ResetSection({ onReset }: { onReset: () => void }) {
     return (
       <div className="mt-16 rounded border border-[#FECACA] bg-[#FEF2F2] p-4">
         <p className="mb-3 font-serif text-[14px] leading-relaxed text-[#991B1B]">
-          Reset to defaults? This will replace your current slots and briefing with the standard
+          Reset to defaults? This will replace your current sections and briefing with the standard
           starter set. Your day-file content will be left alone.
         </p>
         <div className="flex gap-2">
@@ -189,6 +202,82 @@ function ResetSection({ onReset }: { onReset: () => void }) {
         Reset to defaults
       </button>
     </div>
+  );
+}
+
+/**
+ * "Apply a starter practice" swaps the whole section list for a named
+ * preset's layout. Exported so it can be tested without the settings-page
+ * store plumbing. Applying is destructive to the current sections (it
+ * replaces them), so it confirms first, mirroring "Reset to defaults".
+ * The briefing is left untouched by the apply.
+ */
+export function PresetSection({ onApply }: { onApply: (preset: LayoutPreset) => void }) {
+  const presets = layoutPresets();
+  const [pending, setPending] = useState<LayoutPreset | null>(null);
+
+  return (
+    <section className="mb-12">
+      <h2 className="mb-3 font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-[#9CA3AF]">
+        Starter practices
+      </h2>
+      <p className="mb-4 font-serif text-[14px] leading-relaxed text-[#6B7280]">
+        Swap in a ready-made set of sections. Applying one replaces your current sections; your
+        briefing and day-file content are left alone.
+      </p>
+
+      <ul className="flex flex-col gap-2">
+        {presets.map((preset) => (
+          <li
+            key={preset.id}
+            className="flex items-start justify-between gap-4 rounded border border-[#EBEBEB] bg-[#FAFAFA] px-4 py-3"
+          >
+            <div className="min-w-0">
+              <p className="font-serif text-[15px] text-[#111]">{preset.title}</p>
+              <p className="mt-0.5 font-serif text-[13px] leading-relaxed text-[#6B7280]">
+                {preset.description}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPending(preset)}
+              className="shrink-0 cursor-pointer rounded border border-[#D1D5DB] bg-white px-3 py-1.5 font-sans text-[12px] text-[#374151] hover:border-[#9CA3AF] hover:text-[#111]"
+            >
+              Apply
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {pending && (
+        <div className="mt-3 rounded border border-[#FECACA] bg-[#FEF2F2] p-4">
+          <p className="mb-3 font-serif text-[14px] leading-relaxed text-[#991B1B]">
+            Apply &ldquo;{pending.title}&rdquo;? This replaces your current sections with that
+            practice&rsquo;s layout. Your briefing and day-file content are left alone.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const preset = pending;
+                setPending(null);
+                onApply(preset);
+              }}
+              className="cursor-pointer rounded bg-[#B91C1C] px-3 py-1.5 font-sans text-[13px] text-white hover:bg-[#991B1B]"
+            >
+              Yes, apply
+            </button>
+            <button
+              type="button"
+              onClick={() => setPending(null)}
+              className="cursor-pointer rounded border border-[#E5E7EB] bg-white px-3 py-1.5 font-sans text-[13px] text-[#374151] hover:bg-[#F3F4F6]"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

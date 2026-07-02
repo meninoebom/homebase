@@ -215,6 +215,135 @@ export function migrateLoadedConfig(config: HomebaseConfig): {
   };
 }
 
+// -- Layout presets -----------------------------------------------------
+
+/**
+ * A named starter practice: a title, a short description, and the section
+ * layout it installs. Presets are *data* the UI renders (first-run chooser
+ * and the Customize page). Each preset's `slots` reuses the existing
+ * PromptSlotConfig / WorkspaceSlotConfig shapes.
+ *
+ * Preset `id`s are stable and referenced by the UI's default selection.
+ * The *section* ids inside each preset are also stable: they get written
+ * into day-file headers (## <id>) the moment a user writes under one, so
+ * never rename a section id once shipped. Each preset's section ids are
+ * unique within that preset (validated in tests) and match ID_PATTERN.
+ */
+export interface LayoutPreset {
+  id: string;
+  title: string;
+  description: string;
+  slots: SlotConfig[];
+}
+
+/**
+ * The named starter practices offered on first run and in Customize.
+ * "Morning ritual" is first and is the default selection: it installs
+ * exactly today's `defaultConfig()` layout, so a user who clicks straight
+ * through gets the current behavior unchanged.
+ */
+export function layoutPresets(): LayoutPreset[] {
+  return [
+    {
+      id: "morning-ritual",
+      title: "Morning ritual",
+      description: "Dreams, inner weather, gratitude, and today. A gentle start to the day.",
+      slots: defaultConfig().slots,
+    },
+    {
+      id: "evening-shutdown",
+      title: "Evening shutdown",
+      description:
+        "Close the day the way Cal Newport does: what happened, open loops, tomorrow's one thing.",
+      slots: [
+        {
+          id: "today-happened",
+          kind: "prompt",
+          title: "What happened today",
+          prompt: "What actually happened today? What went well, what didn't?",
+        },
+        {
+          id: "open-loops",
+          kind: "prompt",
+          title: "Open loops",
+          prompt:
+            "What's still unfinished or on your mind? Get it out of your head and onto paper.",
+        },
+        {
+          id: "tomorrow-one-thing",
+          kind: "prompt",
+          title: "Tomorrow's one thing",
+          prompt: "If tomorrow can only go one way, what's the single thing that matters most?",
+        },
+      ],
+    },
+    {
+      id: "five-minutes",
+      title: "Five minutes",
+      description:
+        "Three tiny prompts, after the Five-Minute Journal. Grateful for, an intention, and one line about today.",
+      slots: [
+        {
+          id: "grateful-for",
+          kind: "prompt",
+          title: "Grateful for",
+          prompt: "What are three things you're grateful for?",
+        },
+        {
+          id: "intention",
+          kind: "prompt",
+          title: "Intention",
+          prompt: "What would make today great?",
+        },
+        {
+          id: "one-line",
+          kind: "prompt",
+          title: "One line about today",
+          prompt: "Sum up your day in a sentence.",
+        },
+      ],
+    },
+    {
+      id: "plain-page",
+      title: "Plain page",
+      description: "A single open page, for morning-pages people. No prompts, just room to write.",
+      slots: [
+        {
+          id: "today",
+          kind: "prompt",
+          title: "Today",
+          prompt: "What's on your mind today?",
+        },
+      ],
+    },
+  ];
+}
+
+/** Look up a preset by its stable id, or undefined if none matches. */
+export function findLayoutPreset(id: string): LayoutPreset | undefined {
+  return layoutPresets().find((p) => p.id === id);
+}
+
+/** The preset selected by default on first run (installs today's behavior). */
+export const DEFAULT_PRESET_ID = "morning-ritual";
+
+/**
+ * Build a full HomebaseConfig from a preset's section layout. The briefing
+ * is the standard curated rotation (same as `defaultConfig()`), so picking
+ * any practice still ships the day-one quote rotation. Section arrays are
+ * copied so callers can't mutate the preset's shared data.
+ */
+export function configFromPreset(preset: LayoutPreset): HomebaseConfig {
+  return {
+    version: 1,
+    slots: preset.slots.map((slot) => ({ ...slot })),
+    briefing: {
+      enabled: true,
+      quotes: [...DEFAULT_BRIEFING_QUOTES],
+    },
+  };
+}
+
 // -- Defaults -----------------------------------------------------------
 
 /**
