@@ -11,7 +11,7 @@ If you already keep your thinking in plain text, Homebase will feel like home. I
 Homebase has two surfaces:
 
 - A **home page** for reflection at long horizons — your values, your goals, the year, the month, the week. Writing at one horizon carries forward to the next when a new period begins, so a fresh week starts with last week's draft instead of a blank page.
-- A **daily page** for whatever you want to write today. Sections (called *slots*) are arranged to suit your practice — morning ritual, evening journal, midday check-in, all the same surface.
+- A **daily page** for whatever you want to write today. Sections are arranged to suit your practice: morning ritual, evening journal, midday check-in, all the same surface.
 
 Everything you write is plain markdown saved to a folder you choose on your own computer. There is no server, no account, no sync. Open the same files in any text editor; back them up however you back up files.
 
@@ -27,17 +27,17 @@ To install as a desktop app, click the install button in the address bar (or the
 
 Most things you'd want to change are configurable from the **Customize** link on the home page or daily page footer:
 
-- Reorder, rename, add, or remove slots on the daily page
+- Reorder, rename, add, or remove sections on the daily page
 - Edit the prompts and small hint chips
 - Toggle the briefing panel; comes pre-seeded with a curated quote rotation drawn from non-dual, contemplative, and deeper Stoic traditions — replace or extend at will
 - Reset to defaults if you want a clean slate
 
 All edits save to a file called `homebase.config.json` in your homebase folder. You can hand-edit it in any text editor; if you break it, Homebase shows a recovery screen with a "Reset to defaults" button.
 
-The two slot kinds:
+The two section kinds:
 
-- **Prompt slot** — single writing field, optional question above it. Each day starts blank. Examples: Dreams, Inner Weather, Gratitude, Today.
-- **Workspace slot** — a small whiteboard above a writing field. The whiteboard persists across days; the writing field resets daily. Use a workspace when there's standing context you want to see *before* writing today's entry — goals for a project, the book you're reading, the instrument you're practicing.
+- **Prompt section**: single writing field, optional question above it. Each day starts blank. Examples: Dreams, Inner Weather, Gratitude, Today.
+- **Workspace section**: a small whiteboard above a writing field. The whiteboard persists across days; the writing field resets daily. Use a workspace when there's standing context you want to see *before* writing today's entry, like goals for a project, the book you're reading, or the instrument you're practicing.
 
 ## Your data stays on your disk
 
