@@ -183,9 +183,10 @@ export function Masthead({ onDayClick }: { onDayClick?: () => void }) {
                   color: HERO_TEXT,
                 }}
               >
-                A personal writing tool. Reflect at long horizons on the home page; write freely on
-                the daily page. Everything saves as plain markdown in a folder you choose. No
-                server, no account, no sync.
+                A writing tool for people who keep their thinking in plain text. Reflect at long
+                horizons on the home page; write freely on the daily page. Every entry is a markdown
+                file in a folder you point us at. No server, no account, no lock-in. Your journal is
+                a folder you can grep, back up, and open in any editor.
               </p>
               <p
                 style={{
