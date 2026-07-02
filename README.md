@@ -4,6 +4,10 @@ A personal writing tool. Plain markdown. Your folder. No server.
 
 **[Try it →](https://homebase.you)**
 
+## Who this is for
+
+If you already keep your thinking in plain text, Homebase will feel like home. It's for the Obsidian-and-a-thousand-notes crowd, the developers who journal in `vim`, the writers who'd rather own a folder than rent an account, and anyone who bounced off Day One or Notion because their words ended up locked inside someone else's database. Your journal here is a folder of markdown you can `git diff`. Nothing more clever than that, on purpose.
+
 Homebase has two surfaces:
 
 - A **home page** for reflection at long horizons — your values, your goals, the year, the month, the week. Writing at one horizon carries forward to the next when a new period begins, so a fresh week starts with last week's draft instead of a blank page.
@@ -13,9 +17,9 @@ Everything you write is plain markdown saved to a folder you choose on your own 
 
 ## Try it
 
-Open **[homebase.you](https://homebase.you)** in a Chromium browser (Chrome, Edge, Brave, Arc). Homebase uses the browser's File System Access API to read and write your markdown files; Firefox and Safari don't support that yet.
+Open **[homebase.you](https://homebase.you)** in a Chromium browser (Chrome, Edge, Brave, Arc) on a desktop. These aren't arbitrary requirements; they fall directly out of the local-first design. Writing straight to your own files, with no server in the middle, means leaning on the browser's File System Access API, which today ships in Chromium on the desktop and not in Firefox or Safari. A tool that owns your files instead of a cloud database picks up whatever platform lets it touch the disk. That's the trade, made in your favor.
 
-On first launch you pick a folder. `~/Homebase` works well, but anywhere is fine — keeping it out of `~/Documents` and `~/Desktop` avoids iCloud making sync-conflict copies of files you edit constantly. You only pick it once. Both your home-page horizons and your daily entries live in that one folder. You can change the folder later from the **Customize** page.
+On first launch you pick a folder. This is the moment of ownership: you hand Homebase a directory and from then on it writes real files there that you can see, move, and read without it. `~/Homebase` works well, but anywhere is fine; keeping it out of `~/Documents` and `~/Desktop` avoids iCloud making sync-conflict copies of files you edit constantly. You only pick it once. Both your home-page horizons and your daily entries live in that one folder. You can change the folder later from the **Customize** page.
 
 To install as a desktop app, click the install button in the address bar (or the 3-dot menu → "Install Homebase"). The app shell works offline after first load.
 
