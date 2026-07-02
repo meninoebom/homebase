@@ -4,7 +4,7 @@
 
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vite-plus/test";
-import { EmptyState, saveFooterText } from "./day";
+import { EmptyState, firstMeaningfulLine, ResurfacePanel, saveFooterText } from "./day";
 
 describe("saveFooterText", () => {
   it("shows 'saving…' while a save is in flight", () => {
@@ -36,5 +36,27 @@ describe("EmptyState", () => {
     render(<EmptyState onCustomize={() => {}} />);
     expect(screen.getByText(/no slots yet/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /customize/i })).toBeInTheDocument();
+  });
+});
+
+describe("firstMeaningfulLine (week compass)", () => {
+  it("returns the first prose line, skipping markdown headings", () => {
+    expect(firstMeaningfulLine("# Week 24\n\nShip the resurface feature.")).toBe(
+      "Ship the resurface feature.",
+    );
+  });
+
+  it("returns empty string for an empty or heading-only file", () => {
+    expect(firstMeaningfulLine("")).toBe("");
+    expect(firstMeaningfulLine("# Week 24\n\n## Notes\n\n")).toBe("");
+  });
+});
+
+describe("ResurfacePanel", () => {
+  it("renders nothing until (and unless) history resolves (silent for new users)", () => {
+    // With no folder handle initialized, gatherResurfacing rejects and the
+    // panel stays empty. The panel must degrade to nothing, not throw.
+    const { container } = render(<ResurfacePanel />);
+    expect(container).toBeEmptyDOMElement();
   });
 });
