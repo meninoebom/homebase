@@ -45,6 +45,15 @@ The app is a static site hosted on GitHub Pages. There is no backend, no databas
 
 For a real backup: `git init` inside your homebase folder and push to a private repo. Diffs over months tell you something interesting about how your thinking shifted.
 
+## Reflect on it with an AI
+
+Plain markdown in a folder happens to be the easiest thing there is to hand to an assistant, so Homebase doesn't build one in. The **Use with AI** link in the home footer (`/integrations`) gives you two ways across:
+
+- **Copy the AI primer** and paste it into any tool that can read the folder directly — Claude Desktop with the filesystem connector, or Claude Code with the folder open. The same instructions are checked in at [`skill/homebase-reflection/`](skill/homebase-reflection/) if you'd rather install them as a skill.
+- **Copy a recent digest** — your last 30 days plus your strategy files, assembled in the browser into one markdown block — for tools that only take pasted text.
+
+Nothing is sent anywhere by Homebase itself. The digest is built locally and goes to your clipboard; where it travels from there is your call.
+
 ## Contribute
 
 Homebase is small and personal, but it's open source ([MIT](LICENSE)) and contributions are welcome. Some ways in:
@@ -64,15 +73,18 @@ Repo layout:
 homebase/                      # the app — Vite+ + React + TanStack Router
   src/                         # routes, components, store
   public/                      # icons, manifest
+    welcome/                   # the static landing page, served at /welcome
   vite.config.ts               # Vite + PWA + Tailwind config
+skill/                         # portable reflection skill for AI agents
 docs/                          # durable design notes
+  solutions/                   # things that bit us, named by symptom
 .github/workflows/             # CI + Pages deploy
 ```
 
 Daily commands (from the repo root):
 
 ```bash
-pnpm install      # first time only
+pnpm install:app  # first time only — installs the app's deps in homebase/
 pnpm dev          # Vite dev server at http://localhost:47823
 pnpm test         # vitest run once
 pnpm typecheck    # tsc --noEmit
@@ -89,7 +101,7 @@ Under the hood the toolchain is Vite+ (`vp`), wrapping Vite + Vitest + Oxlint + 
 
 Two workflows:
 
-- `.github/workflows/ci.yml` — runs on every PR and push to main. Format + lint + typecheck + tests. Required check; gates auto-merge.
+- `.github/workflows/ci.yml` — runs on pull requests. Format + lint + typecheck + tests. Required check; gates auto-merge.
 - `.github/workflows/deploy.yml` — runs on push to main. Builds with `BASE_PATH=/` and publishes to GitHub Pages, served at the custom domain `homebase.you` (configured via `homebase/public/CNAME`).
 
 Branch protection on `main` requires the CI check to pass before merge.

@@ -11,7 +11,7 @@ Use judgment to plan appropriately for the task:
 - Larger changes: think through the approach before coding. A brief plan in the PR body or a scratch file is enough.
 - Always create a feature branch off `origin/main`, commit with descriptive messages, and ship via PR. CI is required to pass before merge.
 
-The branch protection on `main` requires the CI check to pass. Auto-merge is fine once CI is green; the deploy workflow rolls the change to `meninoebom.github.io/homebase/` automatically.
+The branch protection on `main` requires the CI check to pass. Auto-merge is fine once CI is green; the deploy workflow rolls the change out to `homebase.you` automatically. (The old `meninoebom.github.io/homebase/` URL now 301s to the custom domain — with one nasty consequence for anyone who loaded it before the move; see `docs/solutions/stale-app-after-moving-to-a-custom-domain.md`.)
 
 ## Auto-merge
 
@@ -44,7 +44,18 @@ If you ever need a reactive placeholder, the CodeMirror-idiomatic fix is a `Comp
 
 The standalone `/about` route was removed in the sotol-fishhook cover redesign (2026-06). "About" is now an expand/collapse panel inside the `Masthead` rust band on `/`: a slim functional bar by default that opens to reveal the concentric `HorizonEmblem` plus a succinct "what Homebase is" + how-to-start. First load auto-opens it once via a localStorage flag (`homebase.seenIntro` in `Masthead.tsx`); the user reopens it any time with the About toggle.
 
-Because About is no longer a public, pre-gate route, `SetupGate.isPublicRoute()` was deleted with it — *every* route now sits behind the folder picker. That's intentional: the SetupGate first-run screen itself explains Homebase before the grant, so a brand-new visitor still gets the pitch. If you ever reintroduce a public colophon route (privacy, FAQ), you'll need to re-add a public-route escape in `SetupGate` — and beware the client-nav bypass the old `isPublicRoute()` had (it read `window.location.pathname` once, outside `RouterProvider`, so in-app nav never re-evaluated it).
+Because About is no longer a public, pre-gate route, `SetupGate.isPublicRoute()` was deleted with it — *every React route* now sits behind the folder picker.
+
+### Public pages live in `public/`, not in the router
+
+The pre-gate surface is now `homebase/public/welcome/index.html`: plain static HTML, no build step, no React, served at `/welcome`. `SetupGate` links to it from both the first-run screen and the unsupported-browser screen, so a stranger can read what Homebase is without granting filesystem access.
+
+This is the pattern to copy for any future public page (privacy, FAQ). Doing it as a static file rather than a router route sidesteps the bug the old `isPublicRoute()` had: that check read `window.location.pathname` once, outside `RouterProvider`, so client-side nav never re-evaluated it and an in-app link could walk you past the gate. A file in `public/` cannot have that problem — it isn't part of the SPA at all.
+
+**Two things will bite you when adding one:**
+
+1. **Add it to `navigateFallbackDenylist`** in `homebase/vite.config.ts`. The service worker registers a navigation fallback bound to the app shell, so without the denylist entry your new static page gets shadowed by the gated SPA for anyone with the worker installed — and only for them, which makes it look intermittent.
+2. **Meta tags don't inherit.** `homebase/index.html` and the welcome page each carry their own `og:`/`twitter:` block; `og:image` must be an absolute URL, since unfurlers don't resolve relative paths. The card itself is `homebase/public/og.png`, excluded from the precache in `vite.config.ts` because only crawlers ever fetch it.
 
 ### A rotated `+` reads as `×`, not "collapse"
 
@@ -98,3 +109,11 @@ Before wrapping up a non-trivial PR, self-assess:
 - Would a future session benefit from knowing this?
 
 If the answer is yes, add to this file's **Gotchas** section. The bar is "would a future engineer (or future you) lose time without this." Keep entries focused — one paragraph plus a code pointer.
+
+### `pnpm install` at the repo root installs nothing
+
+The app's `package.json` lives in `homebase/`, and the repo root is *not* a pnpm workspace (the `pnpm-workspace.yaml` is inside `homebase/`, holding the Vite+ catalog). So a plain `pnpm install` at the root exits 0 after doing no work, and the next command dies with `ERR_MODULE_NOT_FOUND` plus a quiet "Local package.json exists, but node_modules missing" warning below the stack trace.
+
+Use `pnpm install:app` (a passthrough for `pnpm -C homebase install`). Every other root script already delegates with `-C homebase`, which is why they work once the app's deps exist.
+
+Nothing needs to be installed globally, `vp` included: `vite-plus` is a devDependency and provides `node_modules/.bin/vp`, which is how the scripts resolve it.
