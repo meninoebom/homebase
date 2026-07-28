@@ -12,13 +12,11 @@
 import { create } from "zustand";
 import {
   defaultConfig,
-  legacyDefaultConfig,
   migrateLoadedConfig,
   readConfig,
   writeConfig,
   type HomebaseConfig,
 } from "../lib/config";
-import { listTopLevelFiles } from "../lib/fs";
 import { readDaySections, saveDay, todayISO } from "../lib/log";
 
 export type SlotId = string;
@@ -72,8 +70,6 @@ interface RitualState {
   updateConfig: (updater: (config: HomebaseConfig) => HomebaseConfig) => Promise<void>;
 }
 
-const DAY_FILE_PATTERN = /^\d{4}-\d{2}-\d{2}\.md$/;
-
 /**
  * True for a "folder unreachable" error (revoked permission), as opposed to a
  * missing file or a content problem. Such an error means the user must
@@ -88,16 +84,16 @@ function isAccessError(err: unknown): boolean {
 }
 
 /**
- * Decide which default config to seed when the user has no
- * homebase.config.json yet. If the log dir already has day files, the
- * user is mid-flow on a pre-config build (Brandon, anyone migrating)
- * — give them the legacy slot set so nothing visibly changes. Otherwise
- * they're a fresh install — give them the neutral default.
+ * Seed a config when the folder has no homebase.config.json.
+ *
+ * This used to branch: a folder with day files got the author's own legacy
+ * slot set, on the theory that its owner was mid-migration from a pre-config
+ * build. The starter-practice chooser (#118) took over that job — it writes a
+ * config before the app renders — so the only way here now is a config
+ * deleted by hand, where the neutral default is right for everybody.
  */
-async function pickFirstRunConfig(): Promise<HomebaseConfig> {
-  const files = await listTopLevelFiles();
-  const hasExistingDays = files.some((name) => DAY_FILE_PATTERN.test(name));
-  return hasExistingDays ? legacyDefaultConfig() : defaultConfig();
+function pickFirstRunConfig(): HomebaseConfig {
+  return defaultConfig();
 }
 
 export const useRitualStore = create<RitualState>()((set, get) => ({
@@ -122,7 +118,7 @@ export const useRitualStore = create<RitualState>()((set, get) => ({
       let config: HomebaseConfig;
       const result = await readConfig();
       if (result.kind === "missing") {
-        config = await pickFirstRunConfig();
+        config = pickFirstRunConfig();
         await writeConfig(config);
       } else if (result.kind === "parse-error" || result.kind === "schema-error") {
         set({ configError: result, draftsError: false, accessError: false, loaded: true });

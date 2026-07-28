@@ -36,7 +36,7 @@ vi.mock("../lib/log", () => ({
 
 // Import AFTER mocks so the store picks them up.
 const { useRitualStore } = await import("./ritual");
-const { defaultConfig, legacyDefaultConfig } = await import("../lib/config");
+const { defaultConfig } = await import("../lib/config");
 
 beforeEach(() => {
   mockReadConfig = () => Promise.resolve({ kind: "missing" });
@@ -77,7 +77,11 @@ describe("loadToday — config seeding", () => {
     expect(useRitualStore.getState().config).toEqual(defaultConfig());
   });
 
-  it("writes legacyDefaultConfig() when day files already exist (existing user)", async () => {
+  it("writes defaultConfig() even when day files already exist", async () => {
+    // A folder holding day files but no config used to seed the author's own
+    // six-section layout, piano included. The starter-practice chooser owns
+    // first-run setup now, so the neutral default is the only thing seeded
+    // here and nobody inherits somebody else's practice.
     const writes: HomebaseConfig[] = [];
     mockWriteConfig = (c) => {
       writes.push(c);
@@ -88,21 +92,8 @@ describe("loadToday — config seeding", () => {
     await useRitualStore.getState().loadToday();
 
     expect(writes).toHaveLength(1);
-    expect(writes[0]).toEqual(legacyDefaultConfig());
-  });
-
-  it("ignores non-day-file names when deciding fresh vs. legacy", async () => {
-    const writes: HomebaseConfig[] = [];
-    mockWriteConfig = (c) => {
-      writes.push(c);
-      return Promise.resolve();
-    };
-    // README and the config file itself shouldn't trigger legacy migration.
-    mockListFiles = () => Promise.resolve(["README.md", "homebase.config.json", ".DS_Store"]);
-
-    await useRitualStore.getState().loadToday();
-
     expect(writes[0]).toEqual(defaultConfig());
+    expect(writes[0].slots.map((s) => s.id)).not.toContain("piano");
   });
 
   it("uses the existing config when readConfig returns ok", async () => {

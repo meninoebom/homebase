@@ -258,17 +258,11 @@ function BriefingPanel({ config }: { config: HomebaseConfig }) {
     <div className="mb-6 rounded bg-[#F8F8F8] px-4 py-3" style={{ fontFamily: DAY_SANS }}>
       <div className="flex items-baseline justify-between">
         <h2 style={{ fontSize: "15px", fontWeight: 600, color: "#6B7280", margin: 0 }}>Briefing</h2>
-        <span
-          style={{
-            fontSize: "11px",
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "#D1D5DB",
-          }}
-        >
-          generated
-        </span>
+        {/* This panel used to carry a "generated" tag. Nothing generates it —
+            the quotes are a curated list the user can edit in Customize, picked
+            by a date hash. In an app whose central claim is that no model runs
+            here and nothing leaves your machine, labelling the one dynamic-
+            looking element as machine-made undercut the claim for no gain. */}
       </div>
       <p
         className="mt-2"

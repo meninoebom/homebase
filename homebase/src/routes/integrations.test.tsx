@@ -15,6 +15,7 @@ function renderContent(overrides: Partial<Parameters<typeof IntegrationsContent>
     digestCopied: false,
     digestBusy: false,
     digestError: null,
+    primerError: null,
     ...overrides,
   };
   render(<IntegrationsContent {...props} />);
@@ -56,6 +57,11 @@ describe("IntegrationsContent", () => {
   it("surfaces a digest error when the folder can't be read", () => {
     renderContent({ digestError: "Couldn't read your folder just now. Try again in a moment." });
     expect(screen.getByText(/couldn.t read your folder/i)).toBeInTheDocument();
+  });
+
+  it("surfaces a clipboard failure on the primer instead of looking inert", () => {
+    renderContent({ primerError: "Couldn't reach your clipboard." });
+    expect(screen.getByText(/couldn.t reach your clipboard/i)).toBeInTheDocument();
   });
 
   it("navigates back when Done is clicked", () => {

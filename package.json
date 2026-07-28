@@ -1,8 +1,8 @@
 {
-  "name": "morning-ritual",
+  "name": "homebase",
   "version": "0.2.0",
   "private": true,
-  "description": "Homebase — personal morning writing surface. Pure HTML/JS at homebase/, runs in the browser via the File System Access API. Tauri shell removed April 15 2026.",
+  "description": "Homebase — a journal structured by time. A Vite + React app in homebase/ that writes plain markdown into a folder you pick, via the browser's File System Access API. No server, no account.",
   "scripts": {
     "dev": "pnpm -C homebase dev",
     "build": "pnpm -C homebase build",

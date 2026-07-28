@@ -420,60 +420,15 @@ const DEFAULT_BRIEFING_QUOTES: ReadonlyArray<string> = [
   "The mind unborn does not arise; it does not pass away. Stop trying to grasp it, and it is right here. — Bankei",
 ];
 
-/**
- * Existing-user migration: mirrors the current hardcoded slot registry
- * verbatim (Dreams · Inner Weather · Morning Practices · Piano · Creative
- * · Orient). Only used when a log dir already contains day files but no
- * config — Brandon's setup, anyone migrating from a pre-config build.
- */
-export function legacyDefaultConfig(): HomebaseConfig {
-  return {
-    version: 1,
-    slots: [
-      {
-        id: "dreams",
-        kind: "prompt",
-        prompt: "What did you dream?",
-      },
-      {
-        id: "inner-weather",
-        kind: "prompt",
-        title: "Inner Weather",
-        prompt: "What's alive in you this morning?",
-        hints: ["weighing on you", "avoiding", "needs to be said", "giving you life", "gratitude"],
-      },
-      {
-        id: "morning-practices",
-        kind: "prompt",
-        title: "Morning Practices",
-        prompt: "Anything about your practices today?",
-        hints: ["movement", "meditation", "water", "piano"],
-      },
-      {
-        id: "piano",
-        kind: "workspace",
-        title: "Piano",
-        prompt: "What did you practice? What clicked, what needs work?",
-      },
-      {
-        id: "creative",
-        kind: "prompt",
-        title: "Creative Projects",
-        prompt: "What's surfacing? What's maturing?",
-      },
-      {
-        id: "orient",
-        kind: "prompt",
-        prompt:
-          "According to my deepest understanding, how can I live that understanding more deeply?",
-      },
-    ],
-    briefing: {
-      enabled: true,
-      quotes: [...DEFAULT_BRIEFING_QUOTES],
-    },
-  };
-}
+// A `legacyDefaultConfig()` used to live here: the author's own six-section
+// layout (Dreams · Inner Weather · Morning Practices · Piano · Creative ·
+// Orient), seeded whenever a folder held day files but no config, so that
+// users of pre-config builds saw no change. That migration window closed
+// once the starter-practice chooser shipped (#118) — a folder without a
+// config now gets one written before the app renders — leaving the branch
+// reachable only if someone deleted their config by hand, in which case it
+// would have furnished a stranger with the author's piano practice. Removed
+// rather than kept as personal content in every user's bundle.
 
 // -- Disk I/O -----------------------------------------------------------
 
