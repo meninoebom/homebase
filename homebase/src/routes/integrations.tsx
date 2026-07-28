@@ -30,14 +30,24 @@ const COPIED_RESET_MS = 2000;
 function IntegrationsPage() {
   const navigate = useNavigate();
   const [primerCopied, setPrimerCopied] = useState(false);
+  const [primerError, setPrimerError] = useState<string | null>(null);
   const [digestCopied, setDigestCopied] = useState(false);
   const [digestBusy, setDigestBusy] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
 
   const copyPrimer = async () => {
-    await navigator.clipboard.writeText(AI_PRIMER);
-    setPrimerCopied(true);
-    setTimeout(() => setPrimerCopied(false), COPIED_RESET_MS);
+    // Unlike the digest below there's nothing to fail in gathering this — the
+    // primer is a constant — but the clipboard write itself can still reject
+    // (permission denied, or no clipboard API at all), and an unhandled
+    // rejection here would leave the button looking like it did nothing.
+    setPrimerError(null);
+    try {
+      await navigator.clipboard.writeText(AI_PRIMER);
+      setPrimerCopied(true);
+      setTimeout(() => setPrimerCopied(false), COPIED_RESET_MS);
+    } catch {
+      setPrimerError("Couldn't reach your clipboard. You can select and copy the primer by hand.");
+    }
   };
 
   const copyDigest = async () => {
@@ -64,6 +74,7 @@ function IntegrationsPage() {
       digestCopied={digestCopied}
       digestBusy={digestBusy}
       digestError={digestError}
+      primerError={primerError}
     />
   );
 }
@@ -76,6 +87,7 @@ interface IntegrationsContentProps {
   digestCopied: boolean;
   digestBusy: boolean;
   digestError: string | null;
+  primerError: string | null;
 }
 
 // Presentational seam — no router, no clipboard — so it renders cleanly in tests.
@@ -87,6 +99,7 @@ export function IntegrationsContent({
   digestCopied,
   digestBusy,
   digestError,
+  primerError,
 }: IntegrationsContentProps) {
   return (
     <main className="min-h-screen bg-white">
@@ -130,6 +143,11 @@ export function IntegrationsContent({
             onClick={onCopyPrimer}
             testid="copy-primer"
           />
+          {primerError && (
+            <p className="mt-2 font-sans text-[13px] leading-relaxed text-[#B91C1C]">
+              {primerError}
+            </p>
+          )}
           <p className="mt-2 font-sans text-[13px] leading-relaxed text-[#9CA3AF]">
             Tip: you can also save this primer as a file in your folder so any agent picks it up
             automatically. Edit it to sound like the kind of reflection you actually want.

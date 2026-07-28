@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SetupGate } from "./components/SetupGate";
 import "./index.css";
 
@@ -22,8 +23,11 @@ declare module "@tanstack/react-router" {
 const rootElement = document.getElementById("root") as HTMLElement;
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <SetupGate>
-      <RouterProvider router={router} />
-    </SetupGate>
+    {/* Outside SetupGate so a crash in the gate itself is caught too. */}
+    <ErrorBoundary>
+      <SetupGate>
+        <RouterProvider router={router} />
+      </SetupGate>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

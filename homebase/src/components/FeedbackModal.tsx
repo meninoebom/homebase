@@ -160,6 +160,9 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
           Found a bug or have an idea? Send an email — it goes straight to the person building this.
         </p>
 
+        {/* The address stays in the mailto (that's what makes the link work)
+            but is no longer printed as body text: a personal inbox rendered in
+            full on a public page is a standing invitation to scrapers. */}
         <a
           href={MAILTO_HREF}
           style={{
@@ -171,7 +174,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             letterSpacing: "-0.01em",
           }}
         >
-          Email {FEEDBACK_EMAIL}
+          Write an email
         </a>
       </div>
     </div>

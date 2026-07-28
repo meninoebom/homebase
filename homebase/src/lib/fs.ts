@@ -157,10 +157,9 @@ export async function writeNested(segments: string[], text: string): Promise<voi
 }
 
 /**
- * List top-level filenames in the log dir. Used to detect whether the
- * directory already contains user data (any `YYYY-MM-DD.md` day file)
- * — drives the choice between `legacyDefaultConfig()` (existing user
- * migrating from a pre-config build) and `defaultConfig()` (fresh user).
+ * List top-level filenames in the homebase folder. Callers filter it for the
+ * shape they care about: `reflect/digest.ts` for the corpus it hands to an
+ * assistant, `reflect/resurface.ts` for past day files worth resurfacing.
  */
 export async function listTopLevelFiles(): Promise<string[]> {
   const dir = rootOrThrow();

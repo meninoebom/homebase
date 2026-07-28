@@ -5,7 +5,6 @@ import {
   defaultConfig,
   findLayoutPreset,
   layoutPresets,
-  legacyDefaultConfig,
   migrateLoadedConfig,
   parseConfig,
   serializeConfig,
@@ -18,8 +17,10 @@ describe("validateConfig", () => {
     expect(validateConfig(defaultConfig()).kind).toBe("ok");
   });
 
-  it("accepts the legacyDefaultConfig", () => {
-    expect(validateConfig(legacyDefaultConfig()).kind).toBe("ok");
+  it("accepts every starter practice", () => {
+    for (const preset of layoutPresets()) {
+      expect(validateConfig(configFromPreset(preset)).kind).toBe("ok");
+    }
   });
 
   it("rejects non-objects", () => {
@@ -146,7 +147,7 @@ describe("parseConfig", () => {
 
 describe("serializeConfig", () => {
   it("round-trips through parseConfig", () => {
-    const original = legacyDefaultConfig();
+    const original = configFromPreset(layoutPresets()[1]);
     const json = serializeConfig(original);
     const parsed = parseConfig(json);
     expect(parsed.kind).toBe("ok");
@@ -176,15 +177,16 @@ describe("defaultConfig", () => {
   });
 });
 
-describe("legacyDefaultConfig", () => {
-  it("includes piano as a workspace slot", () => {
-    const piano = legacyDefaultConfig().slots.find((s) => s.id === "piano");
-    expect(piano?.kind).toBe("workspace");
-  });
-
-  it("includes the existing briefing quote so Brandon's setup looks identical post-migration", () => {
-    const config = legacyDefaultConfig();
-    expect(config.briefing.quotes.length).toBeGreaterThan(0);
+describe("shipped defaults", () => {
+  // The author's own layout used to ship as legacyDefaultConfig() and could
+  // reach a stranger's screen. No shipped default should carry it back in.
+  it("carry no personal sections", () => {
+    const configs = [defaultConfig(), ...layoutPresets().map(configFromPreset)];
+    for (const config of configs) {
+      const ids = config.slots.map((s) => s.id);
+      expect(ids).not.toContain("piano");
+      expect(ids).not.toContain("morning-practices");
+    }
   });
 });
 
@@ -315,7 +317,16 @@ describe("layout presets", () => {
 
 describe("type narrowing", () => {
   it("narrows by kind via discriminated union", () => {
-    const config: HomebaseConfig = legacyDefaultConfig();
+    // Built inline rather than from a shipped default: no starter practice
+    // includes a workspace slot, so a default-derived config would leave the
+    // workspace branch of the union unexercised.
+    const config: HomebaseConfig = {
+      ...defaultConfig(),
+      slots: [
+        { id: "a-prompt", kind: "prompt", prompt: "What's on your mind?" },
+        { id: "a-workspace", kind: "workspace", title: "A workspace" },
+      ],
+    };
     for (const slot of config.slots) {
       if (slot.kind === "prompt") {
         expect(typeof slot.prompt).toBe("string");
