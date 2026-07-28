@@ -24,6 +24,25 @@ import {
   requestHomebaseFolderPermission,
 } from "../lib/fs";
 
+// The static marketing page in public/welcome/. It is the only surface a
+// stranger can read before granting filesystem access, so every dead end in
+// this gate links to it. Built from BASE_URL so it survives a base-path change.
+const WELCOME_URL = `${import.meta.env.BASE_URL}welcome/`;
+const APP_URL = "https://homebase.you/";
+
+/**
+ * Rough mobile check, used only to pick which "wrong browser" copy to show.
+ * Worth splitting because the two audiences need opposite advice: a desktop
+ * Safari user should switch browsers, while a Chrome-on-Android user is
+ * already in Chromium and would be baffled by "use a Chromium browser" —
+ * their problem is the device, since the directory picker ships on no mobile
+ * browser at all.
+ */
+function isMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 type GateState =
   | { kind: "checking" }
   | { kind: "unsupported" }
@@ -79,15 +98,7 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-6 px-6 text-center">
-      {state.kind === "unsupported" && (
-        <>
-          <h1 className="font-serif text-2xl text-[#374151]">Homebase needs a Chromium browser.</h1>
-          <p className="font-serif text-[15px] italic text-[#6B7280]">
-            Homebase saves your notes as real markdown files on your computer, which needs an API
-            that Chrome, Edge, Arc, Brave, and Opera support. Firefox and Safari don&rsquo;t yet.
-          </p>
-        </>
-      )}
+      {state.kind === "unsupported" && <UnsupportedBrowser mobile={isMobileBrowser()} />}
 
       {state.kind === "first-run" && (
         <>
@@ -125,6 +136,12 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
           >
             Choose folder
           </button>
+          <a
+            href={WELCOME_URL}
+            className="font-sans text-[13px] text-[#6B7280] underline hover:text-[#374151]"
+          >
+            What is Homebase?
+          </a>
         </>
       )}
 
@@ -168,6 +185,71 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * The wrong-browser dead end, which around seven in ten arrivals will hit
+ * (the File System Access API is Chromium-desktop only). Exported for tests.
+ *
+ * Two rules for this screen. First, tell the truth: Safari and Firefox have
+ * formally declined to implement the API rather than merely not shipped it
+ * yet, so "not yet" was a promise the platform is not going to keep. Second,
+ * always leave a way forward — a link to what Homebase actually is, and, on a
+ * phone, a way to carry the link to a machine that can run it.
+ */
+export function UnsupportedBrowser({ mobile }: { mobile: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const canCopy = typeof navigator !== "undefined" && !!navigator.clipboard;
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(APP_URL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard blocked (permissions, insecure context). The address is
+      // printed below regardless, so there's nothing to recover from.
+    }
+  };
+
+  return (
+    <>
+      <h1 className="font-serif text-2xl text-[#374151]">
+        {mobile ? "Homebase needs a desktop." : "Homebase needs a Chromium browser."}
+      </h1>
+      {mobile ? (
+        <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
+          Homebase writes markdown files straight into a folder on your computer. No phone or tablet
+          browser can do that, including Chrome on Android, so there is nothing to switch to here.
+          On a desktop, open <span className="font-mono text-[13px]">homebase.you</span> in Chrome,
+          Edge, Brave, or Arc.
+        </p>
+      ) : (
+        <p className="font-serif text-[15px] leading-relaxed text-[#6B7280]">
+          Homebase writes markdown files straight into a folder on your computer. That takes the
+          File System Access API, which Chrome, Edge, Brave, Arc, and Opera support. Safari and
+          Firefox have both declined to implement it, so this is not a gap that closes on its own.
+        </p>
+      )}
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <a
+          href={WELCOME_URL}
+          className="rounded bg-[#374151] px-4 py-2 font-sans text-[13px] text-white hover:bg-[#1F2937]"
+        >
+          See what Homebase is
+        </a>
+        {mobile && canCopy && (
+          <button
+            type="button"
+            onClick={copyLink}
+            className="cursor-pointer rounded border border-[#D1D5DB] px-4 py-2 font-sans text-[13px] text-[#374151] hover:border-[#9CA3AF]"
+          >
+            {copied ? "Copied ✓" : "Copy link for later"}
+          </button>
+        )}
+      </div>
+    </>
   );
 }
 

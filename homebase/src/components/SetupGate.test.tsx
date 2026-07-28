@@ -5,7 +5,7 @@
 
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { StarterPracticeChooser } from "./SetupGate";
+import { StarterPracticeChooser, UnsupportedBrowser } from "./SetupGate";
 import { layoutPresets } from "../lib/config";
 
 describe("StarterPracticeChooser", () => {
@@ -76,5 +76,54 @@ describe("StarterPracticeChooser", () => {
       />,
     );
     expect(screen.getByText(/starting point/i)).toBeInTheDocument();
+  });
+});
+
+describe("UnsupportedBrowser", () => {
+  it("tells a desktop visitor which browsers work", () => {
+    render(<UnsupportedBrowser mobile={false} />);
+    expect(screen.getByText(/needs a Chromium browser/i)).toBeInTheDocument();
+    expect(screen.getByText(/Chrome, Edge, Brave, Arc, and Opera/i)).toBeInTheDocument();
+  });
+
+  it("does not promise Safari and Firefox support is coming", () => {
+    render(<UnsupportedBrowser mobile={false} />);
+    // The old copy said they "don't yet" support it. Both vendors have
+    // formally declined, so "yet" was a promise the platform won't keep.
+    expect(screen.queryByText(/don't yet|doesn't yet|not yet/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/declined to implement/i)).toBeInTheDocument();
+  });
+
+  it("tells a phone visitor the device is the problem, not the browser", () => {
+    render(<UnsupportedBrowser mobile={true} />);
+    expect(screen.getByText(/needs a desktop/i)).toBeInTheDocument();
+    expect(screen.getByText(/including Chrome on Android/i)).toBeInTheDocument();
+  });
+
+  it("always offers a way to read what Homebase is", () => {
+    for (const mobile of [true, false]) {
+      const { unmount } = render(<UnsupportedBrowser mobile={mobile} />);
+      expect(screen.getByRole("link", { name: /what Homebase is/i })).toHaveAttribute(
+        "href",
+        expect.stringContaining("welcome"),
+      );
+      unmount();
+    }
+  });
+
+  it("offers a phone visitor a way to carry the link to a desktop", () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
+
+    render(<UnsupportedBrowser mobile={true} />);
+    fireEvent.click(screen.getByRole("button", { name: /copy link/i }));
+
+    expect(writeText).toHaveBeenCalledWith("https://homebase.you/");
+    vi.unstubAllGlobals();
+  });
+
+  it("omits the copy button on desktop, where it would be pointless", () => {
+    render(<UnsupportedBrowser mobile={false} />);
+    expect(screen.queryByRole("button", { name: /copy link/i })).not.toBeInTheDocument();
   });
 });
