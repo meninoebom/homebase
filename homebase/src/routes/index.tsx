@@ -16,6 +16,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { FeedbackLink, FeedbackModal } from "../components/FeedbackModal";
 import { HorizonRow } from "../components/HorizonRow";
+import { InstallLink } from "../components/InstallLink";
 import { Masthead } from "../components/Masthead";
 
 export const Route = createFileRoute("/")({
@@ -74,6 +75,7 @@ function StrategyAccordion() {
                 Use with AI
               </button>
               <FeedbackLink variant="strategic" onOpen={() => setFeedbackOpen(true)} />
+              <InstallLink />
             </div>
             <p
               style={{

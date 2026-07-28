@@ -53,7 +53,7 @@ export default defineConfig({
       manifest: {
         name: "Homebase",
         short_name: "Homebase",
-        description: "A strategic life guide.",
+        description: "A journal structured by time. Plain markdown, in a folder you own.",
         // Match the base so the installed PWA opens to the app, not to
         // meninoebom.github.io's root (which is the user page).
         start_url: BASE_PATH,
@@ -76,7 +76,14 @@ export default defineConfig({
         // Don't precache the SPA-fallback 404.html — it's a client-side
         // redirect shim (see #30), not a real page. The service worker
         // would otherwise intercept it on offline navigations.
-        globIgnores: ["**/404.html"],
+        // og.png is a 1200x630 card only ever fetched by link unfurlers, so
+        // precaching it would cost every user bandwidth no user benefits from.
+        globIgnores: ["**/404.html", "**/og.png"],
+        // /welcome is a static marketing page, not an app route. Without this
+        // denylist the app-shell navigation fallback would intercept it and
+        // render the gated SPA instead — i.e. the one page a stranger is
+        // supposed to be able to read would show them the folder picker.
+        navigateFallbackDenylist: [/^\/welcome/],
       },
     }),
   ],
